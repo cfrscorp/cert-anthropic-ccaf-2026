@@ -1,0 +1,11 @@
+PURCHASE ORDER
+PO Number: PO-70012
+Buyer: Rivera Architects     Vendor: Blue Heron Supplies, Inc.
+Currency: USD
+
+Qty  Item                 Unit    Amount
+ 5   Drafting paper       12.00    60.00
+ 2   Ink cartridges       45.00    90.00
+
+Authorized total: 150.00 USD
+Requested delivery: 2026-05-15

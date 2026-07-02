@@ -1,0 +1,51 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run Claude Code review (non-interactive)
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed_files.txt
+          # BUG (Sample Q10): this run hangs in CI waiting for interactive input.
+          # TODO: make Claude Code non-interactive and emit schema-compliant JSON.
+          #   - add the -p / --print flag (NOT CLAUDE_HEADLESS, --batch, or < /dev/null)
+          #   - add --output-format json
+          #   - add --json-schema review-schema.json
+          claude "Review the files in changed_files.txt for bugs and security issues \
+              using the criteria in review.CLAUDE.md. Report only NEW or unaddressed issues." \
+            > review.json
+
+      - name: Post findings as inline PR comments
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uv run ci_review.py \
+            --findings review.json \
+            --schema review-schema.json \
+            --prior prior_findings.json \
+            --post

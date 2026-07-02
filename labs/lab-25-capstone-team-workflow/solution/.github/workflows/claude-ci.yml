@@ -1,0 +1,52 @@
+name: Claude Code CI review
+
+# Runs an automated, independent code review on every pull request. A FRESH
+# Claude instance reviews the diff — it did not generate the code, so it is more
+# effective at catching issues than a self-review would be (Task Statement 3.6).
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check out PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run automated review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # -p / --print runs Claude Code non-interactively so the job never hangs
+        # waiting for input (Sample Question 10). --output-format json plus
+        # --json-schema force schema-valid, machine-parseable findings that the
+        # next step posts as inline PR comments. Project context (testing
+        # standards, review criteria) comes from the committed .claude/CLAUDE.md
+        # and .claude/rules/*, so no prompt duplication is needed.
+        run: |
+          git diff --merge-base origin/main > pr.diff
+          claude -p "Review the changes in pr.diff against our team standards in \
+            .claude/CLAUDE.md and .claude/rules/. Report only genuine correctness \
+            and security issues; skip style nits the formatter handles." \
+            --output-format json \
+            --json-schema review-schema.json \
+            > review.json
+
+      - name: Post findings as PR comments
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # review.json is schema-valid (guaranteed by --json-schema above), so a
+        # posting step can parse it deterministically and create one inline PR
+        # comment per finding — e.g. iterate findings[] and call `gh pr comment`.
+        run: |
+          jq -r '.findings[] | "\(.file):\(.line) [\(.severity)] \(.issue)"' review.json

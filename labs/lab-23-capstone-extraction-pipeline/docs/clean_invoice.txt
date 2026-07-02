@@ -1,0 +1,12 @@
+BLUE HERON SUPPLIES, INC.
+Invoice: INV-4501
+Date: 2026-05-02        Terms: Net 30 (due 2026-06-01)
+Bill To: Rivera Architects
+
+Line items
+  1. Drafting paper, 5 reams @ $12.00 ......... $60.00
+  2. Ink cartridges, 2 @ $45.00 .............. $90.00
+  3. Delivery ................................. $10.00
+
+Subtotal: $160.00
+Total due: USD 160.00

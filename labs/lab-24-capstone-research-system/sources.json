@@ -1,0 +1,112 @@
+{
+  "_comment": "Fixture for L24. Two credible sources report the SAME metric with DIFFERENT values and DIFFERENT publication dates (a conflict synthesis must preserve, not resolve). facet_findings supplies per-facet claims the mock subagents 'return'. The two conflicting observations also appear inside facet_findings (visual arts + music) so run_research surfaces the conflict end-to-end.",
+  "metric": "share of creative professionals who use generative AI tools",
+  "conflicting_claims": [
+    {
+      "claim": "About 45% of creative professionals use generative AI tools in their work.",
+      "metric": "share of creative professionals who use generative AI tools",
+      "value": "45%",
+      "excerpt": "45% of surveyed creative professionals reported using generative AI tools at least weekly.",
+      "facet": "visual arts",
+      "source": {
+        "name": "Creative Industry Council",
+        "url": "https://cic.example.org/reports/2023-adoption-survey",
+        "date": "2023-09-01"
+      }
+    },
+    {
+      "claim": "About 62% of creative professionals use generative AI tools in their work.",
+      "metric": "share of creative professionals who use generative AI tools",
+      "value": "62%",
+      "excerpt": "62% of respondents said generative AI tools are now part of their regular workflow.",
+      "facet": "music",
+      "source": {
+        "name": "Global Arts Foundation",
+        "url": "https://gaf.example.org/ai-in-the-arts-2024",
+        "date": "2024-08-01"
+      }
+    }
+  ],
+  "facet_findings": {
+    "visual arts": [
+      {
+        "claim": "About 45% of creative professionals use generative AI tools in their work.",
+        "metric": "share of creative professionals who use generative AI tools",
+        "value": "45%",
+        "excerpt": "45% of surveyed creative professionals reported using generative AI tools at least weekly.",
+        "facet": "visual arts",
+        "source": {
+          "name": "Creative Industry Council",
+          "url": "https://cic.example.org/reports/2023-adoption-survey",
+          "date": "2023-09-01"
+        }
+      },
+      {
+        "claim": "AI image generators have reshaped concept-art and illustration workflows.",
+        "metric": null,
+        "value": null,
+        "excerpt": "Studios report faster ideation cycles as illustrators use diffusion models for concept boards.",
+        "facet": "visual arts",
+        "source": {
+          "name": "Design Weekly",
+          "url": "https://designweekly.example.com/ai-concept-art",
+          "date": "2024-02-11"
+        }
+      }
+    ],
+    "music": [
+      {
+        "claim": "About 62% of creative professionals use generative AI tools in their work.",
+        "metric": "share of creative professionals who use generative AI tools",
+        "value": "62%",
+        "excerpt": "62% of respondents said generative AI tools are now part of their regular workflow.",
+        "facet": "music",
+        "source": {
+          "name": "Global Arts Foundation",
+          "url": "https://gaf.example.org/ai-in-the-arts-2024",
+          "date": "2024-08-01"
+        }
+      },
+      {
+        "claim": "AI-assisted composition and stem separation tools are widely used in music production.",
+        "metric": null,
+        "value": null,
+        "excerpt": "Producers cite AI stem separation and generative accompaniment as standard studio tools.",
+        "facet": "music",
+        "source": {
+          "name": "Sound On Journal",
+          "url": "https://soundon.example.com/ai-music-tools",
+          "date": "2024-05-20"
+        }
+      }
+    ],
+    "writing": [
+      {
+        "claim": "Publishers use large language models for drafting, editing, and localization.",
+        "metric": null,
+        "value": null,
+        "excerpt": "Editorial teams report LLM-assisted copyediting and translation across trade publishing.",
+        "facet": "writing",
+        "source": {
+          "name": "Publishing Trends Report",
+          "url": "https://ptr.example.org/ai-in-publishing-2024",
+          "date": "2024-04-03"
+        }
+      }
+    ],
+    "film": [
+      {
+        "claim": "Film production uses generative AI for previsualization and VFX.",
+        "metric": null,
+        "value": null,
+        "excerpt": "VFX houses apply generative models to previz and background generation.",
+        "facet": "film",
+        "source": {
+          "name": "Screen Tech Review",
+          "url": "https://screentech.example.com/genai-vfx",
+          "date": "2024-06-15"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "name": "get_customer",
+    "description": "TODO: rewrite. Retrieves details about a customer using an identifier.",
+    "input_schema": {
+      "type": "object",
+      "properties": { "id": { "type": "string", "description": "An identifier." } },
+      "required": ["id"]
+    }
+  },
+  {
+    "name": "lookup_order",
+    "description": "TODO: rewrite. Retrieves details about an order using an identifier.",
+    "input_schema": {
+      "type": "object",
+      "properties": { "id": { "type": "string", "description": "An identifier." } },
+      "required": ["id"]
+    }
+  },
+  {
+    "name": "extract_data_points",
+    "description": "TODO: split analyze_document — describe field extraction here.",
+    "input_schema": { "type": "object", "properties": {}, "required": [] }
+  },
+  {
+    "name": "summarize_content",
+    "description": "TODO: split analyze_document — describe summarization here.",
+    "input_schema": { "type": "object", "properties": {}, "required": [] }
+  },
+  {
+    "name": "verify_claim_against_source",
+    "description": "TODO: split analyze_document — describe claim verification here.",
+    "input_schema": { "type": "object", "properties": {}, "required": [] }
+  },
+  {
+    "name": "extract_web_results",
+    "description": "TODO: rename analyze_content and rescope for web content here.",
+    "input_schema": { "type": "object", "properties": {}, "required": [] }
+  }
+]

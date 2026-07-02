@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Example 1 — inline parenthetical citation",
+    "input": "The treatment reduced reported symptoms by 42% over eight weeks (Chen et al., 2021).",
+    "output": "{\n  \"claim\": \"treatment reduced reported symptoms by 42% over eight weeks\",\n  \"source\": \"Chen et al., 2021\",\n  \"citation_style\": \"inline\",\n  \"reference_marker\": null\n}",
+    "why": "The source is captured from the inline parenthetical. The plausible alternative was to leave source null because the document has no References section, but inline parentheticals ARE valid citations, so we extract the author/year rather than dropping the attribution."
+  },
+  {
+    "title": "Example 2 — numeric marker resolved against a bibliography",
+    "input": "Latency dropped by 30% after the migration [3].\n\nReferences\n[2] Ito, K. (2018). Caching at scale.\n[3] Smith, J. (2019). Zero-downtime migrations. J. Ops, 12(4).",
+    "output": "{\n  \"claim\": \"latency dropped by 30% after the migration\",\n  \"source\": \"Smith, J. (2019). Zero-downtime migrations. J. Ops, 12(4).\",\n  \"citation_style\": \"bibliography\",\n  \"reference_marker\": \"[3]\"\n}",
+    "why": "The [3] marker is resolved to its bibliography entry rather than stored literally. The plausible alternative — recording the raw marker \"[3]\" as the source — loses the actual reference, so we join the marker to the matching entry in the References section and keep both."
+  }
+]

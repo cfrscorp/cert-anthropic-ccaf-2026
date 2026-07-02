@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code CI review output",
+  "_todo": "Define the schema for review findings that CI will enforce with --json-schema. Suggested shape: an object with a `findings` array, each item having file, line, severity (enum: blocker/warning/nit), issue, and suggested_fix.",
+  "type": "object",
+  "properties": {}
+}

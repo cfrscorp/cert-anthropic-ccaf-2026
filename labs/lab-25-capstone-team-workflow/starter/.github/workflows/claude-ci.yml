@@ -1,0 +1,39 @@
+name: Claude Code CI review
+
+# TODO: Complete this workflow so it runs an automated review on every PR using
+# an INDEPENDENT Claude instance (a fresh review is more effective than a
+# self-review by the instance that generated the code — Task Statement 3.6).
+#
+# The critical fix is the `claude` invocation in the "Run automated review" step:
+#   - add the -p (or --print) flag so Claude runs non-interactively and the job
+#     does not hang waiting for input (Sample Question 10);
+#   - add --output-format json AND --json-schema review-schema.json so the output
+#     is schema-valid and machine-parseable for posting as inline PR comments.
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check out PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run automated review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          git diff --merge-base origin/main > pr.diff
+          # TODO: this invocation is WRONG for CI — it runs interactively and
+          # returns unstructured text. Fix it (see the TODO at the top).
+          claude "Review the changes in pr.diff against our team standards."

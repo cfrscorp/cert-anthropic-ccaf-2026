@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code CI Review Findings",
+  "description": "TODO: enforce structured output via `--json-schema`. Describe an object with a `findings` array; each finding needs: location {path, line}, issue, severity (enum: critical/high/medium/low/info), suggested_fix, detected_pattern. Set additionalProperties:false and mark required fields. See solution/review-schema.json for the reference shape.",
+  "type": "object",
+  "required": ["findings"],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

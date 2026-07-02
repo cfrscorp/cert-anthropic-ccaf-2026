@@ -1,0 +1,16 @@
+GLOBEX CORP
+Invoice #: INV-7788
+Invoice date: 2026-06-15
+Due date: 2026-07-15
+Currency: USD
+
+Line items
+  Consulting, June    20 hrs @ 150.00  =  3000.00
+  Travel reimbursement                 =   450.00
+
+Total due: 3950.00
+
+NOTE: the stated total (3950.00) does not equal the sum of the line items
+(3450.00). The source document is internally inconsistent: no re-extraction can
+reconcile numbers that genuinely do not add up in the source. This is a
+source_conflict, not a model error.

@@ -1,0 +1,154 @@
+[
+  {
+    "id": "explicit-human-demand",
+    "note": "Customer directly demands a human. Honor immediately, no investigation.",
+    "context": {
+      "explicit_human_request": true,
+      "policy_status": "covered",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": true,
+      "sentiment": "neutral",
+      "self_reported_confidence": 0.95
+    },
+    "expected": "ESCALATE"
+  },
+  {
+    "id": "competitor-price-match-policy-silent",
+    "note": "Policy covers own-site price adjustments only; silent on competitor matching.",
+    "context": {
+      "explicit_human_request": false,
+      "policy_status": "silent",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": false,
+      "sentiment": "neutral",
+      "self_reported_confidence": 0.7
+    },
+    "expected": "ESCALATE"
+  },
+  {
+    "id": "two-j-smith-matches",
+    "note": "Two customers named 'J. Smith' match. Ask for another identifier, do not guess.",
+    "context": {
+      "explicit_human_request": false,
+      "policy_status": "covered",
+      "customer_matches": 2,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": true,
+      "sentiment": "neutral",
+      "self_reported_confidence": 0.8
+    },
+    "expected": "ASK_CLARIFY"
+  },
+  {
+    "id": "damaged-item-replacement-with-photo",
+    "note": "Standard damaged-item replacement with photo evidence. Routine, in policy.",
+    "context": {
+      "explicit_human_request": false,
+      "policy_status": "covered",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": true,
+      "sentiment": "neutral",
+      "self_reported_confidence": 0.9
+    },
+    "expected": "RESOLVE"
+  },
+  {
+    "id": "frustrated-but-resolvable",
+    "note": "Customer is angry but the request is a routine refund. Sentiment is ignored.",
+    "context": {
+      "explicit_human_request": false,
+      "reiterated_human_request": false,
+      "policy_status": "covered",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": true,
+      "sentiment": "furious",
+      "self_reported_confidence": 0.5
+    },
+    "expected": "RESOLVE"
+  },
+  {
+    "id": "frustrated-and-reiterated-human-request",
+    "note": "Customer was offered a resolution but reiterates that they want a human.",
+    "context": {
+      "explicit_human_request": false,
+      "reiterated_human_request": true,
+      "policy_status": "covered",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": true,
+      "sentiment": "furious",
+      "self_reported_confidence": 0.5
+    },
+    "expected": "ESCALATE"
+  },
+  {
+    "id": "backend-outage-no-progress",
+    "note": "Refund system is down; the agent cannot make meaningful progress.",
+    "context": {
+      "explicit_human_request": false,
+      "policy_status": "covered",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": false,
+      "straightforward": true,
+      "sentiment": "neutral",
+      "self_reported_confidence": 0.85
+    },
+    "expected": "ESCALATE"
+  },
+  {
+    "id": "policy-ambiguous-on-request",
+    "note": "Policy language is genuinely ambiguous for this specific scenario.",
+    "context": {
+      "explicit_human_request": false,
+      "policy_status": "ambiguous",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": false,
+      "sentiment": "neutral",
+      "self_reported_confidence": 0.6
+    },
+    "expected": "ESCALATE"
+  },
+  {
+    "id": "high-confidence-but-policy-gap",
+    "note": "Agent is 95% 'sure' but the case needs a policy exception. Confidence is ignored.",
+    "context": {
+      "explicit_human_request": false,
+      "policy_status": "gap",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": false,
+      "sentiment": "cheerful",
+      "self_reported_confidence": 0.95
+    },
+    "expected": "ESCALATE"
+  },
+  {
+    "id": "low-confidence-but-straightforward",
+    "note": "Agent reports low confidence, but it is a routine in-policy return. Confidence is ignored.",
+    "context": {
+      "explicit_human_request": false,
+      "policy_status": "covered",
+      "customer_matches": 1,
+      "within_capability": true,
+      "can_make_progress": true,
+      "straightforward": true,
+      "sentiment": "neutral",
+      "self_reported_confidence": 0.2
+    },
+    "expected": "RESOLVE"
+  }
+]

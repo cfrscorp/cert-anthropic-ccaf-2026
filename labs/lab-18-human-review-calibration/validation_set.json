@@ -1,0 +1,1202 @@
+[
+  {
+    "doc_id": "invoice-001",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.94,
+      "total": 0.987,
+      "invoice_date": 0.961
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-002",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.942,
+      "total": 0.977,
+      "invoice_date": 0.939
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-003",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.961,
+      "total": 0.986,
+      "invoice_date": 0.981
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-004",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.953,
+      "total": 0.982,
+      "invoice_date": 0.959
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-005",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.986,
+      "total": 0.987,
+      "invoice_date": 0.95
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-006",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.961,
+      "total": 0.933,
+      "invoice_date": 0.968
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-007",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.97,
+      "total": 0.935,
+      "invoice_date": 0.935
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-008",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.941,
+      "total": 0.984,
+      "invoice_date": 0.952
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-009",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.937,
+      "total": 0.984,
+      "invoice_date": 0.94
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-010",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.97,
+      "total": 0.976,
+      "invoice_date": 0.969
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-011",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.946,
+      "total": 0.938,
+      "invoice_date": 0.975
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-012",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.976,
+      "total": 0.935,
+      "invoice_date": 0.97
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-013",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.941,
+      "total": 0.947,
+      "invoice_date": 0.937
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-014",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.984,
+      "total": 0.975,
+      "invoice_date": 0.944
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-015",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.947,
+      "total": 0.937,
+      "invoice_date": 0.981
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-016",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.95,
+      "total": 0.956,
+      "invoice_date": 0.952
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-017",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.966,
+      "total": 0.974,
+      "invoice_date": 0.957
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-018",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.964,
+      "total": 0.954,
+      "invoice_date": 0.974
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-019",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.934,
+      "total": 0.959,
+      "invoice_date": 0.951
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-020",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.939,
+      "total": 0.96,
+      "invoice_date": 0.985
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-021",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.975,
+      "total": 0.952,
+      "invoice_date": 0.98
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-022",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.931,
+      "total": 0.943,
+      "invoice_date": 0.958
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-023",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.931,
+      "total": 0.939,
+      "invoice_date": 0.981
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-024",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.971,
+      "total": 0.978,
+      "invoice_date": 0.958
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-025",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.954,
+      "total": 0.973,
+      "invoice_date": 0.942
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-026",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.937,
+      "total": 0.958,
+      "invoice_date": 0.97
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-027",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.983,
+      "total": 0.957,
+      "invoice_date": 0.989
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-028",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.983,
+      "total": 0.981,
+      "invoice_date": 0.946
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-029",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.941,
+      "total": 0.949,
+      "invoice_date": 0.93
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-030",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.987,
+      "total": 0.989,
+      "invoice_date": 0.959
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-031",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.955,
+      "total": 0.959,
+      "invoice_date": 0.933
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-032",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.973,
+      "total": 0.986,
+      "invoice_date": 0.976
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-033",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.978,
+      "total": 0.931,
+      "invoice_date": 0.955
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-034",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.974,
+      "total": 0.958,
+      "invoice_date": 0.956
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-035",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.955,
+      "total": 0.957,
+      "invoice_date": 0.954
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-036",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.977,
+      "total": 0.986,
+      "invoice_date": 0.972
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-037",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.936,
+      "total": 0.945,
+      "invoice_date": 0.957
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-038",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.949,
+      "total": 0.975,
+      "invoice_date": 0.935
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-039",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.935,
+      "total": 0.941,
+      "invoice_date": 0.955
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-040",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.954,
+      "total": 0.974,
+      "invoice_date": 0.977
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-041",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.946,
+      "total": 0.972,
+      "invoice_date": 0.978
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-042",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.97,
+      "total": 0.951,
+      "invoice_date": 0.986
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-043",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.988,
+      "total": 0.933,
+      "invoice_date": 0.952
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-044",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.972,
+      "total": 0.965,
+      "invoice_date": 0.977
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-045",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.97,
+      "total": 0.93,
+      "invoice_date": 0.97
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-046",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.937,
+      "total": 0.97,
+      "invoice_date": 0.963
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-047",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.956,
+      "total": 0.984,
+      "invoice_date": 0.959
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-048",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.977,
+      "total": 0.981,
+      "invoice_date": 0.943
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-049",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.966,
+      "total": 0.946,
+      "invoice_date": 0.967
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-050",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.988,
+      "total": 0.95,
+      "invoice_date": 0.968
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-051",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.955,
+      "total": 0.945,
+      "invoice_date": 0.986
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-052",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.953,
+      "total": 0.947,
+      "invoice_date": 0.978
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-053",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.973,
+      "total": 0.954,
+      "invoice_date": 0.955
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-054",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.969,
+      "total": 0.949,
+      "invoice_date": 0.94
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-055",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.982,
+      "total": 0.951,
+      "invoice_date": 0.958
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-056",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.976,
+      "total": 0.931,
+      "invoice_date": 0.941
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-057",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.952,
+      "total": 0.968,
+      "invoice_date": 0.954
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-058",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.948,
+      "total": 0.988,
+      "invoice_date": 0.971
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-059",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.937,
+      "total": 0.944,
+      "invoice_date": 0.975
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "invoice-060",
+    "doc_type": "invoice",
+    "confidences": {
+      "vendor": 0.983,
+      "total": 0.942,
+      "invoice_date": 0.98
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-001",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.933,
+      "amount": 0.97,
+      "purchase_date": 0.978
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-002",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.939,
+      "amount": 0.976,
+      "purchase_date": 0.942
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-003",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.956,
+      "amount": 0.964,
+      "purchase_date": 0.959
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-004",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.954,
+      "amount": 0.952,
+      "purchase_date": 0.93
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-005",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.932,
+      "amount": 0.978,
+      "purchase_date": 0.987
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-006",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.935,
+      "amount": 0.948,
+      "purchase_date": 0.942
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-007",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.982,
+      "amount": 0.948,
+      "purchase_date": 0.959
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-008",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.972,
+      "amount": 0.955,
+      "purchase_date": 0.934
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-009",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.94,
+      "amount": 0.981,
+      "purchase_date": 0.955
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-010",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.973,
+      "amount": 0.987,
+      "purchase_date": 0.938
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-011",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.964,
+      "amount": 0.987,
+      "purchase_date": 0.988
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-012",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.985,
+      "amount": 0.931,
+      "purchase_date": 0.948
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-013",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.948,
+      "amount": 0.983,
+      "purchase_date": 0.944
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-014",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.935,
+      "amount": 0.986,
+      "purchase_date": 0.946
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-015",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.987,
+      "amount": 0.963,
+      "purchase_date": 0.939
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-016",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.978,
+      "amount": 0.965,
+      "purchase_date": 0.968
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-017",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.94,
+      "amount": 0.955,
+      "purchase_date": 0.952
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-018",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.972,
+      "amount": 0.974,
+      "purchase_date": 0.974
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-019",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.961,
+      "amount": 0.982,
+      "purchase_date": 0.946
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-020",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.979,
+      "amount": 0.956,
+      "purchase_date": 0.953
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-021",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.953,
+      "amount": 0.93,
+      "purchase_date": 0.935
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-022",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.983,
+      "amount": 0.961,
+      "purchase_date": 0.936
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-023",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.98,
+      "amount": 0.955,
+      "purchase_date": 0.939
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-024",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.935,
+      "amount": 0.969,
+      "purchase_date": 0.931
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-025",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.933,
+      "amount": 0.949,
+      "purchase_date": 0.987
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-026",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.957,
+      "amount": 0.954,
+      "purchase_date": 0.958
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-027",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.936,
+      "amount": 0.985,
+      "purchase_date": 0.956
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-028",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.947,
+      "amount": 0.963,
+      "purchase_date": 0.979
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-029",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.931,
+      "amount": 0.984,
+      "purchase_date": 0.98
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "receipt-030",
+    "doc_type": "receipt",
+    "confidences": {
+      "merchant": 0.957,
+      "amount": 0.962,
+      "purchase_date": 0.982
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "handwritten_note-001",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.881,
+      "body": 0.955,
+      "note_date": 0.854
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "handwritten_note-002",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.86,
+      "body": 0.939,
+      "note_date": 0.916
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "handwritten_note-003",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.939,
+      "body": 0.885,
+      "note_date": 0.919
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "handwritten_note-004",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.907,
+      "body": 0.928,
+      "note_date": 0.937
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "handwritten_note-005",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.877,
+      "body": 0.954,
+      "note_date": 0.927
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "handwritten_note-006",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.901,
+      "body": 0.955,
+      "note_date": 0.952
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "handwritten_note-007",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.957,
+      "body": 0.88,
+      "note_date": 0.851
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": true
+  },
+  {
+    "doc_id": "handwritten_note-008",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.959,
+      "body": 0.93,
+      "note_date": 0.928
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": false
+  },
+  {
+    "doc_id": "handwritten_note-009",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.939,
+      "body": 0.926,
+      "note_date": 0.95
+    },
+    "ambiguous": false,
+    "contradictory": false,
+    "correct": false
+  },
+  {
+    "doc_id": "handwritten_note-010",
+    "doc_type": "handwritten_note",
+    "confidences": {
+      "author": 0.871,
+      "body": 0.702,
+      "note_date": 0.885
+    },
+    "ambiguous": false,
+    "contradictory": true,
+    "correct": false
+  }
+]

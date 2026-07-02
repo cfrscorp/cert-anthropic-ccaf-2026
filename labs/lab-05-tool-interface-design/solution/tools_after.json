@@ -1,0 +1,73 @@
+[
+  {
+    "name": "get_customer",
+    "description": "Look up a customer's ACCOUNT PROFILE: name, email, phone, mailing address, loyalty tier, and account standing.\n\nInput format: {\"customer_id\": \"CUST-<digits>\"} (e.g. \"CUST-40912\") or {\"email\": \"person@example.com\"}. Accepts a customer ID or an email address; it does NOT accept an order number.\n\nExample query: \"What email do we have on file for account CUST-40912?\" or \"Is this customer's account in good standing?\"\n\nEdge cases: If more than one account matches an email, it returns multiple matches, ask the customer for their customer ID to disambiguate rather than guessing. It returns an empty result (not an error) when no account matches.\n\nUse this when the question is about WHO the customer is, their profile, contact information, or account standing, and not when the question is about a specific order's status, contents, or shipment (use lookup_order for that).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "customer_id": { "type": "string", "description": "Customer ID, format CUST-<digits>." },
+        "email": { "type": "string", "description": "Customer email address." }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "lookup_order",
+    "description": "Retrieve a single ORDER's status and contents: order status, line items, totals, shipment tracking number, and delivery dates.\n\nInput format: {\"order_id\": \"ORD-<digits>\"} (e.g. \"ORD-88213\"). Accepts an order number only; it does NOT accept a customer ID or email address.\n\nExample query: \"Where is my order #88213?\" or \"What items were in order ORD-88213 and has it shipped yet?\"\n\nEdge cases: It returns an empty result (not an error) when the order number does not exist. A cancelled order still returns its record with status \"cancelled\". It does not return other orders belonging to the same customer.\n\nUse this when the question is about a SPECIFIC order, its status, items, or shipment, and not when the question is about the customer's profile or listing all of their orders (use get_customer for account-level questions).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "order_id": { "type": "string", "description": "Order number, format ORD-<digits>." }
+      },
+      "required": ["order_id"]
+    }
+  },
+  {
+    "name": "extract_data_points",
+    "description": "Extract specific STRUCTURED FIELD VALUES from a document (dates, amounts, names, IDs, line items) and return them as JSON.\n\nInput format: {\"document\": \"<full document text>\", \"fields\": [\"invoice_number\", \"total_amount\", \"due_date\"]}. `fields` names the exact data points to pull.\n\nExample query: \"Pull the invoice number, total, and due date from this invoice.\"\n\nEdge cases: When a requested field is absent from the document, return null for that field rather than fabricating a value.\n\nUse this when you need discrete field values out of a document, and not when you need a prose summary (use summarize_content) or a yes/no check of a claim (use verify_claim_against_source).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "fields": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["document", "fields"]
+    }
+  },
+  {
+    "name": "summarize_content",
+    "description": "Produce a concise NATURAL-LANGUAGE SUMMARY of a document's main points.\n\nInput format: {\"document\": \"<full document text>\", \"max_words\": 150}.\n\nExample query: \"Give me a two-paragraph summary of this contract.\"\n\nEdge cases: For very long documents, summarize section by section; do not silently drop the middle.\n\nUse this when you need a human-readable overview of what a document says, and not when you need specific field values (use extract_data_points) or to confirm one statement (use verify_claim_against_source).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "max_words": { "type": "integer" }
+      },
+      "required": ["document"]
+    }
+  },
+  {
+    "name": "verify_claim_against_source",
+    "description": "Check whether a SPECIFIC CLAIM is supported, contradicted, or unaddressed by a source document, returning a verdict plus the supporting excerpt.\n\nInput format: {\"document\": \"<full document text>\", \"claim\": \"The contract auto-renews annually.\"}.\n\nExample query: \"Does this contract actually say it auto-renews?\"\n\nEdge cases: If the document neither supports nor contradicts the claim, return \"unsupported\" rather than guessing.\n\nUse this when you need to confirm or refute one statement against a source, and not when you need to extract fields (use extract_data_points) or summarize the whole document (use summarize_content).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string" },
+        "claim": { "type": "string" }
+      },
+      "required": ["document", "claim"]
+    }
+  },
+  {
+    "name": "extract_web_results",
+    "description": "Extract the relevant RESULTS FROM WEB CONTENT (a web search response or a fetched web page): titles, URLs, snippets, and publication dates, returned as structured entries.\n\nInput format: {\"query\": \"<original search query>\", \"page_or_results\": \"<raw search results or fetched page content>\"}.\n\nExample query: \"From these search results, pull the top 5 article titles, links, and dates.\"\n\nEdge cases: Skip ads and navigation chrome; return an empty list when the page has no substantive results.\n\nUse this when the source is web content (search results or a fetched page), and not when the source is an internal document (use extract_data_points or summarize_content instead).",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "query": { "type": "string" },
+        "page_or_results": { "type": "string" }
+      },
+      "required": ["page_or_results"]
+    }
+  }
+]

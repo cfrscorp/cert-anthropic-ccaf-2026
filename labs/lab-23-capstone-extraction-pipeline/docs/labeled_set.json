@@ -1,0 +1,340 @@
+{
+  "scored_fields": [
+    "vendor_name",
+    "invoice_number",
+    "currency",
+    "stated_total"
+  ],
+  "records": [
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4501",
+        "currency": "USD",
+        "stated_total": 101.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4501",
+        "currency": "USD",
+        "stated_total": 101.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4502",
+        "currency": "USD",
+        "stated_total": 102.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4502",
+        "currency": "USD",
+        "stated_total": 102.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4503",
+        "currency": "USD",
+        "stated_total": 103.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4503",
+        "currency": "USD",
+        "stated_total": 103.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4504",
+        "currency": "USD",
+        "stated_total": 104.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4504",
+        "currency": "USD",
+        "stated_total": 104.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4505",
+        "currency": "USD",
+        "stated_total": 105.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4505",
+        "currency": "USD",
+        "stated_total": 105.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4506",
+        "currency": "USD",
+        "stated_total": 106.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4506",
+        "currency": "USD",
+        "stated_total": 106.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4507",
+        "currency": "USD",
+        "stated_total": 107.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4507",
+        "currency": "USD",
+        "stated_total": 107.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4508",
+        "currency": "USD",
+        "stated_total": 108.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4508",
+        "currency": "USD",
+        "stated_total": 108.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4509",
+        "currency": "USD",
+        "stated_total": 109.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4509",
+        "currency": "USD",
+        "stated_total": 109.0
+      }
+    },
+    {
+      "document_type": "typed_invoice",
+      "prediction": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4510",
+        "currency": "USD",
+        "stated_total": 110.0
+      },
+      "label": {
+        "vendor_name": "Blue Heron Supplies",
+        "invoice_number": "INV-4510",
+        "currency": "USD",
+        "stated_total": 110.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5001",
+        "currency": "USD",
+        "stated_total": 7.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5001",
+        "currency": "USD",
+        "stated_total": 7.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5002",
+        "currency": "USD",
+        "stated_total": 8.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5002",
+        "currency": "USD",
+        "stated_total": 8.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5003",
+        "currency": "USD",
+        "stated_total": 9.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5003",
+        "currency": "USD",
+        "stated_total": 9.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5004",
+        "currency": "USD",
+        "stated_total": 10.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5004",
+        "currency": "USD",
+        "stated_total": 10.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5005",
+        "currency": "USD",
+        "stated_total": 11.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5005",
+        "currency": "USD",
+        "stated_total": 11.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5006",
+        "currency": "USD",
+        "stated_total": 12.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5006",
+        "currency": "USD",
+        "stated_total": 12.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5007",
+        "currency": "USD",
+        "stated_total": 13.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5007",
+        "currency": "USD",
+        "stated_total": 13.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5008",
+        "currency": "USD",
+        "stated_total": 14.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5008",
+        "currency": "USD",
+        "stated_total": 14.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5009",
+        "currency": "USD",
+        "stated_total": 15.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5009",
+        "currency": "USD",
+        "stated_total": 15.0
+      }
+    },
+    {
+      "document_type": "digital_receipt",
+      "prediction": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5010",
+        "currency": "USD",
+        "stated_total": 16.0
+      },
+      "label": {
+        "vendor_name": "QuickMart",
+        "invoice_number": "R-5010",
+        "currency": "USD",
+        "stated_total": 16.0
+      }
+    },
+    {
+      "document_type": "handwritten",
+      "prediction": {
+        "vendor_name": "Ceder Fnrn",
+        "invoice_number": "HW-0I",
+        "currency": "USD",
+        "stated_total": 12.0
+      },
+      "label": {
+        "vendor_name": "Cedar Farm Stand",
+        "invoice_number": "HW-01",
+        "currency": "USD",
+        "stated_total": 42.0
+      }
+    },
+    {
+      "document_type": "handwritten",
+      "prediction": {
+        "vendor_name": "Nnpie Rcpair",
+        "invoice_number": "HW-O2",
+        "currency": "EUR",
+        "stated_total": 8.0
+      },
+      "label": {
+        "vendor_name": "Maple Repair",
+        "invoice_number": "HW-02",
+        "currency": "USD",
+        "stated_total": 88.0
+      }
+    }
+  ]
+}

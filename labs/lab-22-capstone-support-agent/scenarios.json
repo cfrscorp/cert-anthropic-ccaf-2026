@@ -1,0 +1,114 @@
+{
+  "description": "Labeled end-to-end cases for the Customer Support Resolution Agent capstone (Scenario 1 / Exercise 1). Each case gives the customer message, the model's tool plan (the ordered tool_use/text turns a MockAnthropic router should emit), and the expected outcome the agent must produce. The tests in tests/test_lab22.py assert these outcomes.",
+  "refund_limit": 500,
+  "scenarios": [
+    {
+      "label": "misidentification-prevented",
+      "task_statements": ["1.1", "1.4"],
+      "message": "Where is my order ORD-88213?",
+      "model_plan": [
+        {"tool": "lookup_order", "input": {"order_id": "ORD-88213"}},
+        {"tool": "get_customer", "input": {"customer_id": "CUST-40912"}},
+        {"tool": "lookup_order", "input": {"order_id": "ORD-88213"}},
+        {"text": "Your order ORD-88213 has shipped; arriving 2026-07-05."}
+      ],
+      "expected": {
+        "first_tool_blocked": "lookup_order (reason: prerequisite)",
+        "verified_customer_id": "CUST-40912",
+        "note": "The prerequisite gate refuses the order lookup until get_customer verifies identity, preventing action on a misidentified account. Prompt instructions alone have a non-zero failure rate (Sample Question 1)."
+      }
+    },
+    {
+      "label": "$600-refund-blocked-and-escalated",
+      "task_statements": ["1.5", "1.4"],
+      "message": "I need a $600 refund for my damaged order ORD-55100.",
+      "model_plan": [
+        {"tool": "get_customer", "input": {"customer_id": "CUST-40912"}},
+        {"tool": "process_refund", "input": {"order_id": "ORD-55100", "amount": 600, "reason": "damaged"}},
+        {"text": "That amount is above my limit, so I've escalated it to a human agent."}
+      ],
+      "expected": {
+        "escalated": true,
+        "escalation_reason": "refund_over_limit",
+        "handoff.refund_amount": 600,
+        "money_moved": false,
+        "note": "The interception hook blocks the over-limit refund on every call regardless of the prompt, then builds a structured handoff for the human."
+      }
+    },
+    {
+      "label": "$400-refund-proceeds",
+      "task_statements": ["1.5"],
+      "message": "Please refund $400 for the damage on order ORD-55100.",
+      "model_plan": [
+        {"tool": "get_customer", "input": {"customer_id": "CUST-40912"}},
+        {"tool": "process_refund", "input": {"order_id": "ORD-55100", "amount": 400, "reason": "damaged"}},
+        {"text": "Done — I've refunded $400 to your original payment method."}
+      ],
+      "expected": {
+        "escalated_for_refund": false,
+        "refund_status": "refunded",
+        "note": "$400 is within the $500 ceiling, so the same agent resolves it autonomously — the guardrail blocks only what violates policy."
+      }
+    },
+    {
+      "label": "explicit-human-request",
+      "task_statements": ["5.2"],
+      "message": "This is ridiculous, I want to speak to a human right now.",
+      "model_plan": [],
+      "expected": {
+        "escalated": true,
+        "escalation_reason": "explicit_human_request",
+        "iterations": 0,
+        "tools_called": [],
+        "note": "An explicit request for a human is honored immediately, WITHOUT first investigating. Sentiment is not the trigger — the explicit request is."
+      }
+    },
+    {
+      "label": "multiple-customer-matches->clarify",
+      "task_statements": ["5.2"],
+      "message": "Hi, it's Sam Taylor — where's my refund?",
+      "model_plan": [
+        {"tool": "get_customer", "input": {"name": "Sam Taylor"}},
+        {"text": "I found more than one account under that name — could you share your customer ID (CUST-...)?"}
+      ],
+      "expected": {
+        "clarification_requested": true,
+        "verified_customer_id": null,
+        "note": "Two accounts match the name, so the agent asks for a unique identifier rather than picking one by heuristic. The gate stays locked, so no refund can proceed."
+      }
+    },
+    {
+      "label": "multi-concern-message",
+      "task_statements": ["1.4", "5.1"],
+      "message": "Where is my order ORD-88213? Also, I need a $40 refund for the damaged charger on order ORD-55100.",
+      "model_plan": [
+        {"tool": "get_customer", "input": {"customer_id": "CUST-40912"}},
+        {"tool": "lookup_order", "input": {"order_id": "ORD-88213"}},
+        {"tool": "process_refund", "input": {"order_id": "ORD-55100", "amount": 40, "reason": "damaged charger"}},
+        {"text": "Your order ORD-88213 has shipped (arriving 2026-07-05), and I've refunded $40 for the charger."}
+      ],
+      "expected": {
+        "concerns_count": 2,
+        "both_investigated": ["lookup_order", "process_refund"],
+        "note": "The message is decomposed into two concerns, each investigated under the shared case context, then synthesized into one unified reply."
+      }
+    },
+    {
+      "label": "standard-resolvable-case",
+      "task_statements": ["1.1", "5.1"],
+      "message": "Where is my order ORD-88213?",
+      "model_plan": [
+        {"tool": "get_customer", "input": {"customer_id": "CUST-40912"}},
+        {"tool": "lookup_order", "input": {"order_id": "ORD-88213"}},
+        {"text": "Your order ORD-88213 has shipped and will arrive 2026-07-05."}
+      ],
+      "expected": {
+        "escalated": false,
+        "case_facts.order_numbers": ["ORD-88213"],
+        "case_facts.statuses": ["shipped"],
+        "case_facts.amounts": ["$129.99"],
+        "note": "First-contact resolution. Transactional facts (order#, status, amount) are extracted verbatim into the persistent case-facts block, including the $129.99 that came from the tool result rather than the message."
+      }
+    }
+  ]
+}

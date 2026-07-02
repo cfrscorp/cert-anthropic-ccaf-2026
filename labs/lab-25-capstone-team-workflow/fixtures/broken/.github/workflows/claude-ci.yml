@@ -1,0 +1,15 @@
+name: Claude Code CI review (broken)
+
+# Broken: runs claude interactively (no -p/--print, so it hangs) and produces
+# unstructured text (no --output-format json / --json-schema).
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: claude "Review this pull request for issues."

@@ -1,0 +1,11 @@
+{
+  "findings": [
+    {
+      "location": { "path": "src/auth/session.py", "line": 42 },
+      "issue": "SQL query is built by f-string interpolation of a request parameter, allowing SQL injection.",
+      "severity": "critical",
+      "suggested_fix": "Use a parameterized query: cursor.execute(\"SELECT * FROM sessions WHERE id = %s\", (user_id,)).",
+      "detected_pattern": "f-string-in-sql-execute"
+    }
+  ]
+}

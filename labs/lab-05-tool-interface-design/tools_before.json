@@ -1,0 +1,46 @@
+[
+  {
+    "name": "get_customer",
+    "description": "Retrieves details about a customer using an identifier.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "An identifier." }
+      },
+      "required": ["id"]
+    }
+  },
+  {
+    "name": "lookup_order",
+    "description": "Retrieves details about an order using an identifier.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "An identifier." }
+      },
+      "required": ["id"]
+    }
+  },
+  {
+    "name": "analyze_document",
+    "description": "Analyzes a document and returns useful information about it.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "document": { "type": "string", "description": "The document." }
+      },
+      "required": ["document"]
+    }
+  },
+  {
+    "name": "analyze_content",
+    "description": "Analyzes content and returns an analysis of it.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "content": { "type": "string", "description": "The content." }
+      },
+      "required": ["content"]
+    }
+  }
+]

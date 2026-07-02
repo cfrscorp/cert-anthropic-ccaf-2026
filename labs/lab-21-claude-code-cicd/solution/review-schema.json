@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code CI Review Findings",
+  "description": "Structured output enforced via `claude -p ... --output-format json --json-schema review-schema.json` so findings can be posted as inline PR comments.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["findings"],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["location", "issue", "severity", "suggested_fix", "detected_pattern"],
+        "properties": {
+          "location": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "line"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Repository-relative path to the file the finding applies to."
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "1-based line number in the file for the inline comment anchor."
+              }
+            }
+          },
+          "issue": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What is wrong and why it matters, in one or two sentences."
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "info"],
+            "description": "Impact tier used to route and prioritize the finding."
+          },
+          "suggested_fix": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Concrete, actionable remediation the developer can apply."
+          },
+          "detected_pattern": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable machine tag for the code construct that triggered the finding, enabling dedupe and false-positive analysis."
+          }
+        }
+      }
+    }
+  }
+}

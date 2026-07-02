@@ -1,0 +1,15 @@
+CORNER CAFE
+Cash receipt
+Date: 2026-06-20
+Currency: USD
+
+  Espresso        =  3.50
+  Croissant       =  4.00
+
+Total due: 7.50
+
+NOTE: this receipt carries NO document reference number of any kind. The
+identifier the schema requires is simply absent from the source. No retry can
+fix this: asking the model again cannot produce a value that the document does
+not contain. This is an info_absent failure -- give up (or escalate) instead of
+looping pointlessly.

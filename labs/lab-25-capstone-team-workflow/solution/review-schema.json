@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Claude Code CI review output",
+  "description": "Machine-parseable review findings emitted by `claude -p ... --output-format json --json-schema review-schema.json`, so CI can post each finding as an inline PR comment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["findings"],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "One-line overall assessment of the diff."
+    },
+    "findings": {
+      "type": "array",
+      "description": "One entry per issue. Empty array when the diff is clean.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "line", "severity", "issue", "suggested_fix"],
+        "properties": {
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "severity": {
+            "type": "string",
+            "enum": ["blocker", "warning", "nit"]
+          },
+          "issue": { "type": "string" },
+          "suggested_fix": { "type": "string" }
+        }
+      }
+    }
+  }
+}

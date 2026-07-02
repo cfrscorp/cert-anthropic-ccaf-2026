@@ -1,0 +1,12 @@
+{
+  "_todo": "Configure a shared MCP server (e.g. github) with ${VAR} expansion for the auth token. Do NOT hardcode a real token here — use \"${GITHUB_TOKEN}\". Add a second server (e.g. jira) if you like. has_hardcoded_secret() must return False.",
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "TODO_replace_with_${GITHUB_TOKEN}_placeholder"
+      }
+    }
+  }
+}

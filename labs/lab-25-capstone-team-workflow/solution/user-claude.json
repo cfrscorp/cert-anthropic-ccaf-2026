@@ -1,0 +1,9 @@
+{
+  "_note": "Illustrative excerpt of a USER-scoped config (~/.claude.json). It is NOT committed to the repo; it applies only to this developer and is the right home for personal/experimental MCP servers that teammates should not inherit. Tools from BOTH the project .mcp.json and this user config are discovered at connection time and available simultaneously.",
+  "mcpServers": {
+    "sqlite-scratch": {
+      "command": "uvx",
+      "args": ["mcp-server-sqlite", "--db-path", "/tmp/scratch.db"]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Example 1 — comment contradicts code (REPORT)",
+    "input": "def user_age_days(dob):\n    # returns the user's age in YEARS\n    return (date.today() - dob).days",
+    "output": "- location: users.py:2\n- issue: The comment claims the function returns age in years, but it returns age in days.\n- severity: high\n- suggested_fix: Update the comment to \"returns the user's age in DAYS\", or divide by 365 if years were intended.",
+    "why": "REPORTED because the comment's claimed behavior (years) contradicts the actual code behavior (days) — a REPORT category. The plausible alternative was to skip it as a harmless doc nit, but a wrong unit in a comment misleads every caller and causes downstream bugs, so it qualifies and is rated high, not low."
+  },
+  {
+    "title": "Example 2 — single-letter loop index consistent with file (SKIP)",
+    "input": "for i in range(len(rows)):\n    process(rows[i])\n# every loop in this 400-line file uses i / j / k",
+    "output": "No issues found.",
+    "why": "SKIPPED because the single-letter index matches the surrounding file's established pattern and changes no behavior — a SKIP category (local consistency + naming nit). The plausible alternative was to flag it as poor naming, but style nits that fight the file's own conventions erode developer trust without improving correctness."
+  }
+]

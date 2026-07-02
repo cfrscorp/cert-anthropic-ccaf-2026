@@ -1,0 +1,16 @@
+{
+  "_TODO": [
+    "1. Replace the hardcoded GITHUB_TOKEN below with a ${GITHUB_TOKEN} env-expansion reference so no secret is committed.",
+    "2. Add a SECOND project-scoped community server (e.g. Jira) so the team shares two servers.",
+    "3. Delete this _TODO block when done."
+  ],
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_REPLACE_ME_hardcoded_token_do_not_commit_this"
+      }
+    }
+  }
+}

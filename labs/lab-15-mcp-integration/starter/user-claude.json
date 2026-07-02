@@ -1,0 +1,4 @@
+{
+  "_TODO": "Add ONE personal/experimental MCP server here under mcpServers (e.g. an sqlite scratch server run with uvx). This file models ~/.claude.json — a USER-scoped config that is NOT shared via version control. Delete this _TODO when done.",
+  "mcpServers": {}
+}

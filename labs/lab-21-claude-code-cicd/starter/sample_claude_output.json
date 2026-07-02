@@ -1,0 +1,25 @@
+{
+  "findings": [
+    {
+      "location": { "path": "src/auth/session.py", "line": 42 },
+      "issue": "SQL query is built by f-string interpolation of a request parameter, allowing SQL injection.",
+      "severity": "critical",
+      "suggested_fix": "Use a parameterized query: cursor.execute(\"SELECT * FROM sessions WHERE id = %s\", (user_id,)).",
+      "detected_pattern": "f-string-in-sql-execute"
+    },
+    {
+      "location": { "path": "src/api/orders.py", "line": 118 },
+      "issue": "Broad `except Exception` swallows the error without logging, hiding failures from CI and on-call.",
+      "severity": "high",
+      "suggested_fix": "Catch the specific exception, log it with context, and re-raise or return a typed error.",
+      "detected_pattern": "bare-except-swallow"
+    },
+    {
+      "location": { "path": "src/api/orders.py", "line": 205 },
+      "issue": "New checkout endpoint has no test covering the empty-cart branch.",
+      "severity": "medium",
+      "suggested_fix": "Add a test asserting a 400 response and error body when the cart is empty.",
+      "detected_pattern": "missing-branch-test"
+    }
+  ]
+}

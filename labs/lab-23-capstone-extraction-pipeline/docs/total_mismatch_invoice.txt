@@ -1,0 +1,10 @@
+ACME PARTS CO.        Invoice AC-88
+Currency: USD
+
+  Widget ................. 40.00
+  Gasket ................. 35.00
+
+Printed TOTAL: 100.00
+
+(Note: the printed total does not equal the sum of the two line items.
+The document is internally inconsistent — a human should reconcile it.)

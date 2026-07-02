@@ -1,0 +1,12 @@
+ACME WIDGETS LLC
+Invoice #: INV-2201
+Invoice date: 2026-06-01
+Due date: 2026-07-01
+Currency: USD
+
+Line items
+  Steel widget    qty 10  @ 12.50   =  125.00
+  Rubber gasket   qty  4  @  5.00   =   20.00
+  Freight                            =   30.00
+
+Total due: 175.00
