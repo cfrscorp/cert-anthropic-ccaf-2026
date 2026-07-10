@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CCAF Study</title>
+  <meta name="description" content="Local study app for the Claude Certified Architect – Foundations exam." />
+  <link rel="stylesheet" href="fonts.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#view">Skip to content</a>
+
+  <header class="app-header">
+    <div class="app-header__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <div class="brand__text">
+          <strong>CCAF Study</strong>
+          <span class="brand__sub">Claude Certified Architect – Foundations</span>
+        </div>
+      </div>
+      <nav class="tabs" aria-label="Primary">
+        <a class="tab" href="#/quiz" data-view="quiz">Quiz</a>
+        <a class="tab" href="#/flashcards" data-view="flashcards">Flashcards</a>
+        <a class="tab" href="#/concepts" data-view="concepts">Concepts</a>
+        <a class="tab" href="#/readiness" data-view="readiness">Readiness</a>
+      </nav>
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle light/dark theme">
+        <span class="icon-btn__glyph" aria-hidden="true">◐</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="view" class="view" tabindex="-1">
+    <div class="loading">Loading study content…</div>
+  </main>
+
+  <footer class="app-footer">
+    <span>Local &amp; Offline · Progress Stays in This Browser</span>
+    <span class="app-footer__sep">·</span>
+    <a href="https://docs.claude.com" target="_blank" rel="noopener">Claude Docs</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

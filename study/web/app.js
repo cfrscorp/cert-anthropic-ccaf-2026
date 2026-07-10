@@ -1,0 +1,599 @@
+/* ==========================================================================
+   CCAF Study — app (vanilla JS, no dependencies)
+   Loads data/*.json, routes 4 views by hash, tracks cumulative progress in
+   localStorage, and renders a readiness dashboard. Serve over http://localhost
+   (see ../serve.py) so fetch() of the local JSON works.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var PROGRESS_KEY = "ccaf-study-progress-v1";
+  var THEME_KEY = "ccaf-study-theme";
+  var PASS_THRESHOLD = 72; // exam scaled pass ≈ 720/1000; used for the readiness cue
+
+  var DATA = { meta: null, questions: [], flashcards: [], concepts: [] };
+  var view = document.getElementById("view");
+
+  /* ---- tiny helpers ----------------------------------------------------- */
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function domainColor(id) { return "var(--d" + id + ")"; }
+  function domainName(id) {
+    var d = DATA.meta.domains.find(function (x) { return x.id === id; });
+    return d ? d.name : "Domain " + id;
+  }
+  function taskTitle(tid) {
+    var t = DATA.meta.task_statements.find(function (x) { return x.id === tid; });
+    return t ? t.title : tid;
+  }
+  function taskLabs(tid) {
+    var t = DATA.meta.task_statements.find(function (x) { return x.id === tid; });
+    return t ? t.labs : [];
+  }
+  function labLink(lab) {
+    return '<a href="../../labs/' + esc(lab) + '/" target="_blank" rel="noopener">' + esc(lab) + "</a>";
+  }
+
+  /* ---- progress store --------------------------------------------------- */
+  function loadProgress() {
+    try {
+      var p = JSON.parse(localStorage.getItem(PROGRESS_KEY));
+      if (p && p.version === 1 && p.questions && p.sessions) return p;
+    } catch (e) { /* fall through */ }
+    return { version: 1, questions: {}, sessions: [] };
+  }
+  function saveProgress(p) { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); }
+  function recordAnswer(qid, correct) {
+    var p = loadProgress();
+    var q = p.questions[qid] || { seen: 0, correct: 0 };
+    q.seen += 1;
+    if (correct) q.correct += 1;
+    q.last = correct ? "correct" : "wrong";
+    q.ts = Date.now();
+    p.questions[qid] = q;
+    saveProgress(p);
+  }
+  function recordSession(total, correct) {
+    var p = loadProgress();
+    var r = computeReadiness(p);
+    p.sessions.push({ ts: Date.now(), total: total, correct: correct, readiness: r.overall });
+    saveProgress(p);
+  }
+
+  /* ---- readiness math --------------------------------------------------- */
+  function computeReadiness(p) {
+    var byTask = {}; // tid -> {seen, correct, total}
+    DATA.meta.task_statements.forEach(function (t) { byTask[t.id] = { seen: 0, correct: 0, total: 0 }; });
+    DATA.questions.forEach(function (q) {
+      var t = byTask[q.task_statement]; if (!t) return;
+      t.total += 1;
+      var rec = p.questions[q.id];
+      if (rec && rec.seen > 0) { t.seen += 1; t.correct += rec.correct > 0 ? 1 : 0; }
+    });
+    var domains = DATA.meta.domains.map(function (d) {
+      var seen = 0, correct = 0, total = 0;
+      DATA.meta.task_statements.forEach(function (t) {
+        if (t.domain !== d.id) return;
+        seen += byTask[t.id].seen; correct += byTask[t.id].correct; total += byTask[t.id].total;
+      });
+      return {
+        id: d.id, name: d.name, weight: d.weight, color: domainColor(d.id),
+        mastery: seen ? Math.round((correct / seen) * 100) : 0,
+        answered: seen, total: total
+      };
+    });
+    // Overall = domain mastery weighted by exam weights (unanswered domain = 0).
+    var overall = Math.round(domains.reduce(function (s, d) { return s + d.weight * d.mastery; }, 0) / 100);
+    var tasks = DATA.meta.task_statements.map(function (t) {
+      var b = byTask[t.id];
+      return {
+        id: t.id, title: t.title, labs: t.labs, domain: t.domain,
+        mastery: b.seen ? Math.round((b.correct / b.seen) * 100) : 0,
+        answered: b.seen, total: b.total
+      };
+    });
+    return { overall: overall, domains: domains, tasks: tasks };
+  }
+  function readinessColor(pct) {
+    if (pct >= PASS_THRESHOLD) return "var(--good)";
+    if (pct >= 50) return "var(--warning)";
+    return "var(--critical)";
+  }
+
+  /* ---- router ----------------------------------------------------------- */
+  var ROUTES = { quiz: renderQuiz, flashcards: renderFlashcards, concepts: renderConcepts, readiness: renderReadiness };
+  function currentRoute() {
+    var h = (location.hash || "").replace(/^#\/?/, "");
+    return ROUTES[h] ? h : "quiz";
+  }
+  function router() {
+    var name = currentRoute();
+    document.querySelectorAll(".tab").forEach(function (t) {
+      if (t.getAttribute("data-view") === name) t.setAttribute("aria-current", "page");
+      else t.removeAttribute("aria-current");
+    });
+    view.innerHTML = "";
+    ROUTES[name]();
+    view.focus();
+  }
+
+  /* ---- shared control builders ----------------------------------------- */
+  // Content-aware: only list domains/tasks that actually have items, so a user
+  // never selects an option that yields zero results. `items` defaults to the
+  // question bank (quiz); flashcards/concepts pass their own datasets.
+  function domainOptions(sel, items) {
+    var have = {};
+    (items || DATA.questions).forEach(function (x) { have[x.domain] = true; });
+    var o = '<option value="all">All domains</option>';
+    DATA.meta.domains.forEach(function (d) {
+      if (!have[d.id]) return;
+      o += '<option value="' + d.id + '"' + (String(sel) === String(d.id) ? " selected" : "") + ">D" + d.id + " · " + esc(d.name) + "</option>";
+    });
+    return o;
+  }
+  function taskOptions(domainSel, taskSel) {
+    var have = {};
+    DATA.questions.forEach(function (q) { have[q.task_statement] = true; });
+    var o = '<option value="all">All task statements</option>';
+    DATA.meta.task_statements.forEach(function (t) {
+      if (!have[t.id]) return;
+      if (domainSel !== "all" && String(t.domain) !== String(domainSel)) return;
+      o += '<option value="' + t.id + '"' + (t.id === taskSel ? " selected" : "") + ">" + esc(t.id) + " · " + esc(t.title) + "</option>";
+    });
+    return o;
+  }
+
+  /* ======================================================================
+     QUIZ
+     ==================================================================== */
+  var quiz = null; // {pool, idx, score, answered}
+
+  function renderQuiz() {
+    if (quiz && quiz.active) { renderQuizQuestion(); return; }
+    view.innerHTML =
+      '<div class="view-head"><h1>Practice Quiz</h1><p>Scenario multiple-choice, exam-style. Pick a scope, then see the correct answer and why each distractor is wrong.</p></div>' +
+      '<div class="card">' +
+        '<div class="row">' +
+          '<label class="field">Domain<select id="q-domain">' + domainOptions("all") + "</select></label>" +
+          '<label class="field">Task statement<select id="q-task">' + taskOptions("all", "all") + "</select></label>" +
+          '<label class="field">Length<select id="q-len"><option value="10">10 questions</option><option value="20">20 questions</option><option value="0">All matching</option></select></label>' +
+        "</div>" +
+        '<div class="row" style="margin-top:.7rem">' +
+          '<label class="row" style="gap:.4rem;font-size:.85rem;color:var(--ink-2)"><input type="checkbox" id="q-missed"> Only unseen or previously missed</label>' +
+          '<span class="spacer"></span>' +
+          '<span class="pill" id="q-count"></span>' +
+          '<button class="btn btn--primary" id="q-start">Start Quiz →</button>' +
+        "</div>" +
+      "</div>";
+
+    var dSel = document.getElementById("q-domain");
+    var tSel = document.getElementById("q-task");
+    dSel.addEventListener("change", function () {
+      tSel.innerHTML = taskOptions(dSel.value, "all");
+      updateCount();
+    });
+    tSel.addEventListener("change", updateCount);
+    document.getElementById("q-missed").addEventListener("change", updateCount);
+    document.getElementById("q-start").addEventListener("click", startQuiz);
+    updateCount();
+
+    function updateCount() {
+      var n = buildPool().length;
+      document.getElementById("q-count").textContent = n + " available";
+      document.getElementById("q-start").disabled = n === 0;
+    }
+  }
+
+  function buildPool() {
+    var d = document.getElementById("q-domain").value;
+    var t = document.getElementById("q-task").value;
+    var missed = document.getElementById("q-missed").checked;
+    var p = loadProgress();
+    return DATA.questions.filter(function (q) {
+      if (d !== "all" && String(q.domain) !== String(d)) return false;
+      if (t !== "all" && q.task_statement !== t) return false;
+      if (missed) {
+        var rec = p.questions[q.id];
+        if (rec && rec.correct > 0) return false; // answered correctly before → skip
+      }
+      return true;
+    });
+  }
+
+  function startQuiz() {
+    var len = parseInt(document.getElementById("q-len").value, 10);
+    var pool = shuffle(buildPool());
+    if (len > 0) pool = pool.slice(0, len);
+    quiz = { pool: pool, idx: 0, score: 0, answered: false, active: true };
+    renderQuizQuestion();
+  }
+
+  function renderQuizQuestion() {
+    var q = quiz.pool[quiz.idx];
+    if (!q) { renderQuizSummary(); return; }
+    var pct = Math.round((quiz.idx / quiz.pool.length) * 100);
+    var opts = q.options.map(function (o) {
+      return '<button class="option" data-key="' + o.key + '">' +
+        '<span class="option__key">' + o.key + "</span>" +
+        '<span class="option__text">' + esc(o.text) + "</span></button>";
+    }).join("");
+
+    view.innerHTML =
+      '<div class="quiz-meta"><span class="pill">D' + q.domain + " · " + esc(q.task_statement) + "</span>" +
+        '<div class="progressbar"><span style="width:' + pct + '%"></span></div>' +
+        "<span>Q " + (quiz.idx + 1) + "/" + quiz.pool.length + " · Score " + quiz.score + "</span></div>" +
+      '<div class="card">' +
+        (q.scenario ? '<div class="scenario">' + esc(q.scenario) + "</div>" : "") +
+        '<p class="stem">' + esc(q.stem) + "</p>" +
+        '<div class="options" id="opts">' + opts + "</div>" +
+        '<div class="rationale" id="rat" aria-live="polite"></div>' +
+        '<div class="row" style="margin-top:1rem">' +
+          '<button class="btn btn--ghost" id="q-quit">End Quiz</button>' +
+          '<span class="spacer"></span>' +
+          '<button class="btn btn--primary" id="q-next" disabled>Next →</button>' +
+        "</div>" +
+      "</div>";
+
+    quiz.answered = false;
+    document.getElementById("opts").addEventListener("click", function (e) {
+      var btn = e.target.closest(".option");
+      if (btn) answerQuiz(q, btn.getAttribute("data-key"));
+    });
+    document.getElementById("q-next").addEventListener("click", function () {
+      quiz.idx += 1; renderQuizQuestion();
+    });
+    document.getElementById("q-quit").addEventListener("click", function () {
+      quiz.pool = quiz.pool.slice(0, quiz.idx + (quiz.answered ? 1 : 0)); renderQuizSummary();
+    });
+  }
+
+  function answerQuiz(q, key) {
+    if (quiz.answered) return;
+    quiz.answered = true;
+    var correct = key === q.correct;
+    if (correct) quiz.score += 1;
+    recordAnswer(q.id, correct);
+
+    document.querySelectorAll("#opts .option").forEach(function (btn) {
+      var k = btn.getAttribute("data-key");
+      btn.setAttribute("disabled", "true");
+      if (k === q.correct) btn.classList.add("is-correct");
+      else if (k === key) btn.classList.add("is-wrong");
+    });
+
+    var distractors = Object.keys(q.rationale.distractors).sort().map(function (k) {
+      return '<div class="rationale__item"><b>' + k + " —</b> " + esc(q.rationale.distractors[k]) + "</div>";
+    }).join("");
+    var rat = document.getElementById("rat");
+    rat.innerHTML =
+      '<h3>' + (correct ? "✓ Correct" : "✕ Not quite") + " — answer " + q.correct + "</h3>" +
+      '<div class="rationale__correct">' + esc(q.rationale.correct) + "</div>" +
+      '<h3>Why the others are wrong</h3><div class="rationale__list">' + distractors + "</div>" +
+      (q.lab ? '<p class="muted" style="margin-top:.7rem;font-size:.85rem">Practice this hands-on: ' + labLink(q.lab) + "</p>" : "");
+    rat.classList.add("show");
+    document.getElementById("q-next").disabled = false;
+    document.getElementById("q-next").textContent = quiz.idx + 1 >= quiz.pool.length ? "See results →" : "Next →";
+  }
+
+  function renderQuizSummary() {
+    var total = quiz.pool.length;
+    var score = quiz.score;
+    if (total > 0) recordSession(total, score);
+    quiz.active = false;
+    var pct = total ? Math.round((score / total) * 100) : 0;
+    view.innerHTML =
+      '<div class="view-head"><h1>Quiz Complete</h1></div>' +
+      '<div class="card" style="text-align:center">' +
+        '<div class="gauge" style="justify-content:center">' +
+          '<div class="gauge__ring-wrap"><div class="gauge__ring" style="--p:' + pct + ';--gauge-color:' + readinessColor(pct) + '"></div>' +
+          '<span class="gauge__pct">' + pct + "%</span></div>" +
+          '<div style="text-align:left"><div class="gauge__num">' + score + "/" + total + "</div>" +
+          '<div class="muted">questions correct this set</div></div></div>' +
+        '<div class="row" style="justify-content:center;margin-top:1.2rem">' +
+          '<button class="btn btn--primary" id="q-again">New Quiz</button>' +
+          '<a class="btn" href="#/readiness">View Readiness →</a>' +
+        "</div>" +
+      "</div>";
+    document.getElementById("q-again").addEventListener("click", function () { quiz = null; renderQuiz(); });
+  }
+
+  /* ======================================================================
+     FLASHCARDS
+     ==================================================================== */
+  var fc = null; // {pool, idx, flipped}
+
+  function renderFlashcards() {
+    if (!fc) fc = { pool: shuffle(DATA.flashcards), idx: 0, flipped: false, domain: "all" };
+    view.innerHTML =
+      '<div class="view-head"><h1>Flashcards</h1><p>Fact recall for the exam appendix — CLI flags, <code>tool_choice</code> values, batch limits, and more. Click a card to flip.</p></div>' +
+      '<div class="card"><div class="row">' +
+        '<label class="field">Domain<select id="fc-domain">' + domainOptions(fc.domain, DATA.flashcards) + "</select></label>" +
+        '<span class="spacer"></span>' +
+        '<button class="btn" id="fc-shuffle">⇄ Shuffle</button>' +
+      "</div></div>";
+
+    if (fc.pool.length === 0) {
+      view.insertAdjacentHTML("beforeend", emptyState("🗂", "No flashcards match this filter yet."));
+      wireFcDomain(); return;
+    }
+    fc.idx = Math.min(fc.idx, fc.pool.length - 1);
+    var card = fc.pool[fc.idx];
+    view.insertAdjacentHTML("beforeend",
+      '<button class="flashcard' + (fc.flipped ? " flipped" : "") + '" id="fc-card" aria-label="Flashcard, click to flip">' +
+        '<div class="flashcard__inner">' +
+          '<div class="flashcard__face flashcard__face--front"><div class="flashcard__label">' + esc(card.task_statement) + " · " + esc(domainName(card.domain)) + '</div><div class="flashcard__body">' + esc(card.front) + '</div><div class="flashcard__hint">Click to Reveal</div></div>' +
+          '<div class="flashcard__face flashcard__face--back"><div class="flashcard__label">Answer</div><div class="flashcard__body">' + esc(card.back) + '</div><div class="flashcard__hint">Click to Flip Back</div></div>' +
+        "</div></button>" +
+      '<div class="row" style="margin-top:1rem"><button class="btn" id="fc-prev">← Prev</button>' +
+        '<span class="spacer"></span><span class="pill">' + (fc.idx + 1) + " / " + fc.pool.length + '</span><span class="spacer"></span>' +
+        '<button class="btn" id="fc-next">Next →</button></div>');
+
+    document.getElementById("fc-card").addEventListener("click", function () {
+      fc.flipped = !fc.flipped;
+      document.getElementById("fc-card").classList.toggle("flipped");
+    });
+    document.getElementById("fc-prev").addEventListener("click", function () {
+      fc.idx = (fc.idx - 1 + fc.pool.length) % fc.pool.length; fc.flipped = false; renderFlashcards();
+    });
+    document.getElementById("fc-next").addEventListener("click", function () {
+      fc.idx = (fc.idx + 1) % fc.pool.length; fc.flipped = false; renderFlashcards();
+    });
+    document.getElementById("fc-shuffle").addEventListener("click", function () {
+      fc.pool = shuffle(fc.pool); fc.idx = 0; fc.flipped = false; renderFlashcards();
+    });
+    wireFcDomain();
+
+    function wireFcDomain() {
+      document.getElementById("fc-domain").addEventListener("change", function (e) {
+        fc.domain = e.target.value;
+        fc.pool = shuffle(DATA.flashcards.filter(function (c) {
+          return fc.domain === "all" || String(c.domain) === String(fc.domain);
+        }));
+        fc.idx = 0; fc.flipped = false; renderFlashcards();
+      });
+    }
+  }
+
+  /* ======================================================================
+     CONCEPTS
+     ==================================================================== */
+  function renderConcepts() {
+    view.innerHTML =
+      '<div class="view-head"><h1>Concept Explainers</h1><p>One per exam task statement: the idea, why it matters, the common trap, and the lab to practice it.</p></div>' +
+      '<div class="card"><div class="row"><label class="field">Domain<select id="c-domain">' + domainOptions("all", DATA.concepts) + "</select></label></div></div>" +
+      '<div id="c-list"></div>';
+    var sel = document.getElementById("c-domain");
+    sel.addEventListener("change", function () { paint(sel.value); });
+    paint("all");
+
+    function paint(dsel) {
+      var list = document.getElementById("c-list");
+      if (DATA.concepts.length === 0) { list.innerHTML = emptyState("📘", "No concept explainers authored yet."); return; }
+      var html = "";
+      DATA.meta.domains.forEach(function (d) {
+        if (dsel !== "all" && String(d.id) !== String(dsel)) return;
+        var items = DATA.concepts.filter(function (c) { return c.domain === d.id; })
+          .sort(function (a, b) { return a.task_statement.localeCompare(b.task_statement, undefined, { numeric: true }); });
+        if (items.length === 0) return;
+        html += '<section class="concept-domain"><h2><span class="dot" style="background:' + domainColor(d.id) + '"></span>D' + d.id + " · " + esc(d.name) + "</h2>";
+        items.forEach(function (c) {
+          html +=
+            '<details class="concept"><summary><span class="tsid">' + esc(c.task_statement) + "</span> " + esc(c.title) + "</summary>" +
+            '<div class="concept__body"><dl>' +
+              "<dt>Concept</dt><dd>" + esc(c.concept) + "</dd>" +
+              "<dt>Why it matters</dt><dd>" + esc(c.why_it_matters) + "</dd>" +
+              "<dt>Common trap</dt><dd>" + esc(c.common_trap) + "</dd>" +
+              (c.lab ? "<dt>Practice</dt><dd>" + labLink(c.lab) + "</dd>" : "") +
+            "</dl></div></details>";
+        });
+        html += "</section>";
+      });
+      list.innerHTML = html || emptyState("📘", "No concept explainers for this domain yet.");
+    }
+  }
+
+  /* ======================================================================
+     READINESS
+     ==================================================================== */
+  function renderReadiness() {
+    var p = loadProgress();
+    var r = computeReadiness(p);
+    var answered = Object.keys(p.questions).length;
+    var totalQ = DATA.questions.length;
+
+    view.innerHTML = '<div class="view-head"><h1>Readiness</h1><p>Cumulative, weighted by the exam’s domain weights. Progress is saved in this browser.</p></div>';
+
+    if (answered === 0) {
+      view.insertAdjacentHTML("beforeend", emptyState("📊", "Take a quiz to start building your readiness picture.") +
+        '<div class="row" style="justify-content:center;margin-bottom:2rem"><a class="btn btn--primary" href="#/quiz">Start a Quiz →</a></div>');
+      renderProgressTools(p);
+      return;
+    }
+
+    // Overall gauge + stat tiles
+    view.insertAdjacentHTML("beforeend",
+      '<div class="card"><div class="gauge">' +
+        '<div class="gauge__ring-wrap"><div class="gauge__ring" style="--p:' + r.overall + ';--gauge-color:' + readinessColor(r.overall) + '"></div><span class="gauge__pct">' + r.overall + "%</span></div>" +
+        '<div><div class="gauge__num">' + r.overall + '%<span style="font-size:1rem;color:var(--ink-muted);font-weight:500"> readiness</span></div>' +
+        '<div class="muted">' + (r.overall >= PASS_THRESHOLD ? "At or above the ~72% pass line. Keep reinforcing weak areas." : "Below the ~72% pass line — focus on the weak domains below.") + "</div></div>" +
+      "</div>" +
+      '<div class="stat-tiles" style="margin-top:1rem">' +
+        tile(answered + "/" + totalQ, "questions attempted") +
+        tile(sessionCount(p) + "", "quiz sessions") +
+        tile(bestStreak(p) + "", "best session score %") +
+        tile(lastStudied(p), "last studied") +
+      "</div></div>");
+
+    // Per-domain mastery bars
+    var bars = r.domains.map(function (d) {
+      return barRow(
+        '<span class="dot" style="background:' + d.color + '"></span>D' + d.id + " · " + esc(d.name),
+        d.answered ? d.mastery + "%" : "—",
+        d.answered ? d.mastery : 0, d.color,
+        d.answered ? d.answered + "/" + d.total + " answered · " + d.weight + "% of exam" : "not attempted yet · " + d.weight + "% of exam"
+      );
+    }).join("");
+    view.insertAdjacentHTML("beforeend", '<div class="card"><h2 style="margin:.1rem 0 .8rem;font-size:1.05rem">Mastery by Domain</h2><div class="bars">' + bars + "</div></div>");
+
+    // Readiness over time sparkline
+    view.insertAdjacentHTML("beforeend",
+      '<div class="card"><h2 style="margin:.1rem 0 .3rem;font-size:1.05rem">Readiness Over Time</h2>' +
+      '<p class="muted" style="margin:.1rem 0 .6rem;font-size:.85rem">Overall readiness after each quiz session.</p>' + sparkline(p) + "</div>");
+
+    // Weak areas
+    var weak = r.tasks.filter(function (t) { return t.answered > 0 && t.mastery < PASS_THRESHOLD; })
+      .sort(function (a, b) { return a.mastery - b.mastery; }).slice(0, 8);
+    if (weak.length) {
+      var items = weak.map(function (t) {
+        var labs = t.labs.map(labLink).join(", ");
+        return "<li><span class=\"pill\" style=\"background:" + domainColor(t.domain) + ";color:#fff\">" + esc(t.id) + "</span>" +
+          '<span style="flex:1">' + esc(t.title) + ' <span class="muted">(' + t.mastery + "%, " + t.answered + " seen)</span></span>" +
+          '<span class="muted" style="font-size:.82rem">' + (labs || "") + "</span></li>";
+      }).join("");
+      view.insertAdjacentHTML("beforeend", '<div class="card"><h2 style="margin:.1rem 0 .5rem;font-size:1.05rem">Focus Areas → Revisit These Labs</h2><ul class="weak-list">' + items + "</ul></div>");
+    }
+
+    renderProgressTools(p);
+  }
+
+  function renderProgressTools() {
+    view.insertAdjacentHTML("beforeend",
+      '<div class="card" style="margin-top:1rem"><h2 style="margin:.1rem 0 .5rem;font-size:1.05rem">Your Progress Data</h2>' +
+      '<p class="muted" style="margin:.1rem 0 .7rem;font-size:.85rem">Stored only in this browser. Export to back it up or move it to another machine.</p>' +
+      '<div class="row"><button class="btn" id="pg-export">⬇ Export</button>' +
+      '<button class="btn" id="pg-import">⬆ Import</button>' +
+      '<input type="file" id="pg-file" accept="application/json" hidden>' +
+      '<span class="spacer"></span><button class="btn btn--ghost" id="pg-reset">Reset Progress</button></div></div>');
+
+    document.getElementById("pg-export").addEventListener("click", function () {
+      var blob = new Blob([JSON.stringify(loadProgress(), null, 2)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "ccaf-progress.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    document.getElementById("pg-import").addEventListener("click", function () {
+      document.getElementById("pg-file").click();
+    });
+    document.getElementById("pg-file").addEventListener("change", function (e) {
+      var file = e.target.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var obj = JSON.parse(reader.result);
+          if (!obj || obj.version !== 1 || !obj.questions || !obj.sessions) throw new Error("bad shape");
+          saveProgress(obj);
+          router();
+        } catch (err) { alert("That file doesn't look like a CCAF progress export."); }
+      };
+      reader.readAsText(file);
+    });
+    document.getElementById("pg-reset").addEventListener("click", function () {
+      if (confirm("Erase all saved progress in this browser? This cannot be undone.")) {
+        localStorage.removeItem(PROGRESS_KEY); router();
+      }
+    });
+  }
+
+  /* ---- readiness sub-renderers ----------------------------------------- */
+  function tile(num, label) {
+    return '<div class="tile"><div class="tile__num">' + esc(num) + '</div><div class="tile__label">' + esc(label) + "</div></div>";
+  }
+  function barRow(labelHtml, valText, pct, color, subText) {
+    return '<div class="bar-row"><div class="bar-row__label">' + labelHtml + "</div>" +
+      '<div class="bar-row__val">' + esc(valText) + "</div>" +
+      '<div class="bar-row__sub"><div class="track"><span style="width:' + pct + "%;background:" + color + '"></span></div>' +
+      '<div class="muted" style="font-size:.76rem;margin-top:.2rem">' + esc(subText) + "</div></div></div>";
+  }
+  function sessionCount(p) { return p.sessions.length; }
+  function bestStreak(p) {
+    return p.sessions.reduce(function (m, s) {
+      var pct = s.total ? Math.round((s.correct / s.total) * 100) : 0;
+      return Math.max(m, pct);
+    }, 0);
+  }
+  function lastStudied(p) {
+    if (!p.sessions.length) return "—";
+    var days = Math.floor((Date.now() - p.sessions[p.sessions.length - 1].ts) / 86400000);
+    return days <= 0 ? "today" : days === 1 ? "yesterday" : days + "d ago";
+  }
+  function sparkline(p) {
+    var pts = p.sessions.map(function (s) { return s.readiness; });
+    if (pts.length < 2) return '<p class="muted" style="font-size:.85rem">Complete a second quiz to see your trend.</p>';
+    // Uniform-scaled viewBox (no preserveAspectRatio="none") so dots stay round
+    // and strokes stay even. 0–100 y-scale keeps it honest vs the gauge; a dashed
+    // line marks the ~72% pass threshold for context.
+    var W = 600, H = 120, padX = 8, padTop = 12, padBot = 12;
+    var plotH = H - padTop - padBot;
+    var yFor = function (v) { return padTop + (1 - v / 100) * plotH; };
+    var step = (W - padX * 2) / (pts.length - 1);
+    var coords = pts.map(function (v, i) { return [padX + i * step, yFor(v)]; });
+    var line = coords.map(function (c, i) { return (i ? "L" : "M") + c[0].toFixed(1) + " " + c[1].toFixed(1); }).join(" ");
+    var area = "M" + coords[0][0].toFixed(1) + " " + (H - padBot) + " " +
+      coords.map(function (c) { return "L" + c[0].toFixed(1) + " " + c[1].toFixed(1); }).join(" ") +
+      " L" + coords[coords.length - 1][0].toFixed(1) + " " + (H - padBot) + " Z";
+    var dots = coords.map(function (c) {
+      return '<circle cx="' + c[0].toFixed(1) + '" cy="' + c[1].toFixed(1) + '" r="3" fill="var(--surface-1)" stroke="var(--accent)" stroke-width="2"></circle>';
+    }).join("");
+    var last = coords[coords.length - 1];
+    var thr = yFor(72);
+    var cur = pts[pts.length - 1];
+    return '<svg class="sparkline" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Readiness across ' + pts.length + ' sessions, currently ' + cur + '%">' +
+      '<defs><linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="var(--accent)" stop-opacity="0.28"></stop>' +
+        '<stop offset="1" stop-color="var(--accent)" stop-opacity="0"></stop></linearGradient></defs>' +
+      '<line x1="' + padX + '" y1="' + thr.toFixed(1) + '" x2="' + (W - padX) + '" y2="' + thr.toFixed(1) + '" stroke="var(--baseline)" stroke-width="1.5" stroke-dasharray="5 5"></line>' +
+      '<path d="' + area + '" fill="url(#sparkfill)"></path>' +
+      '<path d="' + line + '" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>' +
+      dots +
+      '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="4.5" fill="var(--accent)"></circle></svg>' +
+      '<div class="muted" style="display:flex;justify-content:space-between;font-size:.74rem;margin-top:.3rem">' +
+        '<span>' + pts.length + ' sessions</span><span>dashed line = ~72% pass · now ' + cur + '%</span></div>';
+  }
+
+  function emptyState(glyph, msg) {
+    return '<div class="empty"><span class="empty__glyph">' + glyph + "</span>" + esc(msg) + "</div>";
+  }
+
+  /* ---- theme ------------------------------------------------------------ */
+  function initTheme() {
+    var saved = localStorage.getItem(THEME_KEY);
+    var theme = saved || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+    document.getElementById("theme-toggle").addEventListener("click", function () {
+      var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem(THEME_KEY, next);
+    });
+  }
+
+  /* ---- boot ------------------------------------------------------------- */
+  function boot() {
+    initTheme();
+    Promise.all(["../data/meta.json", "../data/questions.json", "../data/flashcards.json", "../data/concepts.json"]
+      .map(function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }); }))
+      .then(function (res) {
+        DATA.meta = res[0]; DATA.questions = res[1]; DATA.flashcards = res[2]; DATA.concepts = res[3];
+        window.addEventListener("hashchange", router);
+        if (!location.hash) location.hash = "#/quiz";
+        router();
+      })
+      .catch(function (err) {
+        view.innerHTML = '<div class="empty"><span class="empty__glyph">⚠️</span>Could not load study data.<br><span class="muted">' + esc(err.message) +
+          '</span><br><br>Run <code>uv run study/serve.py</code> from the repo root and open the printed URL (don’t open index.html directly).</div>';
+      });
+  }
+  boot();
+})();
