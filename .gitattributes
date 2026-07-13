@@ -1,0 +1,10 @@
+# Normalize line endings: store text as LF in the repo and check out LF on every
+# platform. Prevents the CRLF churn/conflicts introduced when another machine or
+# a Dropbox sync rewrites files with Windows line endings.
+* text=auto eol=lf
+
+# Binary assets — never apply text or EOL processing.
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.ico binary
