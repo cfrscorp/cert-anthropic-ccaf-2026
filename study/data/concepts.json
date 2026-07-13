@@ -6,7 +6,14 @@
     "concept": "An agentic loop repeatedly sends requests to Claude and inspects the API's `stop_reason`. While `stop_reason` is `\"tool_use\"`, the loop executes the requested tools and appends their `tool_result` blocks to the conversation history so the model can reason about the next action; when `stop_reason` is `\"end_turn\"`, the loop terminates and returns the final response. Tool selection is model-driven: Claude decides the next tool from the evolving context rather than following a pre-configured decision tree or fixed sequence.",
     "why_it_matters": "Building control flow on the structured `stop_reason` signal makes agents adaptive and reliable, letting Claude dynamically choose tools instead of being locked into a brittle, hard-coded script.",
     "common_trap": "Terminating the loop by parsing natural-language completion phrases, treating an arbitrary iteration cap as the primary stop, or checking assistant text content as a completion indicator instead of relying on `stop_reason` (`\"end_turn\"`).",
-    "lab": "lab-03-agentic-loop"
+    "lab": "lab-03-agentic-loop",
+    "code_samples": [
+      {
+        "caption": "Agentic loop: branch on stop_reason, not on text",
+        "language": "python",
+        "code": "while True:\n    resp = client.messages.create(model=MODEL, messages=messages, tools=tools)\n    messages.append({\"role\": \"assistant\", \"content\": resp.content})\n\n    if resp.stop_reason == \"end_turn\":\n        return resp.text          # model is done -> stop on the SIGNAL, not on phrases\n\n    if resp.stop_reason == \"tool_use\":\n        results = []\n        for block in resp.tool_use_blocks():\n            output = run_tool(block.name, block.input)\n            results.append({\"type\": \"tool_result\",\n                            \"tool_use_id\": block.id, \"content\": output})\n        messages.append({\"role\": \"user\", \"content\": results})   # feed back, then iterate"
+      }
+    ]
   },
   {
     "task_statement": "1.2",
@@ -24,7 +31,19 @@
     "concept": "Coordinators spawn subagents through the Task tool, which requires `\"Task\"` in the coordinator's `allowedTools`. Each subagent type is configured by an `AgentDefinition` (description, system prompt, tool restrictions). Subagents run with ISOLATED context: they do not inherit the coordinator's history or share memory, so all needed context, including complete prior findings, must be provided explicitly in the subagent's prompt, ideally as structured data that separates content from metadata (source URLs, document names, page numbers, dates) to preserve attribution. Parallel subagents are launched by emitting multiple Task calls in a single response; fork-based session management lets you explore divergent approaches from a shared analysis baseline. Coordinator prompts should state goals and quality criteria, not step-by-step procedures.",
     "why_it_matters": "These are the exact mechanics that make multi-agent systems work or fail. Forgetting `\"Task\"` silently disables delegation; assuming context inheritance produces subagents that ignore prior findings; sequential spawning wastes latency that parallel Task calls would recover; and unstructured context passing corrupts citations during synthesis.",
     "common_trap": "Believing subagents automatically inherit the coordinator's conversation or share a common memory. They do not. Referring a subagent to 'the earlier results' passes nothing; the complete findings must be embedded in its prompt.",
-    "lab": "lab-19-multi-agent-orchestration"
+    "lab": "lab-19-multi-agent-orchestration",
+    "code_samples": [
+      {
+        "caption": "AgentDefinition: a coordinator needs \"Task\" to delegate",
+        "language": "python",
+        "code": "coordinator = AgentDefinition(\n    name=\"coordinator\",\n    description=\"Decomposes the query and delegates to specialized subagents.\",\n    system_prompt=\"State goals and quality bars, not a step-by-step procedure.\",\n    allowed_tools=[\"Task\"],          # omit \"Task\" and delegation SILENTLY fails\n)\n# Subagents run with ISOLATED context: they inherit nothing, so every needed\n# finding must be embedded verbatim in the Task prompt (not 'see earlier results')."
+      },
+      {
+        "caption": "Parallel spawn: multiple Task calls in ONE assistant turn",
+        "language": "json",
+        "code": "{\n  \"role\": \"assistant\",\n  \"content\": [\n    {\"type\": \"tool_use\", \"name\": \"Task\", \"id\": \"toolu_1\",\n     \"input\": {\"subagent_type\": \"web_search\",\n               \"prompt\": \"Research X. (Full context here; you inherit nothing.)\"}},\n    {\"type\": \"tool_use\", \"name\": \"Task\", \"id\": \"toolu_2\",\n     \"input\": {\"subagent_type\": \"doc_analysis\",\n               \"prompt\": \"Analyze Y. Prior findings, verbatim: [...]\"}}\n  ]\n}"
+      }
+    ]
   },
   {
     "task_statement": "1.4",
@@ -33,7 +52,14 @@
     "concept": "Multi-step agent workflows can order steps two ways. Prompt-based guidance (system-prompt rules, few-shot examples) influences the model probabilistically. Programmatic enforcement (hooks and prerequisite gates) intercepts tool calls and blocks a downstream action until a prerequisite has demonstrably completed—for example, blocking process_refund until get_customer has returned a verified customer ID. Enforcement pairs with two other skills: decomposing multi-concern requests into distinct items investigated in parallel over shared context before a unified resolution, and compiling structured handoff summaries (customer ID, root cause, amount, recommended action) when escalating to humans who lack the transcript.",
     "why_it_matters": "Prompt instructions alone have a non-zero failure rate. When a specific sequence is safety- or money-critical (identity verification before financial operations), that residual failure rate causes misidentified accounts and incorrect refunds. A prerequisite gate converts a probabilistic hope into a deterministic guarantee, which is what compliance-critical business logic requires.",
     "common_trap": "Assuming a sufficiently strong system prompt or enough few-shot examples can guarantee ordering. They reduce but never eliminate the failure rate; only a programmatic gate that blocks the call gives deterministic compliance. A related trap is confusing tool routing (which tools are available) with tool ordering (which must run first)—routing does not enforce sequence.",
-    "lab": "lab-11-hooks-and-enforcement"
+    "lab": "lab-11-hooks-and-enforcement",
+    "code_samples": [
+      {
+        "caption": "Prerequisite gate: deterministic ordering a prompt cannot guarantee",
+        "language": "python",
+        "code": "class PrerequisiteGate:\n    \"\"\"Block process_refund until get_customer has VERIFIED the customer.\"\"\"\n    def __init__(self):\n        self.verified_customer_id = None\n\n    def record_tool_result(self, name, result):\n        if name == \"get_customer\" and result.get(\"verified\") and result.get(\"customer_id\"):\n            self.verified_customer_id = result[\"customer_id\"]\n\n    def check(self, tool):\n        if tool == \"process_refund\":\n            return self.verified_customer_id is not None   # gate, not a hope\n        return True"
+      }
+    ]
   },
   {
     "task_statement": "1.5",
@@ -42,7 +68,19 @@
     "concept": "Agent SDK hooks let you insert deterministic code around tool execution. A PostToolUse hook intercepts a tool's returned result and transforms it (for example, normalizing Unix timestamps, ISO 8601 strings, and numeric status codes from different MCP tools into one canonical format) before the model processes it. An outgoing tool-call interception hook inspects the tool call the model requested before it executes, allowing you to enforce compliance rules such as blocking refunds above $500 and redirecting the action to a human-escalation workflow.",
     "why_it_matters": "Prompt instructions only make compliance probabilistic; the model may still violate a rule some fraction of the time. Hooks run in code every time, providing deterministic guarantees. When a rule protects money, privacy, or safety, that certainty is essential, and normalizing data at the hook layer keeps the model from misreading heterogeneous tool outputs.",
     "common_trap": "Assuming a strongly worded system prompt (or a lower temperature, or a capable model) is equivalent to a hook. It is not: only a hook guarantees enforcement. The mirror-image trap is over-engineering by wrapping soft stylistic preferences in hooks when probabilistic prompt guidance would suffice.",
-    "lab": "lab-11-hooks-and-enforcement"
+    "lab": "lab-11-hooks-and-enforcement",
+    "code_samples": [
+      {
+        "caption": "Interception hook: block a policy-violating call every time",
+        "language": "python",
+        "code": "def intercept_tool_call(name, tool_input, refund_limit=500):\n    \"\"\"Runs in CODE on every call -> deterministic, unlike a prompt rule.\"\"\"\n    if name == \"process_refund\" and tool_input.get(\"amount\", 0) > refund_limit:\n        return {\"action\": \"block\",\n                \"redirect\": \"escalate_to_human\",\n                \"reason\": f\"Refund over ${refund_limit} requires a human.\"}\n    return {\"action\": \"allow\"}"
+      },
+      {
+        "caption": "PostToolUse hook: normalize heterogeneous output before the model sees it",
+        "language": "python",
+        "code": "def post_tool_use_normalize(tool_name, result):\n    out = dict(result)\n    if \"timestamp\" in out:                 # Unix int OR ISO string -> canonical ISO-8601 UTC\n        out[\"timestamp\"] = to_iso8601(out[\"timestamp\"])\n    if \"status\" in out:                    # numeric HTTP code -> human-readable label\n        out[\"status\"] = status_label(out[\"status\"])\n    out[\"source_tool\"] = tool_name\n    return out"
+      }
+    ]
   },
   {
     "task_statement": "1.6",
@@ -60,7 +98,19 @@
     "concept": "Claude Code sessions accumulate context and tool results over time. You can continue a specific named conversation with `--resume <session-name>`, and you can use `fork_session` to spin off independent branches from a shared analysis baseline to explore divergent approaches (e.g., two refactoring or testing strategies) without cross-contamination. When resuming after code has changed, you inform the agent about the specific files that were modified so it performs targeted re-analysis instead of full re-exploration. When prior tool results have gone stale, starting a new session and injecting a structured summary of the still-valid conclusions is more reliable than resuming with outdated observations.",
     "why_it_matters": "Long-running investigations and multi-approach experiments depend on preserving hard-won context efficiently. Choosing resume vs. fresh-with-summary correctly saves re-exploration cost while keeping the agent's reasoning grounded in accurate, current information.",
     "common_trap": "Blindly resuming an old session after the codebase has been rewritten, so the agent reasons over stale tool results that describe code that no longer exists. The fix is a fresh session with a curated structured summary, or at minimum informing a resumed agent exactly which files changed.",
-    "lab": "lab-13-session-state"
+    "lab": "lab-13-session-state",
+    "code_samples": [
+      {
+        "caption": "Resume a named session, keeping its full history",
+        "language": "bash",
+        "code": "# Continue a specific prior conversation and append new turns to it.\nclaude --resume analysis-baseline"
+      },
+      {
+        "caption": "Fork a session to explore a divergent approach without contaminating it",
+        "language": "python",
+        "code": "from claude_agent_sdk import ClaudeAgentOptions\n\n# Branch an INDEPENDENT copy from a shared baseline; the original is untouched.\noptions = ClaudeAgentOptions(resume=\"analysis-baseline\", fork_session=True)\n\n# When resuming after code changed, name what moved so re-analysis is targeted\n# (vs. a fresh session + curated summary when prior tool results are fully stale).\nnotice = (\"Files changed since last active: api/auth.py, api/models.py. \"\n          \"Re-analyze ONLY these; treat earlier analysis of them as stale.\")"
+      }
+    ]
   },
   {
     "task_statement": "2.1",
@@ -69,7 +119,19 @@
     "concept": "An LLM chooses which tool to call primarily from the tool descriptions, so descriptions are the highest-leverage part of a tool interface. Effective descriptions differentiate each tool by stating its purpose, the input formats it accepts, example queries, edge cases, and boundaries explaining when to use it versus similar alternatives. Minimal or near-identical descriptions (the classic `analyze_content` vs `analyze_document` case) leave the model without a basis to choose and cause misrouting. The proportionate first fix is almost always to expand or clarify descriptions. When overlap is structural, rename and rescope tools to eliminate it (e.g., `analyze_content` becomes `extract_web_results`) or split a generic tool into purpose-specific tools with defined input/output contracts (e.g., `analyze_document` becomes `extract_data_points`, `summarize_content`, and `verify_claim_against_source`). Descriptions are not the only signal: keyword-sensitive system prompt wording can create unintended tool associations that override even well-written descriptions, so system prompts must be reviewed too.",
     "why_it_matters": "Tool selection reliability is a recurring exam theme. Recognizing that descriptions drive selection lets you pick the low-effort, high-leverage remedy (better descriptions) over heavier or misdirected alternatives such as few-shot examples, external routing layers, or tool consolidation, and to know when renaming, rescoping, or splitting is warranted. It also trains you to look past the tools to the system prompt when descriptions are already sound.",
     "common_trap": "Reaching for few-shot examples, a keyword routing layer, or consolidating tools when the real cause is minimal or overlapping descriptions, and forgetting that keyword-sensitive system prompt wording can override otherwise well-written descriptions.",
-    "lab": "lab-05-tool-interface-design"
+    "lab": "lab-05-tool-interface-design",
+    "code_samples": [
+      {
+        "caption": "Poorly described tools: near-identical descriptions give the model no basis to choose, causing misrouting.",
+        "language": "json",
+        "code": "{\n  \"name\": \"analyze_content\",\n  \"description\": \"Analyze content.\",\n  \"input_schema\": {\"type\": \"object\", \"properties\": {\"input\": {\"type\": \"string\"}}}\n}\n{\n  \"name\": \"analyze_document\",\n  \"description\": \"Analyze a document.\",\n  \"input_schema\": {\"type\": \"object\", \"properties\": {\"input\": {\"type\": \"string\"}}}\n}"
+      },
+      {
+        "caption": "Well described tool: purpose, accepted input format, an example, and a boundary vs. the similar alternative.",
+        "language": "json",
+        "code": "{\n  \"name\": \"extract_web_results\",\n  \"description\": \"Extract structured results from a web search response. Input: raw HTML or a search-results JSON payload (not a file path). Example: 'pull titles and URLs from these Google results'. Use this for web/search content; use extract_data_points for uploaded documents like PDFs or invoices.\",\n  \"input_schema\": {\n    \"type\": \"object\",\n    \"properties\": {\"payload\": {\"type\": \"string\", \"description\": \"HTML or search-results JSON\"}},\n    \"required\": [\"payload\"]\n  }\n}"
+      }
+    ]
   },
   {
     "task_statement": "2.2",
@@ -78,7 +140,19 @@
     "concept": "MCP tools communicate failures back to the agent by returning a result with the `isError` flag set to `true` alongside descriptive content, keeping failures inside the tool-result channel the model can reason over. Effective error responses classify the failure — transient (timeouts, service unavailability), validation (invalid input), business (policy violations), or permission (insufficient access) — and attach structured metadata: an `errorCategory`, an `isRetryable`/`retriable` boolean, and a human-readable message. Retryable failures (transient) are worth retrying; non-retryable ones (validation, business, permission) are deterministic and will fail identically, so the metadata stops the agent from wasting retries. Subagents should recover transient failures locally and propagate to the coordinator only what they cannot resolve, including partial results and what was attempted. A valid empty result (a successful query with no matches) must be returned as a normal successful response, never conflated with an access failure that needs a retry decision.",
     "why_it_matters": "Structured, categorized error metadata is what lets an agent make appropriate recovery decisions — retry, correct input, escalate, or explain to a user — instead of blindly looping or failing prematurely. It also lets business-rule violations be surfaced to customers with clear, friendly explanations rather than opaque codes.",
     "common_trap": "Returning a uniform generic message like \"Operation failed\" or \"search unavailable\" that hides the category and retryability; marking a failure as a successful empty result (suppressing the error); or flagging a valid zero-match query as an error, causing needless retries and false failure reports.",
-    "lab": "lab-09-errors-and-tool-distribution"
+    "lab": "lab-09-errors-and-tool-distribution",
+    "code_samples": [
+      {
+        "caption": "MCP structured error: transient failures are retryable, so the agent retries instead of failing prematurely.",
+        "language": "json",
+        "code": "{\n  \"isError\": true,\n  \"errorCategory\": \"transient\",\n  \"isRetryable\": true,\n  \"message\": \"Search service timed out after 30s. Retry shortly.\"\n}"
+      },
+      {
+        "caption": "Business-rule violation: non-retryable and deterministic, with a customer-friendly message the agent can relay.",
+        "language": "json",
+        "code": "{\n  \"isError\": true,\n  \"errorCategory\": \"business\",\n  \"isRetryable\": false,\n  \"message\": \"Refunds over $500 require manager approval and cannot be processed automatically.\"\n}"
+      }
+    ]
   },
   {
     "task_statement": "2.3",
@@ -87,7 +161,14 @@
     "concept": "Reliable multi-agent systems apply least privilege to tools. Giving one agent too many tools (e.g., 18 instead of a focused 4-5) increases decision complexity and degrades tool selection; agents holding tools outside their specialization tend to misuse them (a synthesis agent running its own web searches). The remedy is scoped tool access: each agent gets only the tools its role needs, with narrowly scoped cross-role tools for specific high-frequency needs (e.g., a `verify_fact` tool on the synthesis agent for simple fact-checks, while complex verification still routes through the coordinator). Prefer constrained tools over generic ones (replace `fetch_url` with a `load_document` tool that validates document URLs). Independently, `tool_choice` controls invocation: `\"auto\"` lets the model choose whether to call a tool or reply in text; `\"any\"` guarantees the model calls some tool rather than returning conversational text; and forced selection `{\"type\": \"tool\", \"name\": \"...\"}` guarantees a specific tool is called first (e.g., forcing `extract_metadata` before enrichment), with later steps handled in follow-up turns.",
     "why_it_matters": "The exam tests whether you can diagnose degraded tool selection and cross-role misuse as tool-distribution problems and apply proportionate fixes (scope tools, constrain generic tools, add a narrow cross-role tool) instead of over-provisioning. It also tests precise mapping of the three tool_choice modes to requirements: mixed text/action (auto), guaranteed structured tool output (any), and guaranteed ordering or a required first tool (forced).",
     "common_trap": "Confusing the tool_choice modes: treating `\"auto\"` as if it guarantees a tool call, using `\"any\"` when a specific tool must run first (it only guarantees some tool), or over-provisioning an agent with a full toolset when a single scoped cross-role tool would serve the common case. Another trap is relying on prompt instructions to enforce tool ordering or URL constraints instead of forced `tool_choice` and constrained tools.",
-    "lab": "lab-09-errors-and-tool-distribution"
+    "lab": "lab-09-errors-and-tool-distribution",
+    "code_samples": [
+      {
+        "caption": "The three tool_choice modes: auto may reply in text, any forces some tool, forced requires a specific tool first.",
+        "language": "python",
+        "code": "# auto: model may call a tool OR answer in text (mixed conversation/action)\ntool_choice = {\"type\": \"auto\"}\n\n# any: model MUST call some tool (it picks which) — guarantees structured output\ntool_choice = {\"type\": \"any\"}\n\n# forced: model MUST call this specific tool first (e.g. extract before enrich)\ntool_choice = {\"type\": \"tool\", \"name\": \"extract_metadata\"}"
+      }
+    ]
   },
   {
     "task_statement": "2.4",
@@ -96,7 +177,14 @@
     "concept": "MCP servers are registered in one of two scopes. Project-level `.mcp.json`, committed to the repository, is for shared team tooling: everyone who clones the repo automatically inherits the same servers. User-level `~/.claude.json` is for personal or experimental servers that apply only to you and are never shared via version control. Because `.mcp.json` is committed, secrets are supplied through environment-variable expansion (e.g., `${GITHUB_TOKEN}`): the file holds only a placeholder while the real value lives in each developer's environment. When Claude Code starts, it connects to every configured server (project and user scope alike) and discovers their tools at connection time; tools from all connected servers are available to the agent simultaneously, with no switching or per-session enabling. Beyond tools, MCP resources expose content catalogs, such as issue summaries, documentation hierarchies, and database schemas, giving the agent up-front visibility into available data so it does not burn latency and tokens on exploratory tool calls. Because agents pick tools from their descriptions, MCP tool descriptions should detail capabilities, appropriate use cases, and outputs so the agent prefers a more capable MCP tool over a built-in like Grep. For standard integrations (e.g., Jira), prefer a mature community server; reserve custom servers for genuinely team-specific workflows.",
     "why_it_matters": "The exam tests whether you can match a requirement to the correct scope (shared vs. personal), keep credentials out of committed config via env expansion, and reason about tool availability. Misplacing a server breaks either team sharing or teammate isolation; committing a literal token leaks a secret; and misunderstanding discovery leads to wrong diagnoses when tools are missing (usually a failed connection from an unset env var, not a scope-priority rule). Knowing resources exist lets you cut exploratory-call overhead instead of raising iteration budgets.",
     "common_trap": "Assuming scopes override each other (they are additive; all connected servers expose tools at once), that base64 or `CLAUDE.md` is a safe place for a token (both still commit the secret), or that missing MCP tools indicate a scope-priority conflict rather than a connection failure from an unset environment variable. Another trap is building a custom server for a standard integration a community server already covers.",
-    "lab": "lab-15-mcp-integration"
+    "lab": "lab-15-mcp-integration",
+    "code_samples": [
+      {
+        "caption": "Project-scoped .mcp.json (committed): the file holds only a ${GITHUB_TOKEN} placeholder; the real value lives in each developer's environment.",
+        "language": "json",
+        "code": "{\n  \"mcpServers\": {\n    \"github\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n      \"env\": {\n        \"GITHUB_TOKEN\": \"${GITHUB_TOKEN}\"\n      }\n    }\n  }\n}"
+      }
+    ]
   },
   {
     "task_statement": "2.5",
@@ -105,7 +193,19 @@
     "concept": "Each built-in tool answers a distinct question. Grep searches file CONTENTS for a pattern and is the right choice for locating callers of a function, error messages, or import statements across a codebase. Glob matches file PATHS by name/extension pattern (e.g., `**/*.test.tsx`) and enumerates files by naming convention. Read loads a full file and Write replaces its full contents, while Edit makes a targeted modification anchored on unique text. When Edit's anchor text is not unique (or when only one of several identical occurrences should change), the reliable fallback is Read the full file then Write it back with just the intended change. Understanding an unfamiliar codebase is done incrementally: Grep to a concrete entry point, then Read and follow imports along the actual call path rather than reading every file upfront; to trace a wrapper module, Read it to enumerate exported names, then Grep each name for its consumers.",
     "why_it_matters": "Choosing the wrong tool wastes context and produces wrong answers: Glob cannot find callers (it ignores contents), Grep cannot modify files (it is read-only), and reading everything upfront buries the signal. Knowing the Edit-to-Read+Write fallback prevents both failed edits on non-unique anchors and accidental multi-match overwrites, which is exactly the precision the exam probes.",
     "common_trap": "Confusing content search with path matching — using Glob to find where a symbol is used, or Grep to enumerate files by name. Another trap is retrying a failed non-unique Edit (or using `replace_all`) instead of falling back to Read+Write to change only the intended occurrence.",
-    "lab": "lab-02-claude-code-config-foundations"
+    "lab": "lab-02-claude-code-config-foundations",
+    "code_samples": [
+      {
+        "caption": "Grep searches file CONTENTS (find callers); Glob matches file PATHS by pattern (enumerate by naming convention).",
+        "language": "text",
+        "code": "# Grep: who calls processRefund? (searches contents)\nGrep pattern=\"processRefund\\(\" glob=\"**/*.ts\"\n\n# Glob: list every React test file by name pattern (matches paths, ignores contents)\nGlob pattern=\"**/*.test.tsx\""
+      },
+      {
+        "caption": "When Edit's anchor text is not unique, fall back to Read the full file then Write it back with only the intended change.",
+        "language": "text",
+        "code": "# Edit fails: \"status\" appears many times — anchor not unique\nEdit old_string=\"status\" new_string=\"state\"   # error: multiple matches\n\n# Reliable fallback: Read full file, then Write back the single intended change\nRead file_path=\"config.py\"\nWrite file_path=\"config.py\" content=\"<full contents with only that one line changed>\""
+      }
+    ]
   },
   {
     "task_statement": "3.1",
@@ -114,7 +214,19 @@
     "concept": "Claude Code loads configuration from a three-level hierarchy: user-level (`~/.claude/CLAUDE.md`, personal to the individual and never shared via version control), project-level (root `CLAUDE.md` or `.claude/CLAUDE.md`, committed and shared with the team), and directory-level (subdirectory `CLAUDE.md` files that add scope for their subtree). Files are additive and load based on the file being worked on; where guidance conflicts, the more specific file closer to the edited file takes precedence. To keep configuration maintainable, `@import` references external files (e.g., a package imports only the shared standards relevant to its domain, single-sourcing them), and a `.claude/rules/` directory splits a monolithic CLAUDE.md into focused topic files such as `testing.md`, `api-conventions.md`, and `deployment.md`. The `/memory` command lists which memory files are currently loaded.",
     "why_it_matters": "Placing instructions at the right level determines whether teammates actually receive them: shared standards must be project-level and committed, while personal preferences belong in user-level config. Modular `@import` and `.claude/rules/` keep guidance focused and single-sourced, and `/memory` lets you verify what is loaded when behavior is inconsistent.",
     "common_trap": "Putting team-wide instructions in `~/.claude/CLAUDE.md` and assuming teammates receive them—user-level config is personal and is never distributed through version control, so a fresh clone contains none of it. The fix is to move shared guidance into project-level configuration.",
-    "lab": "lab-02-claude-code-config-foundations"
+    "lab": "lab-02-claude-code-config-foundations",
+    "code_samples": [
+      {
+        "caption": "Project-level CLAUDE.md that stays modular by pulling shared standards in with an @import reference (single-sourced, reused across packages).",
+        "language": "markdown",
+        "code": "# Sample Project - Project Memory (committed, shared with the team)\n\n## Coding standards\n\n- Type hints on all public functions.\n- Prefer pure functions; push I/O to the edges.\n\n## Testing\n\n<!-- @import keeps the file modular: the standards live in ONE place -->\n@standards/testing.md"
+      },
+      {
+        "caption": "A directory-level CLAUDE.md (src/api/) loads IN ADDITION to the root file; being more specific, it wins on overlapping rules. Note the relative @import path.",
+        "language": "markdown",
+        "code": "# API package memory (directory-level)\n\n## API conventions\n\n- Validate every request body with a Pydantic model.\n- Version breaking changes under a new path prefix (/v2/...).\n\n## Testing for this package\n\n@../../standards/testing.md"
+      }
+    ]
   },
   {
     "task_statement": "3.2",
@@ -123,7 +235,14 @@
     "concept": "Custom slash commands are defined as files in a `commands/` directory. Project-scoped commands live in the repo's `.claude/commands/` and, being version-controlled, are automatically available to everyone who clones or pulls the repository; user-scoped commands live in `~/.claude/commands/` and are personal to one developer across their projects. There is no `.claude/config.json` `commands` array, and CLAUDE.md does not define commands. Skills live in `.claude/skills/` as directories containing a `SKILL.md` whose frontmatter supports three key fields: `context: fork` runs the skill in an isolated sub-agent context so verbose (e.g., codebase analysis) or exploratory (e.g., brainstorming) output does not pollute the main conversation; `allowed-tools` restricts which tools the skill may call (e.g., limiting to file writes to prevent destructive actions); and `argument-hint` prompts the developer for required parameters when the skill is invoked without arguments. Personal skill variants belong in `~/.claude/skills/` under a different name so teammates are unaffected. Choose skills for on-demand, task-specific workflows and CLAUDE.md for always-loaded universal standards.",
     "why_it_matters": "The exam repeatedly tests whether you place shareable automation in the right location and pick the right mechanism. Putting a team command in `~/.claude/commands/` silently denies it to teammates; putting an occasional workflow in CLAUDE.md wastes always-loaded context; and confusing `context: fork`, `allowed-tools`, and `argument-hint` leads to leaked context, unrestricted destructive tools, or stalled invocations.",
     "common_trap": "Believing a `.claude/config.json` `commands` array or a CLAUDE.md section can define slash commands (only files in `.claude/commands/` do), and conflating the three SKILL.md frontmatter fields, for example expecting `context: fork` to restrict tools (that is `allowed-tools`) or `allowed-tools` to prompt for parameters (that is `argument-hint`).",
-    "lab": "lab-07-rules-commands-skills"
+    "lab": "lab-07-rules-commands-skills",
+    "code_samples": [
+      {
+        "caption": "SKILL.md frontmatter for .claude/skills/<name>/: context: fork isolates verbose output in a sub-agent, allowed-tools restricts capabilities, argument-hint prompts for a missing parameter.",
+        "language": "markdown",
+        "code": "---\nname: analyze-codebase\ndescription: >-\n  Map an unfamiliar codebase and return a concise summary. Use before a\n  large refactor. Produces verbose exploration, so it runs forked.\ncontext: fork\nallowed-tools: Read, Grep, Glob\nargument-hint: \"[directory or subsystem to analyze, e.g. src/api]\"\n---\n\n# analyze-codebase\n\nAnalyze the subsystem named in `$ARGUMENTS` and return only a short summary\nto the main session."
+      }
+    ]
   },
   {
     "task_statement": "3.3",
@@ -132,7 +251,14 @@
     "concept": "Files under `.claude/rules/` carry YAML frontmatter with a `paths` field containing glob patterns (e.g., `paths: [\"terraform/**/*\"]` or `paths: [\"**/*.test.tsx\"]`). A rule loads into context only when the file being edited matches one of its glob patterns, so conventions activate conditionally rather than always being present. Because globs match by file type and can use `**` to span any directory depth, one rule can apply a convention to files scattered throughout the codebase regardless of location. This is the key advantage over a directory-bound CLAUDE.md: a CLAUDE.md only governs its own directory, so covering files spread across many folders would mean duplicating it everywhere.",
     "why_it_matters": "Conditional, path-triggered loading keeps only relevant conventions in context, reducing irrelevant tokens, and gives deterministic automatic application by file type. It is the maintainable answer when conventions must span directories, such as test files colocated with the code they test (Sample Question 6).",
     "common_trap": "Reaching for a root or per-subdirectory CLAUDE.md, a manually invoked skill, or a slash command for conventions that must apply automatically to files spread across the repo. CLAUDE.md is directory-bound (forcing duplication and drift), while skills and commands require invocation, none of which deliver the automatic, path-matched activation that a glob `paths` rule provides.",
-    "lab": "lab-07-rules-commands-skills"
+    "lab": "lab-07-rules-commands-skills",
+    "code_samples": [
+      {
+        "caption": "A .claude/rules/*.md file with a YAML paths glob: it loads only when the edited file matches, and ** spans any directory depth so one rule covers test files scattered across the tree.",
+        "language": "markdown",
+        "code": "---\nname: testing\ndescription: Conventions for all test files, wherever they live in the tree.\npaths:\n  - \"**/*.test.tsx\"\n  - \"**/*.test.ts\"\n---\n\n# Testing conventions\n\nLoad automatically when editing a test file, regardless of its directory.\n\n- Use Vitest with describe / it; one top-level describe per unit.\n- Prefer screen.getByRole over getByTestId.\n- No network or real timers - tests must be deterministic and offline."
+      }
+    ]
   },
   {
     "task_statement": "3.4",
@@ -150,7 +276,14 @@
     "concept": "Iterative refinement offers four situational techniques. (1) Concrete input/output examples are the most effective way to communicate an expected transformation when a prose description is interpreted inconsistently; 2-3 representative examples (including edge cases such as null values in a migration) pin down behavior that rewording cannot. (2) Test-driven iteration means writing a test suite covering expected behavior, edge cases, and performance FIRST, then iterating by sharing the specific test failures—exact input, expected, and actual—so each round has a precise, verifiable target. (3) The interview pattern has Claude ask clarifying questions before implementing, surfacing considerations the developer did not anticipate (cache invalidation strategy, acceptable staleness, failure modes), which is especially valuable in unfamiliar domains. (4) Provide all issues in a single detailed message when the fixes INTERACT (a coherent solution must reconcile them together) versus fixing them sequentially when the problems are INDEPENDENT and share no code path or state.",
     "why_it_matters": "Choosing the right technique for the situation is what converts vague, non-converging back-and-forth into measurable, progressive improvement. Examples resolve genuine underspecification; shared test failures make correctness objective; the interview pattern catches unknown unknowns before they are baked into code; and batching interacting fixes prevents patches that undo one another, while sequential handling keeps independent fixes small and individually verifiable.",
     "common_trap": "Treating the techniques as a ranked hierarchy or applying one universally: rewording prose (or lowering temperature, or using a bigger model) to fix ambiguity that only examples can resolve; sharing a bare failure count instead of the concrete failing assertions; implementing a best guess in an unfamiliar domain instead of interviewing first; and the interaction mistake—fixing interacting issues sequentially (causing rework) or force-bundling independent issues under the belief that more context per message is always better.",
-    "lab": "lab-08-plan-mode-and-refinement"
+    "lab": "lab-08-plan-mode-and-refinement",
+    "code_samples": [
+      {
+        "caption": "Iterative refinement: when a prose spec (\"normalize the amounts\") is read inconsistently, 2-3 concrete input -> output examples (including the null edge case) pin down the transformation better than rewording.",
+        "language": "text",
+        "code": "Rule (prose): normalize each amount to a number of cents; blank stays null.\n\nExample 1  input: \"$1,250.00\"  -> output: 125000\nExample 2  input: \"9.5\"        -> output: 950\nExample 3  input: \"\"           -> output: null   (edge case: no fabricated 0)\nExample 4  input: \"USD 40\"     -> output: 4000"
+      }
+    ]
   },
   {
     "task_statement": "3.6",
@@ -159,7 +292,14 @@
     "concept": "To integrate Claude Code into a pipeline, run it non-interactively with the `-p` (or `--print`) flag, which processes the prompt, writes to stdout, and exits instead of waiting for interactive input. Emit machine-parseable findings by combining `--output-format json` with `--json-schema`, so a downstream script can post each finding as an inline PR comment on the right file and line. Supply project context (testing standards, fixture conventions, accepted patterns, review criteria) through a committed CLAUDE.md, which the CI-invoked instance reads automatically. Prefer an independent Claude Code instance for review over the session that generated the code: session context isolation means the author-session carries its own assumptions and is biased toward approving its work, while a fresh instance reviews the diff objectively. On re-runs after new commits, include the prior review's findings in context and instruct Claude to report only new or still-unaddressed issues to avoid duplicate comments; likewise, provide existing test files so test generation targets real coverage gaps rather than duplicating scenarios.",
     "why_it_matters": "CI integration fails in predictable ways: jobs hang without `-p`, brittle prose parsing breaks automated commenting, self-review misses defects, and naive re-runs spam duplicate comments that erode developer trust. Knowing the specific mechanism for each requirement lets you build a review step that runs unattended, posts clean structured findings, and adds signal on every commit instead of noise.",
     "common_trap": "Reaching for invented or ill-fitting fixes: a `CLAUDE_HEADLESS` env var or a `--batch` flag (neither exists) or a `< /dev/null` stdin redirect instead of `-p`; a bigger context window to fix hangs or self-review bias (the fixes are `-p` and an independent instance, not capacity); a prompt that merely asks for JSON instead of schema-enforced `--output-format json` + `--json-schema`; and re-running per commit without passing prior findings, which guarantees duplicate comments.",
-    "lab": "lab-21-claude-code-cicd"
+    "lab": "lab-21-claude-code-cicd",
+    "code_samples": [
+      {
+        "caption": "CI step running Claude Code non-interactively: -p prevents the hang, --output-format json + --json-schema force machine-parseable findings, and a committed review.CLAUDE.md supplies criteria to this independent (non-author) instance.",
+        "language": "yaml",
+        "code": "- name: Run Claude Code review (non-interactive)\n  env:\n    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}\n  run: |\n    git diff --name-only \"origin/${{ github.base_ref }}...HEAD\" > changed_files.txt\n    # -p = non-interactive; prior_findings.json dedupes across re-runs\n    claude -p \"Review files in changed_files.txt for bugs and security issues\n      using review.CLAUDE.md. Prior findings are in prior_findings.json - report\n      only NEW or still-unaddressed issues.\" \\\n      --output-format json \\\n      --json-schema review-schema.json \\\n      > review.json"
+      }
+    ]
   },
   {
     "task_statement": "4.1",
@@ -168,7 +308,19 @@
     "concept": "Precision in review-style agents comes from explicit, categorical criteria that state exactly which conditions qualify a finding, not from vague instructions or confidence dials. Compare \"flag a comment only when its claimed behavior contradicts what the code actually does\" (checkable, categorical) against \"check that comments are accurate\" (vague, subjective). General instructions such as \"be conservative\" or \"only report high-confidence findings\" fail to improve precision because they never define which issues count; the model keeps applying its own fuzzy standard, so the false-positive mix barely changes. The concrete skills are: writing report/skip criteria (report genuine bugs and security vulnerabilities; skip minor style and established local patterns) instead of confidence filtering; defining explicit severity criteria with a concrete code example for each level so classification is consistent across runs and reviewers; and, when a category is too noisy, temporarily disabling it to restore trust while its prompt is rewritten with explicit criteria, re-enabling only after its false-positive rate is verified low.",
     "why_it_matters": "False-positive rates directly determine whether developers act on an agent's output. High false-positive categories undermine confidence in the accurate categories too, so a single noisy category (e.g., style) can cause developers to ignore trustworthy security findings. Fixing precision with explicit criteria and severity rubrics, rather than generic calibration language, is what keeps the tool trusted and used.",
     "common_trap": "Believing precision problems are solved by telling the model to \"be conservative\" or filter by confidence. These general instructions do not define categories and leave the false-positive rate essentially unchanged. The trap also includes conflating confidence with severity, and re-enabling a previously noisy category without first rewriting it with explicit criteria and verifying a low false-positive rate.",
-    "lab": "lab-06-few-shot-and-criteria"
+    "lab": "lab-06-few-shot-and-criteria",
+    "code_samples": [
+      {
+        "caption": "Vague hedges vs. explicit categorical criteria (what to REPORT vs. SKIP)",
+        "language": "markdown",
+        "code": "## Vague - does NOT improve precision\nReview the code. Be conservative and only report high-confidence issues.\n\n## Explicit categorical criteria - does\nREPORT an issue ONLY when it matches one of:\n- a comment's claimed behavior contradicts the actual code behavior\n- unsanitized user input reaches a SQL query\n\nSKIP (out of scope):\n- naming/formatting nits that do not change behavior\n- style the linter already enforces\n"
+      },
+      {
+        "caption": "Severity rubric: one concrete code example per level for consistent classification",
+        "language": "markdown",
+        "code": "- critical: data loss / security breach / crash on a common path\n  example: cursor.execute(f\"SELECT * FROM users WHERE id = {user_id}\")\n- high: wrong result or unhandled error on realistic input\n  example: return sum(xs) / len(xs)   # ZeroDivisionError on []\n- low: no behavioral impact (redundant branch, clarifying rename)\n  example: if is_ready == True:        # `if is_ready:` reads better\n"
+      }
+    ]
   },
   {
     "task_statement": "4.2",
@@ -177,7 +329,14 @@
     "concept": "Few-shot prompting supplies concrete input/output examples in the prompt and is the most effective technique for achieving consistently formatted, actionable output when detailed instructions alone produce inconsistent results. For ambiguous scenarios, create 2-4 targeted examples that show the reasoning for why one action was chosen over plausible alternatives (e.g., which tool to select for an underspecified request). Examples that demonstrate the specific desired output format (location, issue, severity, suggested fix) enforce structural consistency, and examples that distinguish acceptable patterns from genuine issues reduce false positives. Crucially, well-constructed examples let the model generalize its judgment to novel patterns rather than matching only the pre-specified cases. In extraction tasks, few-shot examples reduce hallucination and empty/null extraction of required fields by demonstrating correct handling of informal measurements and varied document structures (inline citations vs bibliographies, dedicated methodology sections vs details embedded in prose).",
     "why_it_matters": "The exam repeatedly presents situations where prose instructions have already failed to produce consistent formatting, correct ambiguous-case handling, or faithful extraction. Recognizing that a small set of targeted, reasoning-bearing examples outperforms longer instructions, more determinism tweaks, or task decomposition is the decision the questions test, along with knowing that examples must cover the varied cases and demonstrate the full desired format.",
     "common_trap": "Responding to inconsistency by escalating instruction detail, lowering temperature, or dumping dozens of examples, instead of adding 2-4 targeted examples that show reasoning. Other traps: providing examples of defects only (no acceptable-pattern contrast, so false positives persist), drawing all examples from the single structure the model already handles, or teaching the model to null out or fabricate fields rather than extract informal information faithfully.",
-    "lab": "lab-06-few-shot-and-criteria"
+    "lab": "lab-06-few-shot-and-criteria",
+    "code_samples": [
+      {
+        "caption": "2-4 few-shot examples showing the output format AND why one choice beats a plausible alternative",
+        "language": "text",
+        "code": "Study these examples, then match the format and reasoning exactly.\n\nInput:  if is_ready == True:\nOutput: {location: auth.py:20, issue: redundant comparison,\n         severity: low, suggested_fix: use `if is_ready:`}\nWhy: no behavior change -> low, not a high-severity bug.\n\nInput:  cursor.execute(f\"SELECT * FROM users WHERE id = {uid}\")\nOutput: {location: db.py:8, issue: SQL injection via unsanitized input,\n         severity: critical, suggested_fix: use a parameterized query}\nWhy: user input reaches the query -> critical, not medium.\n"
+      }
+    ]
   },
   {
     "task_statement": "4.3",
@@ -186,7 +345,19 @@
     "concept": "Tool use with JSON schemas is the most reliable way to obtain guaranteed schema-compliant structured output: Claude emits a `tool_use` block whose `input` conforms to the tool's declared schema, so the result is always valid, well-shaped JSON and you read structured data directly from that block instead of parsing free text. The `tool_choice` parameter controls the guarantee: `\"auto\"` lets the model return text OR call a tool; `\"any\"` forces some tool call while letting the model pick which schema (ideal when several extraction tools exist and the document type is unknown); and forced selection `{\"type\":\"tool\",\"name\":\"extract_metadata\"}` requires a specific named tool, which is how you ensure a particular extraction runs (e.g., before enrichment steps). Critically, strict schemas eliminate SYNTAX errors but not SEMANTIC errors: a schema cannot enforce that line items sum to the stated total or that values land in the right field, so semantic validation remains a separate concern. Schema design prevents downstream problems: mark fields optional/nullable when a source may not contain the information (so the model returns `null` rather than fabricating a value to satisfy a required field), use enums with an `\"other\"` value plus a detail string for extensible categories (and `\"unclear\"` for ambiguity), and pair the strict schema with prompt-level normalization rules to handle inconsistent source formatting (dates to ISO 8601, stripping currency symbols).",
     "why_it_matters": "The exam tests whether you reach for tool-use schemas instead of prompt-and-parse hacks, and whether you can match the right `tool_choice` mode to the requirement (guarantee output at all vs. guarantee a specific tool). It also probes the syntax-vs-semantic distinction, since believing a strict schema catches arithmetic or field-placement mistakes leads to shipping wrong-but-well-formed data. Correct schema design (nullable fields, enum+other) is the proportionate fix for fabrication and taxonomy drift.",
     "common_trap": "Assuming a strict JSON schema also validates meaning, so line items that fail to sum or values in the wrong field slip through unnoticed. Related traps: making fields required and then blaming the model for fabricating values it was forced to supply; forcing one specific tool when the document type is unknown (should use `\"any\"`); and treating tool array order as call order instead of using forced selection to enforce sequence.",
-    "lab": "lab-04-structured-output"
+    "lab": "lab-04-structured-output",
+    "code_samples": [
+      {
+        "caption": "Extraction tool: input_schema IS the output schema (nullable required fields + enum 'other' escape hatch)",
+        "language": "json",
+        "code": "{\n  \"name\": \"extract_invoice\",\n  \"description\": \"Extract billing data. Return null for a field whose info is absent; never guess.\",\n  \"input_schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"vendor_name\": {\"type\": \"string\"},\n      \"document_type\": {\"type\": \"string\", \"enum\": [\"invoice\", \"receipt\", \"other\"]},\n      \"document_type_detail\": {\"type\": [\"string\", \"null\"]},\n      \"due_date\": {\"type\": [\"string\", \"null\"]}\n    },\n    \"required\": [\"vendor_name\", \"document_type\", \"document_type_detail\", \"due_date\"]\n  }\n}"
+      },
+      {
+        "caption": "Force the named tool so the reply is guaranteed schema-compliant tool_use (no free text)",
+        "language": "python",
+        "code": "resp = client.messages.create(\n    model=\"claude-sonnet-4-5\",\n    max_tokens=1024,\n    tools=[EXTRACTION_TOOL],\n    # forced selection -> must call this exact tool; use \"any\" if the\n    # document type is unknown and several schemas exist.\n    tool_choice={\"type\": \"tool\", \"name\": \"extract_invoice\"},\n    messages=[{\"role\": \"user\", \"content\": f\"<document>\\n{doc}\\n</document>\"}],\n)\ndata = next(b.input for b in resp.content if b.type == \"tool_use\")"
+      }
+    ]
   },
   {
     "task_statement": "4.4",
@@ -195,7 +366,19 @@
     "concept": "Robust extraction pairs validation with targeted correction. Retry-with-error-feedback resends the original document, the failed extraction, and the specific validation errors so the model can self-correct; this works for format and structural/output errors but is futile when the required information is absent from the source (the fix there is to supply the missing data). Distinguish schema syntax errors (malformed or non-conformant output), which tool use with a defined schema eliminates, from semantic validation errors (values that don't sum, wrong field placement, contradictory sources), which remain your responsibility. Design self-correction into the output shape: extract a `calculated_total` alongside `stated_total` to flag discrepancies, add a `conflict_detected` boolean for inconsistent source data, and record a `detected_pattern` on each finding so dismissed false positives can be aggregated and analyzed by triggering construct.",
     "why_it_matters": "The exam tests whether you can route each failure to a proportionate fix rather than applying a blanket retry policy. Blind identical resubmission wastes calls and risks hallucination on missing-data cases; appending specific errors converts many structural failures into cheap successes. Knowing which errors tool use already prevents (syntax) versus which need explicit checks (semantic) keeps validation effort where it actually pays off.",
     "common_trap": "Believing more retries can fix any failure. Retries cannot supply information that is absent from the source, and identical resubmissions carry no corrective signal at all. A related trap is assuming a strict tool-use schema guarantees correctness; it guarantees only well-formed structure, not that the values sum, sit in the right field, or agree across sources.",
-    "lab": "lab-10-validation-retry"
+    "lab": "lab-10-validation-retry",
+    "code_samples": [
+      {
+        "caption": "Retry-with-feedback loop: append the SPECIFIC validation errors; stop when a retry cannot help",
+        "language": "python",
+        "code": "feedback = None\nfor attempt in range(max_retries + 1):\n    raw = call_extraction_tool(client, document, feedback)  # tool_use kills syntax errors\n    try:\n        return InvoiceExtraction.model_validate(raw)        # pydantic catches semantics\n    except ValidationError as exc:\n        if not should_retry(document, exc):   # info absent from source -> retry is futile\n            raise\n        feedback = \"\\n\".join(f\"- {'.'.join(map(str, e['loc']))}: {e['msg']}\"\n                             for e in exc.errors())"
+      },
+      {
+        "caption": "Semantic check tool use can't catch: calculated_total vs stated_total, with a detected_pattern label",
+        "language": "python",
+        "code": "@model_validator(mode=\"after\")\ndef reconcile(self):\n    calc = round(sum(i.amount for i in self.line_items), 2)\n    if abs(calc - self.stated_total) > 0.01:\n        raise ValueError(\n            f\"stated_total ({self.stated_total}) != sum of line items ({calc}) \"\n            \"[detected_pattern=stated_total_mismatch]\")\n    return self"
+      }
+    ]
   },
   {
     "task_statement": "4.5",
@@ -204,7 +387,19 @@
     "concept": "The Message Batches API trades latency for cost: it delivers 50% cost savings and processes requests within a window of up to 24 hours, but offers NO guaranteed latency SLA. That makes it the right tool for non-blocking, latency-tolerant workloads (overnight technical debt reports, weekly audits, nightly test generation) and the wrong tool for blocking workflows where someone waits on the result (pre-merge checks, real-time interactions), which belong on the synchronous API. Each request carries a unique `custom_id` that the API echoes on the matching result, so responses correlate to requests regardless of completion order. A batch request is processed non-interactively and therefore cannot do multi-turn tool calling within a single request (it cannot pause to run a tool and feed the result back mid-request). Sound strategy also includes: refining the prompt on a small sample before processing large volumes to maximize first-pass success and reduce resubmission cost; on failure, resubmitting only the failed items (by `custom_id`) with fixes such as chunking oversized documents; and computing submission cadence from the SLA, where total time = wait-until-next-batch + up to 24h processing (e.g., a 6-hour submission interval keeps work inside a 30-hour SLA).",
     "why_it_matters": "The exam repeatedly forces a choice between cost savings and latency guarantees. Choosing batch for a blocking workflow, or 'poll-and-hope' / timeout-fallback hybrids, either stalls people who are waiting or adds needless complexity while forfeiting the savings. Knowing that batching has no latency SLA, that `custom_id` handles correlation, and that batches cannot run interactive tool loops lets you match each workload to the correct API and design failure handling and submission cadence that actually meet the SLA.",
     "common_trap": "Assuming batches 'usually finish fast' is good enough for a blocking check, or believing batch results cannot be reliably matched to requests (they can, via `custom_id`). Related traps: resubmitting the whole batch instead of just the failed `custom_id`s, and trying to run multi-turn tool-calling agents inside a single batch request.",
-    "lab": "lab-17-batch-processing"
+    "lab": "lab-17-batch-processing",
+    "code_samples": [
+      {
+        "caption": "Message Batches: each request carries a unique custom_id to correlate results (order not guaranteed)",
+        "language": "python",
+        "code": "requests = [\n    {\"custom_id\": doc[\"id\"],   # correlates the response back to this document\n     \"params\": {\"model\": \"claude-sonnet-4-5\", \"max_tokens\": 1024,\n                \"messages\": [{\"role\": \"user\", \"content\": doc[\"text\"]}]}}\n    for doc in documents\n]\nbatch = client.messages.batches.create(requests=requests)\n\nfailed = []\nfor item in client.messages.batches.results(batch.id):\n    if item.result[\"type\"] != \"succeeded\":\n        failed.append(item.custom_id)   # resubmit ONLY these, by id"
+      },
+      {
+        "caption": "Submission frequency to meet an SLA: interval + 24h window <= SLA (30h SLA -> submit every 6h)",
+        "language": "python",
+        "code": "def submission_interval(sla_hours, batch_window_hours=24):\n    interval = sla_hours - batch_window_hours\n    if interval <= 0:\n        raise ValueError(\"SLA must exceed the 24h batch window\")\n    return interval   # e.g. sla=30 -> submit at least every 6h"
+      }
+    ]
   },
   {
     "task_statement": "4.6",
@@ -213,7 +408,19 @@
     "concept": "Effective review of AI-generated code separates the reviewer from the generator and separates local from cross-file analysis. Self-review is weak because a model that just generated code retains its reasoning context and is biased toward defending its own decisions in the same session; an independent instance with no prior context catches subtle issues more effectively than either self-review instructions or extended thinking. For large multi-file reviews, a single pass over everything dilutes attention, producing inconsistent depth, missed bugs, and contradictory findings (approving a pattern in one file while flagging identical code in another). The fix is multi-pass review: focused per-file local passes for within-file issues, plus a separate cross-file integration pass that examines data flow and contracts between files. A verification pass in which the model self-reports confidence alongside each finding enables calibrated routing, sending uncertain or high-severity findings to humans while fast-tracking confident low-risk ones.",
     "why_it_matters": "Review is the last line of defense against defects in generated code, and the naive designs fail in specific, testable ways. Trusting self-review lets generation bias hide real bugs; loading a whole PR into one pass dilutes attention; upgrading to a bigger context window fixes fit but not attention quality; and requiring consensus across multiple full-PR runs suppresses subtle bugs that only surface intermittently. Matching each mechanism (independence, per-file passes, integration pass, confidence-tagged verification) to the failure it addresses is exactly what the exam probes.",
     "common_trap": "Believing a larger context window or a stronger self-review instruction solves multi-file review quality, or that running three full-PR passes and keeping only 2-of-3 agreements improves reliability. Larger context fixes capacity, not attention dilution; self-review keeps the generator's bias; and consensus voting discards real findings caught in a single run. The correct answer is per-file passes plus an integration pass, run by an independent instance.",
-    "lab": "lab-16-decomposition-and-review"
+    "lab": "lab-16-decomposition-and-review",
+    "code_samples": [
+      {
+        "caption": "Multi-pass plan: one LOCAL pass per file + ONE cross-file integration pass (N files -> N+1 passes)",
+        "language": "python",
+        "code": "def plan_review_passes(files):\n    # per-file passes keep depth consistent (no attention dilution)\n    passes = [{\"pass\": i, \"kind\": \"local\", \"file\": f}\n              for i, f in enumerate(files, start=1)]\n    # a single integration pass catches what a per-file pass structurally can't\n    passes.append({\"pass\": len(files) + 1, \"kind\": \"integration\",\n                   \"files\": files,\n                   \"focus\": \"cross-file data flow and contradictory findings\"})\n    return passes"
+      },
+      {
+        "caption": "Independent review instance (no generation context) beats self-review or extended thinking",
+        "language": "text",
+        "code": "Spawn a SECOND Claude instance with NO generation history to review\nthe code. The generator retains the reasoning it used to write the code\nand is less likely to question its own decisions in the same session.\nHave each finding self-report a calibrated confidence to route review:\n  confidence >= threshold -> auto-apply;  below -> human review.\n"
+      }
+    ]
   },
   {
     "task_statement": "5.1",
@@ -222,7 +429,19 @@
     "concept": "Long agent interactions face three distinct context pressures. First, progressive summarization condenses exact numerical values, percentages, dates, and customer-stated expectations into vague approximations; the countermeasure is to extract transactional facts (amounts, dates, order numbers, statuses) into a persistent \"case facts\" block, and for multi-issue sessions a separate structured issue-data layer, that is included verbatim in each prompt outside the summarized history. Second, the \"lost in the middle\" effect means models attend to the beginning and end of long inputs reliably but omit middle content; mitigate it by placing a key-findings summary at the beginning and organizing detailed results with explicit section headers. Third, tool results accumulate and consume tokens disproportionately to their relevance (40+ fields when only 5 matter), so trim verbose outputs to only the relevant fields before they enter history, and have upstream agents return structured data (key facts, citations, relevance scores, and metadata such as dates and source locations) instead of verbose content and reasoning chains when downstream agents have limited budgets. Because the API is stateless per request, complete conversation history must still be passed each turn; these techniques control its size without discarding it.",
     "why_it_matters": "In support and multi-agent workflows, silently dropping a dollar amount, a date, or a middle finding produces confidently wrong actions: refunding the wrong amount, missing an escalation window, or synthesizing a report that omits whole topics. Structural fixes (persistent facts, front-loaded summaries with headers, trimmed and structured outputs) preserve fidelity where a bigger context window or longer prose summaries only delay the failure.",
     "common_trap": "Treating a larger context window or more detailed prose summaries as the solution. Both still let exact facts drift and leave middle content under-attended. The reliable fixes are structural: persist exact facts outside summarization, anchor findings with position and headers, and trim/structure accumulating tool and agent outputs.",
-    "lab": "lab-14-context-management"
+    "lab": "lab-14-context-management",
+    "code_samples": [
+      {
+        "caption": "Persistent 'case facts' block: exact transactional values are extracted once and injected verbatim into every prompt, outside the summarized history that would blur them.",
+        "language": "python",
+        "code": "# Facts that summarization must never approximate.\ncase_facts = {\n    \"order_number\": \"A-100294\",\n    \"amount\": 149.99,\n    \"order_date\": \"2026-06-30\",\n    \"status\": \"delivered\",\n    \"promised_refund_by\": \"2026-07-14\",\n}\n\ndef build_prompt(summary: str, user_msg: str) -> str:\n    facts = \"\\n\".join(f\"{k}: {v}\" for k, v in case_facts.items())\n    # Verbatim facts + summarized history + current turn.\n    return f\"CASE FACTS (authoritative):\\n{facts}\\n\\nHISTORY:\\n{summary}\\n\\nUSER: {user_msg}\""
+      },
+      {
+        "caption": "Trim a verbose tool result (40+ fields) to only the fields that matter before it enters history, so token cost tracks relevance.",
+        "language": "python",
+        "code": "KEEP = (\"order_number\", \"status\", \"total\", \"delivered_at\")\n\ndef trim(tool_result: dict) -> dict:\n    # Drop tracking blobs, internal ids, carrier metadata, etc.\n    return {k: tool_result[k] for k in KEEP if k in tool_result}\n\nhistory.append({\"role\": \"tool\", \"content\": trim(raw_order_lookup)})"
+      }
+    ]
   },
   {
     "task_statement": "5.2",
@@ -231,7 +450,14 @@
     "concept": "Effective escalation is driven by explicit, observable criteria rather than emotional or self-assessed signals. There are three legitimate triggers: an explicit customer request for a human (escalate immediately, without first investigating), a policy exception, gap, or silence on the customer's specific request (e.g., competitor price matching when policy only covers own-site adjustments), and an inability to make meaningful progress (stop looping and hand off). When the issue is straightforward and within the agent's capability, the agent should acknowledge any frustration while offering to resolve, escalating only if the customer reiterates a preference for a human. When a tool returns multiple customer matches, the agent asks for an additional identifier to disambiguate rather than selecting a record heuristically. The reliable way to teach these boundaries is to add explicit escalation criteria plus few-shot examples of escalate-versus-resolve cases to the system prompt.",
     "why_it_matters": "Miscalibrated escalation is what keeps first-contact resolution below target: agents escalate easy cases and attempt hard ones. Grounding the decision in explicit criteria and few-shot examples corrects the boundaries proportionately, before reaching for a trained classifier or other heavy infrastructure, and it protects customers by never acting on the wrong account or inventing policy the agent has no authority to create.",
     "common_trap": "Routing on sentiment (frustration does not track complexity) or on a self-reported confidence threshold (LLM confidence is poorly calibrated, so the agent is confidently wrong on the hard cases). Both are unreliable proxies for actual complexity. Related traps: continuing to investigate after a customer explicitly asks for a human, treating policy silence as an automatic denial or stretching a rule by analogy, and picking one of several matching customer records by a heuristic instead of asking for another identifier.",
-    "lab": "lab-12-escalation"
+    "lab": "lab-12-escalation",
+    "code_samples": [
+      {
+        "caption": "Escalation decision driven by explicit structural triggers (human request, policy gap, no progress) and never by sentiment or self-reported confidence.",
+        "language": "python",
+        "code": "def decide(case: dict) -> str:\n    # Honor an explicit human request immediately, without investigating.\n    if case[\"asked_for_human\"]:\n        return \"ESCALATE\"\n    # Policy is silent / ambiguous / has a gap on this request.\n    if case[\"policy_state\"] in {\"gap\", \"silent\", \"ambiguous\"}:\n        return \"ESCALATE\"\n    # Cannot make meaningful progress (e.g. backend down) -> hand off.\n    if not case[\"can_make_progress\"]:\n        return \"ESCALATE\"\n    # Multiple records match -> get another identifier, do not guess.\n    if case[\"match_count\"] > 1:\n        return \"ASK_CLARIFY\"\n    # Straightforward and within capability. Sentiment is irrelevant.\n    return \"RESOLVE\""
+      }
+    ]
   },
   {
     "task_statement": "5.3",
@@ -240,7 +466,19 @@
     "concept": "When a subagent hits a failure, how it reports that failure determines whether the coordinator can recover. The strong pattern is structured error context: failure type, the attempted query, any partial results, and potential alternative approaches. This lets the coordinator make an intelligent choice, retry with a modified query, reroute to an alternative source, or proceed with partial results and annotate the gap. Reporting must distinguish access failures (e.g., timeouts that may warrant a retry decision) from valid empty results (successful queries with no matches), because the appropriate response differs. Subagents implement local recovery for transient failures (such as a quick retry on a connection reset) and only propagate errors they cannot resolve, always including what was attempted and any partial results. Finally, the synthesis agent structures output with coverage annotations that separate well-supported findings from topic areas left incomplete because a source was unavailable.",
     "why_it_matters": "The exam tests whether you can keep a multi-agent workflow both honest and resilient under partial failure. Generic statuses like \"search unavailable\" hide the context the coordinator needs, so recovery collapses into blind retries or nothing. The two mirror-image anti-patterns are equally damaging: silently suppressing errors (returning empty results as success) ships incomplete work that looks complete, while terminating the whole workflow on a single failure throws away every other subagent's results. Structured error context plus coverage annotations is what lets the system degrade gracefully and report its own limits.",
     "common_trap": "Collapsing a rich failure into a single generic status string, or conflating a valid empty result with an access failure so the coordinator retries a query that already succeeded with no matches. The paired traps are marking a failure as an empty success (suppression) and tearing down the entire run on one subagent's failure (over-termination); the right answer is almost always to return structured context and let the coordinator recover proportionately.",
-    "lab": "lab-20-error-propagation-provenance"
+    "lab": "lab-20-error-propagation-provenance",
+    "code_samples": [
+      {
+        "caption": "Structured error context a subagent propagates so the coordinator can retry, reroute, or proceed with partial results.",
+        "language": "json",
+        "code": "{\n  \"failure_type\": \"access_failure\",\n  \"attempted\": \"search(index='filings', q='Q2 2026 revenue')\",\n  \"partial_results\": [\n    {\"claim\": \"Q1 revenue was $4.2B\", \"source\": \"10-Q\"}\n  ],\n  \"alternatives\": [\"retry after 5s\", \"query 'earnings-cache' index\"]\n}"
+      },
+      {
+        "caption": "An access failure (retry-worthy) is not the same as a valid empty result. Conflating them is the 5.3 trap; both are reported explicitly, never as a bare empty list.",
+        "language": "json",
+        "code": "{\n  \"failure_type\": \"empty_success\",\n  \"attempted\": \"search(index='filings', q='Q2 2026 revenue')\",\n  \"partial_results\": [],\n  \"note\": \"Query completed; no matching filings exist yet. Do NOT retry.\"\n}"
+      }
+    ]
   },
   {
     "task_statement": "5.4",
@@ -258,7 +496,14 @@
     "concept": "A single aggregate accuracy metric (e.g., 97% overall) is a volume-weighted average that can mask systematically poor performance on specific document types or fields, so before automating high-confidence extractions you must validate accuracy broken out by document type and field segment and confirm it is consistently acceptable across every segment. Field-level confidence scores are not inherently calibrated probabilities: a raw 0.90 may correspond to very different true accuracies per field, so you calibrate scores against a labeled validation set to learn the real accuracy of each score band and set evidence-based auto-approval thresholds. Routing then directs extractions with low model confidence or ambiguous/contradictory source documents to human review while auto-approving the well-calibrated high-confidence remainder, concentrating limited reviewer capacity where errors are most likely. After launch, continuous stratified random sampling of high-confidence, auto-approved extractions, with error rates tracked per segment over time, keeps measuring the true error rate and surfaces novel error patterns and drift that an aggregate would dilute away.",
     "why_it_matters": "Turning off human review based on a headline accuracy number is how confidently-wrong extractions reach production undetected: a rare but critical segment (scanned international invoices, handwritten forms, a changed vendor template) can fail almost completely while the aggregate barely moves. Validating by segment, calibrating confidence against labeled data, routing by risk, and sampling continuously lets you reduce review cost without silently degrading accuracy on the segments that matter.",
     "common_trap": "Treating a high aggregate accuracy as proof of uniform performance, and treating a raw model confidence score as if it were already a calibrated probability of correctness. Related traps: using simple random sampling (which starves rare segments) instead of stratified sampling, routing a fixed random slice to review instead of prioritizing low-confidence/ambiguous cases, expecting the model's own confidence to flag confident-but-wrong regressions, and averaging field confidences into one document score that destroys the field-level granularity needed to route review.",
-    "lab": "lab-18-human-review-calibration"
+    "lab": "lab-18-human-review-calibration",
+    "code_samples": [
+      {
+        "caption": "The extraction's scalar confidence is its weakest field; route to a human below threshold or when the source is contradictory, and auto-approve the calibrated remainder.",
+        "language": "python",
+        "code": "def overall_confidence(extraction: dict) -> float:\n    confs = extraction[\"confidences\"]  # e.g. {\"vendor\": 0.99, \"total\": 0.88}\n    return min(confs.values())  # a chain is only as strong as its weakest field\n\ndef route(extraction: dict, threshold: float) -> str:\n    if extraction.get(\"source_contradictory\"):\n        return \"REVIEW\"  # ambiguity overrides a high score\n    return \"REVIEW\" if overall_confidence(extraction) < threshold else \"AUTO_APPROVE\"\n\n# threshold is learned from a labeled validation set, not guessed.\nroute(item, threshold=0.95)"
+      }
+    ]
   },
   {
     "task_statement": "5.6",
@@ -267,6 +512,13 @@
     "concept": "In multi-agent research systems, source attribution is lost when subagent findings are compressed into free-text summaries that do not preserve which source supports which claim. The fix is structured claim-source mappings: each subagent pairs every claim with its source (URL/document name) and a relevant excerpt, and the synthesis agent preserves and merges these mappings so corroborated claims retain all their sources. Conflicting statistics from credible sources are annotated with source attribution and methodological context, not arbitrarily selected, averaged, or dropped; analysis subagents pass both values forward and let the coordinator reconcile before synthesis. Temporal data must carry publication/collection dates in structured outputs so time-separated measurements are interpreted as trends rather than contradictions. Finally, synthesis outputs render each content type appropriately, financial data as tables, news as prose, technical findings as structured lists, and separate well-established findings from contested ones rather than flattening everything into one uniform format.",
     "why_it_matters": "The exam tests whether you can locate and fix provenance and uncertainty failures in the synthesis layer. Recognizing that attribution decays at summarization, that conflicts must be surfaced not resolved arbitrarily, that missing dates create false contradictions, and that content type drives rendering lets you design pipelines whose final reports remain traceable, honest about disagreement, and readable.",
     "common_trap": "Treating summarization as lossless and 'cleaning up' the output by picking one value when credible sources conflict, averaging them into a fabricated number, or dropping the disagreement. A closely related trap is flagging time-separated figures as contradictions because no dates were captured, and forcing tables, prose, and procedures into a single uniform format for the sake of consistency.",
-    "lab": "lab-20-error-propagation-provenance"
+    "lab": "lab-20-error-propagation-provenance",
+    "code_samples": [
+      {
+        "caption": "Claim-source mapping: each claim keeps its sources with excerpts and publication dates, and conflicting statistics are annotated (not averaged or dropped).",
+        "language": "json",
+        "code": "{\n  \"claim\": \"2025 global EV sales\",\n  \"status\": \"contested\",\n  \"sources\": [\n    {\"name\": \"IEA report\", \"value\": \"17.1M units\",\n     \"excerpt\": \"...sales reached 17.1 million...\", \"published\": \"2026-04-10\"},\n    {\"name\": \"BNEF outlook\", \"value\": \"14.9M units\",\n     \"excerpt\": \"...an estimated 14.9 million...\", \"published\": \"2026-03-22\"}\n  ],\n  \"conflict\": \"IEA counts light commercial vehicles; BNEF passenger only\"\n}"
+      }
+    ]
   }
 ]

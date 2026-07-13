@@ -11,7 +11,7 @@
   var THEME_KEY = "ccaf-study-theme";
   var PASS_THRESHOLD = 72; // exam scaled pass ≈ 720/1000; used for the readiness cue
 
-  var DATA = { meta: null, questions: [], flashcards: [], concepts: [] };
+  var DATA = { meta: null, questions: [], flashcards: [], concepts: [], labs: [] };
   var view = document.getElementById("view");
 
   /* ---- tiny helpers ----------------------------------------------------- */
@@ -112,10 +112,10 @@
   }
 
   /* ---- router ----------------------------------------------------------- */
-  var ROUTES = { quiz: renderQuiz, flashcards: renderFlashcards, concepts: renderConcepts, readiness: renderReadiness };
+  var ROUTES = { concepts: renderConcepts, flashcards: renderFlashcards, labs: renderLabs, quiz: renderQuiz, readiness: renderReadiness };
   function currentRoute() {
     var h = (location.hash || "").replace(/^#\/?/, "");
-    return ROUTES[h] ? h : "quiz";
+    return ROUTES[h] ? h : "concepts";
   }
   function router() {
     var name = currentRoute();
@@ -394,6 +394,7 @@
               "<dt>Concept</dt><dd>" + esc(c.concept) + "</dd>" +
               "<dt>Why it matters</dt><dd>" + esc(c.why_it_matters) + "</dd>" +
               "<dt>Common trap</dt><dd>" + esc(c.common_trap) + "</dd>" +
+              (c.code_samples && c.code_samples.length ? "<dt>Code</dt><dd>" + codeSamplesHtml(c.code_samples) + "</dd>" : "") +
               (c.lab ? "<dt>Practice</dt><dd>" + labLink(c.lab) + "</dd>" : "") +
             "</dl></div></details>";
         });
@@ -401,6 +402,49 @@
       });
       list.innerHTML = html || emptyState("📘", "No concept explainers for this domain yet.");
     }
+  }
+
+  /* ======================================================================
+     LABS  (README/SOLUTION HTML is pre-rendered at build time by
+     tools/build_labs.py from our own trusted lab Markdown, with <script>
+     stripped — injected as HTML so the browser needs no Markdown parser.)
+     ==================================================================== */
+  var labView = { slug: null };
+
+  function pad2(n) { return ("0" + n).slice(-2); }
+
+  function renderLabs() {
+    if (labView.slug) { renderLabDetail(); return; }
+    if (!DATA.labs.length) { view.innerHTML = emptyState("🧪", "No labs available."); return; }
+    var rows = DATA.labs.map(function (l) {
+      return '<button class="lab-row" data-slug="' + esc(l.slug) + '">' +
+        '<span class="lab-num">' + pad2(l.number) + "</span>" +
+        '<span class="lab-row__title">' + esc(l.title.replace(/^Lab\s+\d+:\s*/i, "")) + "</span>" +
+        '<span class="lab-row__slug">' + esc(l.slug) + "</span></button>";
+    }).join("");
+    view.innerHTML =
+      '<div class="view-head"><h1>Labs</h1><p>The 25 hands-on labs, browsable here. Open one to read its instructions; reveal the solution when you want to check your work.</p></div>' +
+      '<div class="lab-list">' + rows + "</div>";
+    document.getElementById("view").querySelector(".lab-list").addEventListener("click", function (e) {
+      var btn = e.target.closest(".lab-row");
+      if (btn) { labView.slug = btn.getAttribute("data-slug"); renderLabs(); window.scrollTo(0, 0); }
+    });
+  }
+
+  function renderLabDetail() {
+    var l = DATA.labs.find(function (x) { return x.slug === labView.slug; });
+    if (!l) { labView.slug = null; renderLabs(); return; }
+    view.innerHTML =
+      '<div class="row" style="margin-bottom:1rem"><button class="btn" id="lab-back">← All labs</button>' +
+        '<span class="spacer"></span><span class="pill">lab ' + pad2(l.number) + "</span></div>" +
+      '<div class="view-head"><h1>' + esc(l.title.replace(/^Lab\s+\d+:\s*/i, "")) + "</h1></div>" +
+      '<div class="card"><div class="lab-doc">' + l.readme_html + "</div></div>" +
+      (l.solution_html
+        ? '<details class="card lab-solution"><summary>Show solution</summary><div class="lab-doc">' + l.solution_html + "</div></details>"
+        : "");
+    document.getElementById("lab-back").addEventListener("click", function () {
+      labView.slug = null; renderLabs(); window.scrollTo(0, 0);
+    });
   }
 
   /* ======================================================================
@@ -563,6 +607,13 @@
         '<span>' + pts.length + ' sessions</span><span>dashed line = ~72% pass · now ' + cur + '%</span></div>';
   }
 
+  function codeSamplesHtml(samples) {
+    return '<div class="code-samples">' + samples.map(function (s) {
+      return (s.caption ? '<div class="code-cap">' + esc(s.caption) + "</div>" : "") +
+        '<pre class="code-block"><span class="code-lang">' + esc(s.language) + "</span><code>" + esc(s.code) + "</code></pre>";
+    }).join("") + "</div>";
+  }
+
   function emptyState(glyph, msg) {
     return '<div class="empty"><span class="empty__glyph">' + glyph + "</span>" + esc(msg) + "</div>";
   }
@@ -582,12 +633,12 @@
   /* ---- boot ------------------------------------------------------------- */
   function boot() {
     initTheme();
-    Promise.all(["../data/meta.json", "../data/questions.json", "../data/flashcards.json", "../data/concepts.json"]
+    Promise.all(["../data/meta.json", "../data/questions.json", "../data/flashcards.json", "../data/concepts.json", "../data/labs.json"]
       .map(function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }); }))
       .then(function (res) {
-        DATA.meta = res[0]; DATA.questions = res[1]; DATA.flashcards = res[2]; DATA.concepts = res[3];
+        DATA.meta = res[0]; DATA.questions = res[1]; DATA.flashcards = res[2]; DATA.concepts = res[3]; DATA.labs = res[4];
         window.addEventListener("hashchange", router);
-        if (!location.hash) location.hash = "#/quiz";
+        if (!location.hash) location.hash = "#/concepts";
         router();
       })
       .catch(function (err) {
