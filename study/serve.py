@@ -34,10 +34,12 @@ STUDY_ROOT = Path(__file__).resolve().parent
 
 
 class _Handler(http.server.SimpleHTTPRequestHandler):
-    """Serve the study files with caching DISABLED and quiet logging.
+    """Serve the study files with caching DISABLED.
 
     This is a local, frequently-edited app, so `no-store` avoids the classic
-    "I'm still seeing the old version" problem when CSS/JS/JSON change.
+    "I'm still seeing the old version" problem when CSS/JS/JSON change. Request
+    logging is left at the stdlib default so you can watch requests in the
+    terminal that runs the server.
     """
 
     def end_headers(self) -> None:
@@ -45,9 +47,6 @@ class _Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Pragma", "no-cache")
         self.send_header("Expires", "0")
         super().end_headers()
-
-    def log_message(self, *args) -> None:  # keep the console quiet
-        pass
 
 
 def _find_open_port(preferred: int) -> int:
