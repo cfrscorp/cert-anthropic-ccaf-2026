@@ -33,6 +33,23 @@ __version__ = "1.0.0"
 STUDY_ROOT = Path(__file__).resolve().parent
 
 
+class _Handler(http.server.SimpleHTTPRequestHandler):
+    """Serve the study files with caching DISABLED and quiet logging.
+
+    This is a local, frequently-edited app, so `no-store` avoids the classic
+    "I'm still seeing the old version" problem when CSS/JS/JSON change.
+    """
+
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
+
+    def log_message(self, *args) -> None:  # keep the console quiet
+        pass
+
+
 def _find_open_port(preferred: int) -> int:
     """Return ``preferred`` if free, else an OS-assigned free port."""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -86,11 +103,7 @@ def main(argv: list[str] | None = None) -> int:
     port = _find_open_port(args.port)
     url = f"http://{args.host}:{port}/web/"
 
-    handler = functools.partial(
-        http.server.SimpleHTTPRequestHandler, directory=str(STUDY_ROOT)
-    )
-    # Suppress the default per-request logging noise; keep it quiet and friendly.
-    handler.log_message = lambda *a, **k: None  # type: ignore[assignment]
+    handler = functools.partial(_Handler, directory=str(STUDY_ROOT))
 
     with http.server.ThreadingHTTPServer((args.host, port), handler) as httpd:
         print(f"CCAF study app serving {STUDY_ROOT}")
