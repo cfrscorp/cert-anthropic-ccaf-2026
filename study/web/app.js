@@ -332,8 +332,8 @@
     view.insertAdjacentHTML("beforeend",
       '<button class="flashcard' + (fc.flipped ? " flipped" : "") + '" id="fc-card" aria-label="Flashcard, click to flip">' +
         '<div class="flashcard__inner">' +
-          '<div class="flashcard__face flashcard__face--front"><div class="flashcard__label">' + esc(card.task_statement) + " · " + esc(domainName(card.domain)) + '</div><div class="flashcard__body">' + esc(card.front) + '</div><div class="flashcard__hint">Click to Reveal</div></div>' +
-          '<div class="flashcard__face flashcard__face--back"><div class="flashcard__label">Answer</div><div class="flashcard__body">' + esc(card.back) + '</div><div class="flashcard__hint">Click to Flip Back</div></div>' +
+          '<div class="flashcard__face flashcard__face--front"><div class="flashcard__label">' + esc(card.task_statement) + " · " + esc(domainName(card.domain)) + '</div><div class="flashcard__body">' + esc(card.front) + '</div><div class="flashcard__hint">Reveal Answer</div></div>' +
+          '<div class="flashcard__face flashcard__face--back"><div class="flashcard__label">Answer</div><div class="flashcard__body">' + esc(card.back) + '</div><div class="flashcard__hint">Flip Back</div></div>' +
         "</div></button>" +
       '<div class="row" style="margin-top:1rem"><button class="btn" id="fc-prev">← Prev</button>' +
         '<span class="spacer"></span><span class="pill">' + (fc.idx + 1) + " / " + fc.pool.length + '</span><span class="spacer"></span>' +
@@ -607,10 +607,48 @@
         '<span>' + pts.length + ' sessions</span><span>dashed line = ~72% pass · now ' + cur + '%</span></div>';
   }
 
+  // Minimal, dependency-free syntax highlighter (keeps the app offline). Tokenizes
+  // strings, comments, numbers, CLI flags, keywords and literals; escapes everything
+  // else. Returns safe HTML with <span class="tok-*"> wrappers.
+  var KEYWORDS = {
+    python: ["def", "return", "if", "elif", "else", "for", "while", "in", "is", "not", "and", "or",
+      "import", "from", "as", "class", "with", "try", "except", "finally", "raise", "lambda", "pass",
+      "break", "continue", "yield", "assert", "async", "await", "del", "global", "nonlocal"],
+    bash: ["if", "then", "else", "elif", "fi", "for", "in", "do", "done", "while", "case", "esac",
+      "function", "export", "local", "return", "echo", "cd", "source"],
+    json: [],
+    yaml: [],
+  };
+  var _LIT = /^(true|false|null|None|True|False|nil|yes|no)$/;
+  var _TOK = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)|(#[^\n]*)|(--?[A-Za-z][\w-]*)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_][A-Za-z0-9_]*)/g;
+
+  function highlightCode(code, lang) {
+    if (!lang || lang === "text" || lang === "markdown") return esc(code);
+    var kw = KEYWORDS[lang] || [];
+    var allowHash = lang === "python" || lang === "yaml" || lang === "bash";
+    var out = "", last = 0, m;
+    _TOK.lastIndex = 0;
+    while ((m = _TOK.exec(code)) !== null) {
+      out += esc(code.slice(last, m.index));
+      var t = m[0];
+      if (m[1]) out += '<span class="tok-str">' + esc(t) + "</span>";
+      else if (m[2]) out += allowHash ? '<span class="tok-com">' + esc(t) + "</span>" : esc(t);
+      else if (m[3]) out += lang === "bash" ? '<span class="tok-attr">' + esc(t) + "</span>" : esc(t);
+      else if (m[4]) out += '<span class="tok-num">' + esc(t) + "</span>";
+      else if (m[5]) {
+        if (_LIT.test(t)) out += '<span class="tok-lit">' + esc(t) + "</span>";
+        else if (kw.indexOf(t) >= 0) out += '<span class="tok-kw">' + esc(t) + "</span>";
+        else out += esc(t);
+      }
+      last = _TOK.lastIndex;
+    }
+    return out + esc(code.slice(last));
+  }
+
   function codeSamplesHtml(samples) {
     return '<div class="code-samples">' + samples.map(function (s) {
       return (s.caption ? '<div class="code-cap">' + esc(s.caption) + "</div>" : "") +
-        '<pre class="code-block"><span class="code-lang">' + esc(s.language) + "</span><code>" + esc(s.code) + "</code></pre>";
+        '<pre class="code-block"><span class="code-lang">' + esc(s.language) + '</span><code>' + highlightCode(s.code, s.language) + "</code></pre>";
     }).join("") + "</div>";
   }
 

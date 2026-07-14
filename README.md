@@ -1,15 +1,30 @@
 # Claude Certified Architect – Foundations (CCAF) Exam Prep
 
+![The CCAF study app — the Concepts view with a syntax-highlighted code sample](docs/study-app.png)
+
 Study materials and a hands-on lab program for the **Claude Certified Architect –
 Foundations (CCAF)** certification. The exam validates practical judgment about
 building production applications with **Claude Code, the Claude Agent SDK, the
 Claude API, and the Model Context Protocol (MCP)**.
 
-This repo pairs the official exam guide with a buildable, testable lab curriculum
-so you can gain hands-on experience with *every* feature, property, concept, and
-topic the exam covers — not just read about them.
+This repo pairs the official exam guide with two ways to prepare: a buildable,
+testable **lab curriculum** and a polished, fully offline **study app** (practice
+quiz, flashcards, concept explainers, browsable labs, and a readiness dashboard) — so
+you gain hands-on experience with *every* feature, concept, and topic the exam covers,
+not just read about them.
 
-## What's here
+## By the Numbers
+
+| Practice Questions | Flashcards | Concept Explainers | Hands-On Labs |
+|:--:|:--:|:--:|:--:|
+| **240** | **90** | **30** | **25** |
+
+Covering all **5 exam domains** and **30 task statements**, with **40** syntax-highlighted
+code samples across the concept explainers — and every question and concept links to the
+lab that drills it. The whole study app runs locally and offline, with zero runtime
+dependencies.
+
+## Study Materials
 
 | Path | What it is |
 |------|------------|
@@ -20,7 +35,7 @@ topic the exam covers — not just read about them.
 | [`study/`](study/) | A local, offline study app — practice quiz, flashcards, concept explainers (with code samples), browsable labs, and a readiness dashboard. Run: `uv run study/serve.py`. See [`study/README.md`](study/README.md). |
 | `.claude/` | Project Claude Code config (enables the `pyright-lsp` and `agent-sdk-dev` plugins). |
 
-## The lab program at a glance
+## Labs At A Glance
 
 - **25 labs** across 5 dependency tiers (Foundations → Capstones), ordered so
   prerequisites come first, then by difficulty (1–10). ~48 hours of hands-on effort.
@@ -41,12 +56,17 @@ topic the exam covers — not just read about them.
 - [Claude Code](https://docs.claude.com/claude-code) — for the configuration-oriented labs
 - Optional: an `ANTHROPIC_API_KEY` to exercise the live end-to-end and `-m llm` paths
 
-## Quick start
+## Quick Start
 
 ```bash
 git clone https://github.com/craigforr/cert-anthropic-ccaf-2026
-cd cert-anthropic-ccaf-2026/labs
+cd cert-anthropic-ccaf-2026
 
+# The study app (quiz, flashcards, concepts, labs, readiness):
+uv run study/serve.py                     # opens http://localhost:8000/web/
+
+# The labs:
+cd labs
 uv run pytest lab-03-agentic-loop        # test YOUR work on one lab (its starter/)
 uv run pytest                            # test your work across all labs
 LAB_TARGET=solution uv run pytest        # run the reference solutions (all green)
@@ -57,7 +77,7 @@ Suggested workflow per lab: read its `README.md` (note prerequisites) → fill i
 `starter/` until `uv run pytest lab-NN-...` passes → compare against `SOLUTION.md`
 and `solution/` for the *why*, not just the *what*.
 
-## Study path
+## Study Path
 
 Work the labs in the order given in [`labs/README.md`](labs/README.md) (dependency
 tier, then difficulty). Tier 0–1 build the core primitives (agentic loop, tool use,

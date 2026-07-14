@@ -22,7 +22,6 @@ import argparse
 import contextlib
 import functools
 import http.server
-import socket
 import sys
 import threading
 import webbrowser
@@ -49,19 +48,6 @@ class _Handler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
 
-def _find_open_port(preferred: int) -> int:
-    """Return ``preferred`` if free, else an OS-assigned free port."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        try:
-            sock.bind(("127.0.0.1", preferred))
-            return preferred
-        except OSError:
-            pass
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return sock.getsockname()[1]
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="serve.py",
@@ -80,8 +66,10 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
-        "--port", type=int, default=8000,
-        help="Preferred port (default: 8000; falls back to a free port if taken).",
+        "--port", type=int, default=None,
+        help="Port to bind. Default 8000; if you don't pass --port and 8000 is "
+             "unavailable, an open port is chosen automatically. An explicit "
+             "--port is honored exactly (errors out if it can't be bound).",
     )
     parser.add_argument(
         "--host", default="127.0.0.1",
@@ -97,14 +85,40 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _serve(host: str, port: int, handler) -> http.server.ThreadingHTTPServer:
+    # ThreadingHTTPServer sets allow_reuse_address=True, so it binds cleanly even
+    # when the port is briefly in TIME_WAIT from a previous run. We bind the real
+    # server directly (no throwaway probe socket, which would be more pessimistic).
+    return http.server.ThreadingHTTPServer((host, port), handler)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    port = _find_open_port(args.port)
-    url = f"http://{args.host}:{port}/web/"
-
     handler = functools.partial(_Handler, directory=str(STUDY_ROOT))
+    explicit = args.port is not None
+    preferred = args.port if explicit else 8000
 
-    with http.server.ThreadingHTTPServer((args.host, port), handler) as httpd:
+    try:
+        httpd = _serve(args.host, preferred, handler)
+    except OSError as exc:
+        if explicit:
+            print(f"ERROR: could not bind {args.host}:{preferred} — {exc}", file=sys.stderr)
+            print("The port may be in use, or on Windows reserved by an OS excluded "
+                  "range (Hyper-V/WSL). Try another port (e.g. --port 8080).", file=sys.stderr)
+            print("  Windows, list reserved ranges: netsh int ipv4 show excludedportrange tcp",
+                  file=sys.stderr)
+            return 1
+        # No --port given: 8000 wasn't available, so let the OS pick an open port.
+        try:
+            httpd = _serve(args.host, 0, handler)
+        except OSError as exc2:
+            print(f"ERROR: could not start a server on {args.host} — {exc2}", file=sys.stderr)
+            return 1
+        print(f"Note: port {preferred} was unavailable ({exc}); using an open port instead.")
+
+    port = httpd.server_address[1]
+    url = f"http://{args.host}:{port}/web/"
+    with httpd:
         print(f"CCAF study app serving {STUDY_ROOT}")
         print(f"  → {url}")
         print("Press Ctrl+C to stop.")

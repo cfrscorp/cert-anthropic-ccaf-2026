@@ -37,6 +37,10 @@
   --correct-bd: #0ca30c;
   --wrong-bg: rgba(192,71,58,.12);
   --wrong-bd: #c0473a;
+
+  /* Syntax highlighting (on the code-block warm inset) */
+  --syn-kw: #9b2d6b;  --syn-str: #0a7a3f;  --syn-com: #8c877b;
+  --syn-num: #1c6fb0; --syn-lit: #b0512f;  --syn-attr: #7a5b00;
 }
 
 [data-theme="dark"] {
@@ -64,6 +68,10 @@
   --correct-bd: #0ca30c;
   --wrong-bg: rgba(224,106,92,.20);
   --wrong-bd: #e06a5c;
+
+  /* Syntax highlighting (on the dark code-block inset) */
+  --syn-kw: #e493bd;  --syn-str: #74d39a;  --syn-com: #9a9284;
+  --syn-num: #79b8f2; --syn-lit: #e79a7d;  --syn-attr: #d9b25a;
 }
 
 * { box-sizing: border-box; }
@@ -113,7 +121,9 @@ a:hover { text-decoration: underline; }
   width: 26px; height: 26px; border-radius: 8px; flex: none;
   background: linear-gradient(135deg, var(--accent-bright), var(--accent));
   box-shadow: inset 0 0 0 1px var(--ring);
+  display: grid; place-items: center;
 }
+.brand__mark svg { width: 72%; height: 72%; display: block; }
 .brand__text { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
 .brand__text strong { font-size: .98rem; }
 .brand__sub { font-size: .72rem; color: var(--ink-muted); white-space: nowrap;
@@ -172,12 +182,14 @@ a:hover { text-decoration: underline; }
 
 /* ---- controls ------------------------------------------------------------ */
 label.field { display: flex; flex-direction: column; gap: .25rem; font-size: .78rem;
-  color: var(--ink-muted); font-weight: 600; }
+  color: var(--ink-muted); font-weight: 600; min-width: 0; }
 select, .btn {
   font: inherit; font-size: .9rem; border-radius: 10px;
   border: 1px solid var(--hairline); background: var(--surface-1);
   color: var(--ink-1); padding: .5rem .7rem; cursor: pointer;
 }
+/* Selects never exceed their container (long task-statement labels) */
+select { max-width: 100%; min-width: 0; }
 select:focus-visible, .btn:focus-visible, .option:focus-visible, .tab:focus-visible,
 .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn { font-weight: 600; transition: background .15s, border-color .15s, transform .05s; }
@@ -242,12 +254,13 @@ select:focus-visible, .btn:focus-visible, .option:focus-visible, .tab:focus-visi
   margin-top: 1.1rem;
 }
 .flashcard__inner {
-  position: relative; width: 100%; min-height: 260px;
+  position: relative; width: 100%; min-height: 260px; display: grid;
   transition: transform .5s cubic-bezier(.4,.2,.2,1); transform-style: preserve-3d;
 }
 .flashcard.flipped .flashcard__inner { transform: rotateY(180deg); }
 .flashcard__face {
-  position: absolute; inset: 0; backface-visibility: hidden;
+  /* both faces share one grid cell, so the card grows to fit the taller face */
+  grid-area: 1 / 1; backface-visibility: hidden;
   display: flex; flex-direction: column; justify-content: center;
   border-radius: 16px; padding: 1.6rem; text-align: center;
   border: 1px solid var(--hairline); box-shadow: var(--shadow);
@@ -257,8 +270,11 @@ select:focus-visible, .btn:focus-visible, .option:focus-visible, .tab:focus-visi
 .flashcard__label { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em;
   color: var(--ink-muted); margin-bottom: .6rem; }
 .flashcard__body { font-size: 1.12rem; font-weight: 500; }
-.flashcard__hint { position: absolute; bottom: .8rem; left: 0; right: 0; text-align: center;
-  font-size: .8rem; font-weight: 600; letter-spacing: .02em; color: var(--accent); }
+.flashcard__hint {
+  align-self: center; margin-top: 1.2rem; flex: none;
+  background: var(--accent); color: #fff; font-weight: 600; font-size: .82rem;
+  padding: .45rem 1rem; border-radius: 10px; box-shadow: var(--shadow); white-space: nowrap;
+}
 
 /* ---- concepts ------------------------------------------------------------ */
 .concept-domain { margin-top: 1.4rem; }
@@ -288,6 +304,12 @@ details.concept[open] > summary::after { content: "－"; }
   font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
   color: var(--ink-1); white-space: pre; display: block;
 }
+.code-block .tok-kw { color: var(--syn-kw); font-weight: 600; }
+.code-block .tok-str { color: var(--syn-str); }
+.code-block .tok-com { color: var(--syn-com); font-style: italic; }
+.code-block .tok-num { color: var(--syn-num); }
+.code-block .tok-lit { color: var(--syn-lit); }
+.code-block .tok-attr { color: var(--syn-attr); }
 .code-lang {
   position: absolute; top: 0; right: 0; font-size: .64rem; letter-spacing: .06em;
   text-transform: uppercase; color: var(--ink-muted); font-weight: 600;
@@ -380,7 +402,12 @@ details.concept[open] > summary::after { content: "－"; }
 
 @media (max-width: 560px) {
   .app-header__inner { flex-wrap: wrap; }
-  .tabs { order: 3; width: 100%; margin-left: 0; justify-content: space-between; }
+  /* Tight, centered nav that fits one line instead of spreading/wrapping */
+  .tabs { order: 3; width: 100%; margin-left: 0; justify-content: center; gap: .2rem; }
+  .tab { padding: .34rem .5rem; font-size: .82rem; }
+  /* Filter selects each take a full-width line with consistent card padding */
+  label.field { flex: 1 1 100%; }
+  .row select { width: 100%; }
   .gauge__num { font-size: 2.4rem; }
 }
 

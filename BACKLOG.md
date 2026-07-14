@@ -26,5 +26,16 @@ None.
 - [x] BL-001 - Site: Reorder navigation to Concepts, Flashcards, Labs, Quiz, Readiness. Done in `study/web/index.html`; default landing route set to `#/concepts`; active-tab logic verified.
 - [x] BL-002 - Concepts: code samples. Added optional `code_samples` to `concepts.schema.json`; authored 40 guide/lab-grounded snippets across 26 of 30 concepts (skipped where code wouldn't clarify); the Concepts view renders them as styled, language-badged code blocks. `cd study && uv run pytest` green.
 - [x] BL-003 - Add Labs (browsable, offline). `study/tools/build_labs.py` renders each lab `README.md`/`SOLUTION.md` to HTML at build time into `study/data/labs.json`; new Labs view lists all 25 labs and renders instructions with a "Show solution" disclosure — no browser Markdown parser, zero runtime deps. Covered by `labs.schema.json` + tests.
+- [x] BL-004 - Flashcards: "Reveal Answer" / "Flip Back" restyled as a clay button (was a faint text link).
+- [x] BL-005 - Header: black asterisk logo on the orange brand mark.
+- [x] BL-006 - Concepts: syntax highlighting for all code samples (dependency-free tokenizer; theme-aware token colors).
+- [x] BL-007 - serve.py: honor an explicit `--port` and fix the silent random-port fallback (probe socket lacked `SO_REUSEADDR`); clear error + Windows excluded-range hint when a port can't bind.
+- [x] BL-008 - Mobile — Site nav: tightened horizontal spacing so the tabs fit one line instead of spreading/wrapping.
+- [x] BL-009 - Mobile — Filter dropdowns (Flashcards/Concepts/Quiz): Domain/Task/Length selects go full-width with consistent card padding (no odd wrap/right-edge gap).
+- [x] BL-010 - Mobile — Flashcards: fixed "Reveal Answer"/"Flip Back" overlapping card text; the card now auto-grows to fit long answers (grid-stacked faces).
+- [x] BL-011 - Mobile — Quiz: Task Statement select no longer runs outside its card (selects capped to `max-width:100%`).
+- [x] BL-012 - README: add a home-page screenshot (`docs/study-app.png`) at the top.
+- [x] BL-013 - README: add a "By the Numbers" promo section (240 questions / 90 flashcards / 30 concepts / 25 labs) before Study Materials.
+- [x] BL-014 - README: title-case all headings; rename "What's here" → "Study Materials" and "The lab program at a glance" → "Labs At A Glance".
 
 <!-- EOF -->
