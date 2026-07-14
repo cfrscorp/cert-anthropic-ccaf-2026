@@ -47,12 +47,12 @@ layer several defenses:
   that's failing badly. Route low field-confidence / ambiguous / info-absent
   extractions to humans, and report accuracy **by segment** to catch the weak slice.
 
-## Tasks (integrative)
+## Tasks (Integrative)
 
 Implement the same public API in `starter/` that the reference `solution/` exposes.
 Each module builds on the previous one.
 
-### `schema.py` — the contract
+### `schema.py` — the Contract
 1. `build_extraction_tool()` — return a tool whose `input_schema` has at least one
    **nullable** field (type list containing `"null"`), an **enum with `"other"`**,
    plus a mix of required and optional fields. Return a copy.
@@ -63,7 +63,7 @@ Each module builds on the previous one.
 4. `missing_required_info(data)` → the downstream-required fields that are null (the
    *info-absent* signal).
 
-### `extract.py` — extraction + retry
+### `extract.py` — Extraction + Retry
 5. `build_few_shot_messages()` and `build_messages(document, *, error_feedback, few_shot)`.
 6. `extract(client, doc, *, tool_choice=None, error_feedback=None, few_shot=True)` —
    force the extraction tool by default; return the `tool_use` input dict.
@@ -71,7 +71,7 @@ Each module builds on the previous one.
    failure append the error and retry; on **info-absent** give up *immediately*
    (don't burn retries). Return a status dict.
 
-### `batch_pipeline.py` — scale + reliability
+### `batch_pipeline.py` — Scale + Reliability
 8. `build_requests` / `submit_and_collect` / `resubmit_failed` — `custom_id`
    correlation; resend only failures; chunk any `oversized` document.
 9. `choose_api` / `submission_frequency` — batch-vs-sync and SLA math.
@@ -86,7 +86,7 @@ Each module builds on the previous one.
   with all tests green.
 - Keep dependency injection: every Claude-calling function takes a `client`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -106,7 +106,7 @@ three document-type samples (`clean_invoice`, `pos_receipt`, `purchase_order`), 
 `labeled_set.json` — a labeled set engineered so overall accuracy is high (~0.92)
 while the `handwritten` segment is quietly failing (~0.12).
 
-## Stretch goals
+## Stretch Goals
 
 - Add a `field_confidence` object to the tool schema so the model self-reports
   per-field confidence, then calibrate `route_for_review`'s threshold against

@@ -104,7 +104,7 @@ You can regenerate the data set with `uv run make_validation_set.py`
 - Completed `starter/calibration.py` with the same public API as `solution/`.
 - All deterministic tests in `tests/test_lab18.py` passing.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -118,7 +118,7 @@ Compare against the reference solution:
 LAB_TARGET=solution uv run pytest lab-18-human-review-calibration -q
 ```
 
-## Stretch goals
+## Stretch Goals
 
 1. **Field-level segmentation.** Extend `accuracy_by_segment` (or add a sibling)
    to report accuracy per *field* as well as per document type — a field can be

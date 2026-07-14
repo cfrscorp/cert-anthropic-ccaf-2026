@@ -59,7 +59,7 @@ never re-run the whole batch. And before batching a large volume, you
 **prompt-refine on a small sample set** to maximize first-pass success and avoid
 paying for iterative resubmission.
 
-### Submission-frequency math
+### Submission-frequency Math
 
 If your pipeline promises an end-to-end SLA, you must submit batches often enough
 that even the *worst-placed* document lands in time. Worst case, a document
@@ -113,7 +113,7 @@ inside a function — so tests run offline against `MockAnthropic`.
 - Completed `starter/batch.py` with the same public API as `solution/`.
 - All deterministic tests in `tests/test_lab17.py` passing.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -127,7 +127,7 @@ To compare against the reference solution:
 LAB_TARGET=solution uv run pytest lab-17-batch-processing -q
 ```
 
-## Stretch goals
+## Stretch Goals
 
 1. **Chunk-aware reassembly.** After chunking `doc-3` into `doc-3#chunk-0..N`,
    write a helper that stitches the per-chunk results back into one logical

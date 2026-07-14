@@ -28,7 +28,7 @@ the structured payloads and merge/annotate logic your code owns.
 
 ## Background
 
-### Error propagation (Task 5.3, Sample Question 8)
+### Error Propagation (Task 5.3, Sample Question 8)
 
 A web-search subagent times out mid-research. How that failure reaches the
 coordinator determines whether the run can recover. Four options (Sample Q8):
@@ -56,7 +56,7 @@ attempted and any partial results. Synthesis output then gets **coverage
 annotations**: which topics are well-supported vs. which are gaps because a source
 was unavailable.
 
-### Provenance & uncertainty (Task 5.6)
+### Provenance & Uncertainty (Task 5.6)
 
 Synthesis compresses many findings into one report, and naive summarization
 quietly:
@@ -103,7 +103,7 @@ Implement two modules under `starter/` so their public APIs match `solution/`.
   public APIs in `solution/`.
 - All tests in `tests/test_lab20.py` passing against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -120,7 +120,7 @@ source (from `findings.json`); `annotate_conflict` retains **both** conflicting
 values with attributions; and `render_by_type` picks the right format per content
 type.
 
-## Stretch goals
+## Stretch Goals
 
 - **Reconciliation policy.** Add a function that, given an annotated conflict,
   *recommends* (not decides) a reconciliation when publication dates differ —

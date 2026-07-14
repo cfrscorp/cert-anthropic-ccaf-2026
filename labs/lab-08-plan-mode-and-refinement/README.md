@@ -26,7 +26,7 @@ single-file bug-fix.
 
 ## Background
 
-### Plan mode vs direct execution (Task Statement 3.4)
+### Plan Mode vs Direct Execution (Task Statement 3.4)
 
 **Plan mode** lets Claude explore a codebase and design an approach *before*
 committing to changes. It is built for complex work:
@@ -54,7 +54,7 @@ second assumes you already know the right structure without exploring.
 You can also **combine** the two: use plan mode to *investigate* and design a
 migration, then use direct execution to *implement* each already-planned step.
 
-### The Explore subagent
+### The Explore Subagent
 
 Discovery is noisy: reading many files, tracing call flows, and grepping produces a
 lot of output whose raw form has little lasting value but eats your context window.
@@ -64,7 +64,7 @@ when discovery is **verbose AND** would otherwise burden the main session (it is
 of a multi-phase task, or risks exhausting context). Don't spawn it for a quick,
 self-contained lookup — the overhead isn't worth it.
 
-### Iterative refinement patterns (Task Statement 3.5)
+### Iterative Refinement Patterns (Task Statement 3.5)
 
 Several techniques make Claude converge faster on what you actually want:
 
@@ -109,7 +109,7 @@ canonical scenarios and assert exact labels.
   `should_use_explore` (matching the public API in `solution/decisions.py`).
 - All tests in `tests/test_lab08.py` passing against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -123,7 +123,7 @@ and adds explicit checks for the monolith-restructuring (→ plan) and single-fi
 bug-fix (→ direct) cases, plus boundary cases (multi-file-alone → plan, unclear
 scope → plan, verbose-discovery-without-burden → no Explore).
 
-## Stretch goals
+## Stretch Goals
 
 - **Confidence/reasoning output.** Extend `choose_mode` to return a
   `(mode, reasons)` tuple listing which triggers fired, without breaking the

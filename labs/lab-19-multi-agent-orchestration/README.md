@@ -30,7 +30,7 @@ You will implement `orchestrator.py` and prove, with deterministic tests, that:
 
 ## Background
 
-### Hub-and-spoke architecture
+### Hub-and-spoke Architecture
 
 All inter-subagent communication, error handling, and information routing flow
 through the coordinator. Subagents never talk to each other directly.
@@ -55,7 +55,7 @@ through the coordinator. Subagents never talk to each other directly.
                             through the coordinator
 ```
 
-### Isolated context — no inheritance (1.3)
+### Isolated Context — No Inheritance (1.3)
 
 A subagent does **not** automatically receive the coordinator's history or the
 outputs of sibling subagents. Whatever it needs must be **written into its
@@ -63,18 +63,18 @@ prompt**. That is why `build_subagent_prompt` embeds the *complete* prior
 findings verbatim (content **and** metadata — source URLs, dates, page numbers)
 rather than a reference to "the findings above."
 
-### Dynamic selection, not a fixed pipeline (1.2)
+### Dynamic Selection, Not a Fixed Pipeline (1.2)
 
 The coordinator analyses the query and invokes only the relevant subagents. A
 one-line factual query does not need document analysis, synthesis, *and* report
 writing. Always routing through the full pipeline wastes tokens and latency.
 
-### Parallel spawning (1.3)
+### Parallel Spawning (1.3)
 
 To run subagents concurrently, the coordinator emits **several `Task` tool_use
 blocks in a single response**. Emitting one Task per turn serializes them.
 
-### Partition scope to cover the topic (1.2, Sample Question 7)
+### Partition Scope to Cover the Topic (1.2, Sample Question 7)
 
 When decomposing a broad topic, partition it into **distinct, non-overlapping
 subtopics that span its breadth**. The classic failure: decomposing "creative
@@ -116,7 +116,7 @@ Edit `starter/orchestrator.py`. Keep the public API identical to the solution.
   `solution/orchestrator.py`).
 - All tests in `tests/test_lab19.py` passing against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -135,7 +135,7 @@ music, writing, and film (not just visual arts); and `run_coordination` emits
 both Task calls in one coordinator turn while each subagent sees only its
 injected context.
 
-## Stretch goals
+## Stretch Goals
 
 - **Iterative refinement loop (1.2).** After synthesis, have the coordinator
   detect coverage gaps (e.g. a partition with no findings) and re-delegate

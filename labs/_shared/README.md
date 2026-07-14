@@ -1,10 +1,10 @@
-# Shared lab harness — contract for lab authors
+# Shared Lab Harness — Contract for Lab Authors
 
 Everything in `labs/_shared/` is importable from any lab's tests because the root
 `labs/conftest.py` puts this directory on `sys.path`. **Do not edit these files
 inside a lab** — extend within your own lab folder if you need more.
 
-## What every lab folder looks like
+## What Every Lab Folder Looks Like
 
 ```
 lab-NN-slug/
@@ -20,7 +20,7 @@ lab-NN-slug/
 functions/classes**, so the same test file passes against `solution/` and fails
 against an unfinished `starter/`.
 
-## Importing the module under test
+## Importing the Module Under Test
 
 ```python
 # tests/test_labNN.py
@@ -33,7 +33,7 @@ mod = lab_module(__file__, "agent_loop")   # loads starter/agent_loop.py by defa
 - `LAB_TARGET=solution uv run pytest` → tests import from `solution/` (used by the
   program's validation pass; every lab's solution MUST be green this way).
 
-## Mocking Claude (deterministic, offline)
+## Mocking Claude (Deterministic, Offline)
 
 ```python
 from mock_anthropic import MockAnthropic, text_response, tool_use_response
@@ -69,7 +69,7 @@ batch = client.messages.batches.create(requests=[{"custom_id": "doc-1", "params"
 results = client.messages.batches.results(batch.id)   # list with .custom_id and .result
 ```
 
-## Semantic grading (only when unavoidable)
+## Semantic Grading (Only When Unavoidable)
 
 ```python
 import pytest
@@ -86,7 +86,7 @@ Mark such tests `@pytest.mark.llm`. The default `addopts` excludes them, and the
 auto-skip without a key. Prefer deterministic assertions; reach for `grade` only
 for meaning a structural check cannot verify.
 
-## Runnable scripts
+## Runnable Scripts
 
 Any script a learner runs from a shell must follow the user's global conventions:
 PEP 723 inline metadata (`uv run`-able), `argparse` with `-h/--help` + an Examples

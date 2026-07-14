@@ -99,7 +99,7 @@ implement it; keep the same public API.
 - `starter/user-claude.json` — a user-scoped personal server.
 - `starter/resources.md` — an MCP resource content-catalog write-up.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -114,7 +114,7 @@ Until then the default (starter) run fails. To validate the reference solution:
 LAB_TARGET=solution uv run pytest lab-15-mcp-integration -q
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - **Enhanced tool description in the config.** Add a `github` search tool stub to
   `.mcp.json`-adjacent notes and write its description with

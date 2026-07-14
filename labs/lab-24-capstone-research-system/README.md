@@ -73,7 +73,7 @@ so attribution and temporal context survive all the way to the report.
 Edit the four modules in `starter/`. The public API is fixed by
 `solution/` — keep the same names and signatures.
 
-### Task A — `agents.py` (registry & tools)
+### Task A — `agents.py` (Registry & Tools)
 1. `build_agent_registry()` returns the five agents. The **coordinator's**
    `allowed_tools` **must include `"Task"`** (Task 1.3). The **synthesis** agent's
    `allowed_tools` is **`("verify_fact",)` only** — not the search toolset (Task 2.3).
@@ -81,7 +81,7 @@ Edit the four modules in `starter/`. The public API is fixed by
    Write system prompts that state **goals and quality criteria**, not step-by-step
    procedures.
 
-### Task B — `coordinator.py` (decompose, select, spawn, pass context)
+### Task B — `coordinator.py` (Decompose, Select, Spawn, Pass Context)
 3. `expected_facets` / `partition_scope`: decompose a broad topic across **all**
    its facets. For "impact of AI on creative industries" that means *visual arts,
    music, writing, film* — the Sample Q7 failure was covering only visual arts.
@@ -94,13 +94,13 @@ Edit the four modules in `starter/`. The public API is fixed by
 7. `spawn_parallel`: make **one** `client.messages.create` call whose response
    carries **multiple** `Task` blocks (parallel = one turn, many Task calls).
 
-### Task C — `errors.py` (structured propagation)
+### Task C — `errors.py` (Structured Propagation)
 8. `build_error_context` / `handle_timeout`: package failure type, attempted
    query, partial results, and alternatives (Sample Q8-A).
 9. `classify_result`: distinguish `access_failure` from `empty_success` — never
    report a timeout as a successful empty result (Q8-C anti-pattern).
 
-### Task D — `synthesis.py` (provenance, conflicts, verify_fact)
+### Task D — `synthesis.py` (Provenance, Conflicts, verify_fact)
 10. `merge_claims`: flatten findings while **preserving each claim's source**.
 11. `annotate_conflict`: when sources disagree on a `metric`, **keep both** values
     with attribution + dates.
@@ -109,7 +109,7 @@ Edit the four modules in `starter/`. The public API is fixed by
     `verify_fact` tool (one call, forced tool choice); complex ones route back
     through the coordinator **without** calling `verify_fact` (Sample Q9-A).
 
-### Task E — `coordinator.run_research` (integrate)
+### Task E — `coordinator.run_research` (Integrate)
 14. Wire it together: `partition_scope → select_subagents → spawn_parallel → run
     each subagent → synthesize`. On a subagent timeout, **proceed** with partial
     results and let the failed facet become a **coverage gap** in the report.
@@ -122,7 +122,7 @@ The `client` is injected everywhere — never construct `anthropic.Anthropic()`.
   implemented (matching the public API in `solution/`).
 - All tests in `tests/test_lab24.py` passing against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -140,7 +140,7 @@ yields structured error context and `run_research` proceeds with partial results
 keeps both values with attribution + dates; and synthesis's scoped `verify_fact`
 path handles simple lookups while complex cases route to the coordinator.
 
-## Stretch goals
+## Stretch Goals
 
 - **Iterative refinement loop** (Task 1.2): after synthesis, have the coordinator
   detect coverage gaps, re-delegate targeted queries to `web_search`/`doc_analysis`,

@@ -6,7 +6,7 @@ experience with *every* feature, property, concept, and topic in
 [`../anthropic-ccaf-exam-guide-2026.md`](../anthropic-ccaf-exam-guide-2026.md) —
 all 5 domains, 30 task statements, and 6 exam scenarios.
 
-## How the labs work
+## How the Labs Work
 
 Each `lab-NN-slug/` folder contains:
 
@@ -19,7 +19,7 @@ Each `lab-NN-slug/` folder contains:
 | `tests/` | Automated checks (deterministic pytest; a few semantic `llm` checks) |
 | *config files* | `.mcp.json`, `.claude/rules/*`, `SKILL.md`, CI YAML, sample docs, etc. |
 
-### Running the tests
+### Running the Tests
 
 From this `labs/` directory (uses [`uv`](https://docs.astral.sh/uv/) — no manual venv):
 
@@ -36,25 +36,25 @@ inherently semantic checks are marked `@pytest.mark.llm` and are skipped unless 
 set `ANTHROPIC_API_KEY`. See [`_shared/README.md`](_shared/README.md) for the harness
 contract.
 
-### Suggested workflow per lab
+### Suggested Workflow per Lab
 
 1. Read the lab `README.md`; note its prerequisites.
 2. Fill in `starter/` until `uv run pytest lab-NN-...` passes.
 3. Compare against `SOLUTION.md` / `solution/` for the "why", not just the "what".
 
-## The lab matrix
+## The Lab Matrix
 
 Ordered by dependency **tier**, then **difficulty** (1 novice → 10 advanced) ascending.
 LOE = estimated hands-on effort.
 
-### Tier 0 — Foundations (no prerequisites)
+### Tier 0 — Foundations (No Prerequisites)
 
 | # | Lab | Task stmts | Diff | LOE |
 |---|-----|-----------|:----:|:---:|
 | L01 | [Claude API Fundamentals](lab-01-claude-api-fundamentals/) | API appendix | 1 | 0:45 |
 | L02 | [Claude Code Config Foundations](lab-02-claude-code-config-foundations/) | 3.1, 2.5 | 2 | 1:30 |
 
-### Tier 1 — Core building blocks
+### Tier 1 — Core Building Blocks
 
 | # | Lab | Task stmts | Diff | LOE | Deps |
 |---|-----|-----------|:----:|:---:|------|
@@ -80,7 +80,7 @@ LOE = estimated hands-on effort.
 | L16 | [Task Decomposition & Multi-pass Review](lab-16-decomposition-and-review/) | 1.6, 4.6 | 6 | 2:00 | L06 |
 | L18 | [Human Review & Confidence Calibration](lab-18-human-review-calibration/) | 5.5 | 6 | 2:00 | L04, L10 |
 
-### Tier 3 — Advanced / multi-agent
+### Tier 3 — Advanced / Multi-Agent
 
 | # | Lab | Task stmts | Diff | LOE | Deps |
 |---|-----|-----------|:----:|:---:|------|
@@ -88,7 +88,7 @@ LOE = estimated hands-on effort.
 | L19 | [Multi-Agent Coordinator–Subagent Orchestration](lab-19-multi-agent-orchestration/) | 1.2, 1.3 | 7 | 2:30 | L03, L09 |
 | L20 | [Error Propagation & Provenance in Synthesis](lab-20-error-propagation-provenance/) | 5.3, 5.6 | 7 | 2:00 | L19, L09 |
 
-### Tier 4 — Capstones (one per scenario cluster)
+### Tier 4 — Capstones (One per Scenario Cluster)
 
 | # | Lab | Scenario / Exercise | Diff | LOE | Deps |
 |---|-----|--------------------|:----:|:---:|------|
@@ -99,9 +99,9 @@ LOE = estimated hands-on effort.
 
 **Totals:** 25 labs · ~48 hours of hands-on effort.
 
-## Traceability — every exam item is covered
+## Traceability — Every Exam Item Is Covered
 
-### Task statements → labs
+### Task Statements → Labs
 
 | Domain | Task statement | Lab(s) |
 |--------|----------------|--------|
@@ -136,7 +136,7 @@ LOE = estimated hands-on effort.
 | 5 | 5.5 Human review & confidence calibration | L18, L23 |
 | 5 | 5.6 Provenance & uncertainty in synthesis | L20, L24 |
 
-### Exam scenarios → capstones
+### Exam Scenarios → Capstones
 
 | Scenario | Capstone |
 |----------|----------|

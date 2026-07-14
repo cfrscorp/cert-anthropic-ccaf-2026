@@ -37,7 +37,7 @@ In this lab, `SessionStore.save(name, messages)` persists a named conversation
 and `SessionStore.resume(name)` returns the prior history so you can append new
 turns and continue.
 
-### `fork_session` — independent branches from a shared baseline
+### `fork_session` — Independent Branches from a Shared Baseline
 
 Sometimes you have done expensive shared analysis (the agent has read and mapped
 a codebase) and now want to explore **two divergent approaches** from that same
@@ -52,7 +52,7 @@ leaves the original untouched. A shallow copy would share nested message
 objects and silently corrupt the baseline — that is the classic bug this lab
 guards against.
 
-### Resume vs. restart-with-summary (stale vs. fresh)
+### Resume vs. Restart-With-Summary (Stale vs. Fresh)
 
 Resuming replays **all** prior tool results as if they were still true. That is
 great when they are — but if the code has changed since, those results are
@@ -67,7 +67,7 @@ current statement of where things stand) than to resume on top of stale results.
 
 `should_resume(prior_results_stale)` encodes exactly this decision.
 
-### Informing a resumed session about file changes
+### Informing a Resumed Session About File Changes
 
 When you *do* resume after modifying files the agent already analyzed, do not
 silently let it trust its stale reading, and do not force a wasteful full
@@ -103,7 +103,7 @@ Edit `starter/sessions.py` and implement the public API (it must match
   `solution/sessions.py`.
 - All tests in `tests/test_lab13.py` passing against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -119,7 +119,7 @@ leaves the baseline unchanged, including nested content); `should_resume` return
 `inject_file_change_notice` appends a notice that references every changed file
 (and is a no-op for an empty list).
 
-## Stretch goals
+## Stretch Goals
 
 - **Summary-seeded restart.** Add `restart_with_summary(name, summary) -> list`
   that starts a fresh session whose first turn is your structured summary,

@@ -80,7 +80,7 @@ Edit only the files in `starter/`. Implement, run the tests, iterate.
   all four functions implemented and the same public API as the reference.
 - All tests in `tests/test_lab02.py` passing against `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -95,7 +95,7 @@ uv run solution/tool_selection.py "find all callers of process_order"   # -> Gre
 uv run solution/config_hierarchy.py --demo
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - Add a second `@import` (e.g. `standards/security.md`) to
   `sample-project/src/api/CLAUDE.md` and confirm `resolve_imports` expands both.

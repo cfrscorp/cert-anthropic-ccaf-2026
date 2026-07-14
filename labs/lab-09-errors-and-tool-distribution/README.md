@@ -25,7 +25,7 @@ deterministic tests.
 
 ## Background
 
-### Structured errors (Task Statement 2.2)
+### Structured Errors (Task Statement 2.2)
 
 The MCP `isError` flag tells the agent a tool call failed. But a bare failure
 signal — or a uniform `"Operation failed"` string — leaves the agent blind: it
@@ -62,7 +62,7 @@ Two more distinctions the task statement calls out:
   returning empty-as-success hides real failures — an anti-pattern (Task 5.3,
   Sample Question 8).
 
-### Tool distribution & tool_choice (Task Statement 2.3)
+### Tool Distribution & tool_choice (Task Statement 2.3)
 
 - **Too many tools degrades selection.** Handing one agent 18 tools instead of
   the 4-5 it needs increases decision complexity and misrouting. Scope each
@@ -131,7 +131,7 @@ system) is provided. Design `ROLE_TOOLS` yourself.
   the public API in `solution/`).
 - All tests in `tests/test_lab09.py` passing against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -148,7 +148,7 @@ flags the 18-tool catalogue and clears a scoped set; that `choose_tool_choice`
 maps the canonical scenarios; and — via `MockAnthropic` — that a forced
 `tool_choice` is actually forwarded to the API call.
 
-## Stretch goals
+## Stretch Goals
 
 - **Local recovery then propagate (Task 5.3).** Write a small
   `subagent_call(...)` that retries `transient` errors locally (bounded) and only

@@ -93,7 +93,7 @@ load these; feel free to study and extend them.
 - Completed `starter/prompt_builder.py` with the same public API as `solution/`.
 - All deterministic tests in `tests/test_lab06.py` passing.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -114,7 +114,7 @@ yields consistent, actionable output?) runs only when you opt in with a key:
 ANTHROPIC_API_KEY=... uv run pytest lab-06-few-shot-and-criteria -m llm
 ```
 
-## Stretch goals
+## Stretch Goals
 
 1. **Report/skip pairs.** Extend `build_review_prompt` to accept structured
    criteria (each with its own REPORT vs SKIP label) instead of a flat REPORT list

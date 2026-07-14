@@ -37,5 +37,8 @@ None.
 - [x] BL-012 - README: add a home-page screenshot (`docs/study-app.png`) at the top.
 - [x] BL-013 - README: add a "By the Numbers" promo section (240 questions / 90 flashcards / 30 concepts / 25 labs) before Study Materials.
 - [x] BL-014 - README: title-case all headings; rename "What's here" → "Study Materials" and "The lab program at a glance" → "Labs At A Glance".
+- [x] BL-015 - Title Case for all headings in the remaining READMEs (labs/README.md, labs/_shared/README.md, study/README.md, 25 lab READMEs) via a script that skips code fences and preserves acronyms/code spans/filenames.
+- [x] BL-016 - study/README.md: added an "Install uv" quick start (macOS + Windows best-practice install) just before "Run It", linking the uv install guide.
+- [x] BL-017 - README (root): added a concise uv install line (macOS/Linux + Windows one-liners + link) under Quick Start.
 
 <!-- EOF -->

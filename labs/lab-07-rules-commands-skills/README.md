@@ -81,7 +81,7 @@ Work in `starter/`. Two kinds of deliverable: the **config artifacts** under
 - `starter/.claude/skills/analyze-codebase/SKILL.md` with valid frontmatter.
 - `starter/claude_config.py` with the three functions implemented.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -96,7 +96,7 @@ the reference solution:
 LAB_TARGET=solution uv run pytest lab-07-rules-commands-skills
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - Add a `.claude/rules/database.md` scoped to a repository-pattern layer (e.g.
   `paths: ["src/models/**/*"]`) and a test asserting a model file routes to it.

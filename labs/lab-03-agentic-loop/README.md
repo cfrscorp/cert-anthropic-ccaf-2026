@@ -52,7 +52,7 @@ This is **model-driven** control flow: Claude decides which tool to call next
 based on the accumulating context — as opposed to a hard-coded decision tree or a
 fixed tool sequence you wrote in advance.
 
-### Anti-patterns to avoid (these are tested)
+### Anti-patterns to Avoid (These Are Tested)
 
 - ❌ **Parsing natural language to decide when to stop** (e.g. stopping because
   the reply contains "done" or "final answer"). Use `stop_reason`.
@@ -98,7 +98,7 @@ function. Tests pass a `MockAnthropic`.
   `solution/agent_loop.py`).
 - All tests in `tests/test_lab03.py` passing against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -113,7 +113,7 @@ matching `tool_use_id`s and fed back into the next request; that a turn combinin
 text **and** `tool_use` does not stop the loop early; and that `safety_cap` halts
 a model that always asks for a tool.
 
-## Stretch goals
+## Stretch Goals
 
 - **Multiple tools per turn.** Extend a test so one assistant turn contains two
   `tool_use` blocks (use `mock_anthropic.message(...)` to build a custom turn)

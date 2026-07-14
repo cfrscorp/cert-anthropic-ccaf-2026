@@ -114,7 +114,7 @@ stubs so the shared test suite runs unchanged.
 - Completed `starter/tools.py`, `starter/guardrails.py`, and
   `starter/support_agent.py` that pass the full test suite.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -133,7 +133,7 @@ LAB_TARGET=solution uv run pytest lab-22-capstone-support-agent
 request, multiple matches → clarify, multi-concern message, standard resolvable
 case) with the model plan and expected outcome for each.
 
-## Stretch goals
+## Stretch Goals
 
 - **Trim tool outputs before they land in context (5.1).** `lookup_order`
   already drops internal fields; extend trimming so only refund-relevant fields

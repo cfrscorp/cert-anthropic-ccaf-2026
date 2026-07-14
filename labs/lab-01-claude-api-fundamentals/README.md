@@ -75,7 +75,7 @@ Keep the same public signatures.
   and no remaining `NotImplementedError`.
 - All tests in `tests/test_lab01.py` passing against your starter code.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -89,7 +89,7 @@ To check your work against the reference solution instead of your own:
 LAB_TARGET=solution uv run pytest lab-01-claude-api-fundamentals
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - Add a `usage_summary(resp) -> str` helper that reports input/output tokens
   from `resp.usage`, and a test for it.

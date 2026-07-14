@@ -101,7 +101,7 @@ The persistence contract is the point: after `record`, a **brand-new**
 - `starter/context.py` implementing the public API above.
 - All tests in `tests/test_lab14.py` green against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -116,7 +116,7 @@ field fixture; that `order_for_position` puts the summary at index 0 with header
 on every section; that a `Scratchpad` value written by one instance is recalled
 by a fresh one; and that `load_manifest` round-trips a JSON manifest.
 
-## Stretch goals
+## Stretch Goals
 
 - **Provenance.** Extend `extract_case_facts` to record which message index each
   fact came from, so a downstream agent can cite the source turn.

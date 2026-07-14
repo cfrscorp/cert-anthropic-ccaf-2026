@@ -89,7 +89,7 @@ until you implement it; keep the same public API as `solution/`.
 - (Reference) `solution/decomposition.py` — the complete implementation.
 - `review_scenario.md` — the canonical 14-file PR case (provided).
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -104,7 +104,7 @@ solution the same way the program's grader does:
 LAB_TARGET=solution uv run pytest lab-16-decomposition-and-review -q
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - **Adaptive plan for the legacy-tests task.** Sketch the dynamic decomposition
   for "add comprehensive tests to a legacy codebase": map structure → identify

@@ -60,7 +60,7 @@ optimization has even been tried.
 You will encode all of this as testable logic, and then produce the very prompt
 artifact answer A calls for.
 
-## The decision & the context schema
+## The Decision & the Context Schema
 
 `decide(context)` returns exactly one of `"ESCALATE"`, `"ASK_CLARIFY"`,
 `"RESOLVE"`. The `context` dict uses these keys (all optional, with safe
@@ -121,7 +121,7 @@ reiterated).
 - `starter/escalation.py` with all three functions implemented.
 - All tests in `tests/test_lab12.py` passing against your `starter/`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -136,7 +136,7 @@ to 1.0 **never** change a decision; that `uses_unreliable_signal` flags a
 sentiment/confidence policy and clears a criteria-based one; and that
 `build_escalation_criteria` embeds the examples it is given.
 
-## Stretch goals
+## Stretch Goals
 
 - **Structured handoff.** Extend `decide` to also return a reason code and, when
   escalating, a short handoff summary (customer id, root cause, recommended

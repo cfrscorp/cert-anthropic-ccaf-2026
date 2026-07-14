@@ -30,7 +30,7 @@ instructions cannot** (Sample Question 1).
 
 ## Background
 
-### Two hook shapes: PostToolUse vs. interception
+### Two Hook Shapes: PostToolUse vs. Interception
 
 The Agent SDK lets you attach hooks at different points in the tool lifecycle.
 Two matter here, and they point in opposite directions:
@@ -69,7 +69,7 @@ Two matter here, and they point in opposite directions:
      model sees clean result
 ```
 
-### Deterministic enforcement vs. probabilistic prompt compliance
+### Deterministic Enforcement vs. Probabilistic Prompt Compliance
 
 You can *ask* a model to verify identity before refunding, or to never refund
 over $500. But a prompt instruction has a **non-zero failure rate**: production
@@ -83,7 +83,7 @@ of the prompt, the phrasing of the request, or model temperature. That is the
 distinction the exam draws (Task Statements 1.4 and 1.5, and Sample Question 1):
 choose programmatic enforcement when a rule requires *guaranteed* compliance.
 
-### Prerequisite gates and structured handoffs (1.4)
+### Prerequisite Gates and Structured Handoffs (1.4)
 
 A **prerequisite gate** encodes ordering: a downstream tool cannot run until an
 upstream step has produced a required, verified output. Here, `process_refund`
@@ -123,7 +123,7 @@ Edit **`starter/hooks.py`**. Keep the public API identical to the stubs.
 
 - A completed `starter/hooks.py` that passes the test suite.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -138,7 +138,7 @@ you can also run the solution:
 LAB_TARGET=solution uv run pytest lab-11-hooks-and-enforcement
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - **Wire the hooks into an agentic loop.** Reuse your L03 `run_agent` and call
   `intercept_tool_call` before each tool executes and `post_tool_use_normalize`

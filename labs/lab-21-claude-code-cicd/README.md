@@ -88,7 +88,7 @@ fixtures (already complete) — treat them as example Claude output.
 - `starter/ci_review.py` with the four functions implemented (the wired CLI then
   works via `uv run ci_review.py --help`).
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -110,7 +110,7 @@ uv run ci_review.py --findings sample_claude_output.json \
     --schema review-schema.json --prior prior_findings.json --post
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - Add a `confidence` field (0–1) to the schema and route only high-confidence
   findings to inline comments, batching the rest into a single summary comment.

@@ -61,7 +61,7 @@ false positive that developers dismiss.
 
 You will complete two modules in `starter/` (public API must match `solution/`).
 
-### 1. `starter/models.py` — the semantic validator
+### 1. `starter/models.py` — the Semantic Validator
 
 The fields are provided. Implement the `_reconcile` `model_validator(mode="after")`:
 
@@ -74,7 +74,7 @@ The fields are provided. Implement the `_reconcile` `model_validator(mode="after
   `detected_pattern="due_date_before_invoice_date"` and raise `ValueError`;
 - otherwise return `self`.
 
-### 2. `starter/retry.py` — the retry/feedback loop
+### 2. `starter/retry.py` — the retry/feedback Loop
 
 - `is_retryable_error(kind) -> bool` — `format`/`structural` → `True`;
   `info_absent`/`source_conflict` → `False`; unknown kind → `ValueError`.
@@ -103,7 +103,7 @@ functions) so the tests run offline against `MockAnthropic`.
   as `solution/`.
 - All deterministic tests in `tests/test_lab10.py` passing.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -117,7 +117,7 @@ Against the reference solution:
 LAB_TARGET=solution uv run pytest lab-10-validation-retry -q
 ```
 
-## Stretch goals
+## Stretch Goals
 
 1. **Attempt log.** Return a per-attempt trail (kind, `detected_pattern`, whether
    a retry was issued) so you can aggregate false-positive rates by pattern.

@@ -65,7 +65,7 @@ concerns.
 
 You will complete two files in `starter/`:
 
-### 1. `starter/schema.py` — finish the extraction tool's schema
+### 1. `starter/schema.py` — Finish the Extraction Tool's Schema
 
 Complete `INPUT_SCHEMA` (and the small constants above it) so it demonstrates all
 four techniques:
@@ -78,7 +78,7 @@ four techniques:
 - a paired nullable **detail** field for the `"other"` case;
 - a `description` that tells the model to return `null` rather than fabricate.
 
-### 2. `starter/extract.py` — implement the public API
+### 2. `starter/extract.py` — Implement the Public API
 
 - `build_extraction_tool() -> dict` — return a **copy** of `EXTRACTION_TOOL`.
 - `extract(client, document, *, tool_choice=None) -> dict | None` — call
@@ -100,7 +100,7 @@ functions) so the tests can run offline against `MockAnthropic`.
   as `solution/`.
 - All deterministic tests in `tests/test_lab04.py` passing.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -120,7 +120,7 @@ The optional semantic check is skipped unless you opt in with a key:
 ANTHROPIC_API_KEY=... uv run pytest lab-04-structured-output -m llm
 ```
 
-## Stretch goals
+## Stretch Goals
 
 1. **Semantic validation.** After `extract`, add a `validate(result)` that flags
    when `sum(item["amount"] for item in line_items)` ≠ `total_amount` — the

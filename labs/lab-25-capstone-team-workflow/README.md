@@ -115,7 +115,7 @@ library is what turns the suite green.
   `--json-schema`) and `starter/review-schema.json`.
 - `starter/validate_config.py` with the public API implemented.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -138,7 +138,7 @@ uv run lab-25-capstone-team-workflow/solution/validate_config.py solution
 uv run lab-25-capstone-team-workflow/solution/validate_config.py --help
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - Add a `.claude/rules/react.md` scoped to `["**/*.tsx"]` for component
   conventions, and extend `validate_project` to require at least N rule files.

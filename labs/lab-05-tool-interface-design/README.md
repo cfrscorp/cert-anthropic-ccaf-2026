@@ -80,7 +80,7 @@ implement it; keep the same public API.
   `get_customer`, `lookup_order`, the three split document tools, and
   `extract_web_results`.
 
-## How to verify
+## How to Verify
 
 From the `labs/` directory:
 
@@ -96,7 +96,7 @@ export `ANTHROPIC_API_KEY`. To run it too:
 ANTHROPIC_API_KEY=sk-... uv run pytest lab-05-tool-interface-design -m llm
 ```
 
-## Stretch goals
+## Stretch Goals
 
 - **System-prompt keyword sensitivity.** Suppose the system prompt says *"When
   the user mentions their account, first pull up their customer record."* Explain

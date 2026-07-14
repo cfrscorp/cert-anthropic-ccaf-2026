@@ -9,7 +9,15 @@ your progress lives in your browser.
 The content is plain, schema-validated **JSON** (`data/`); the app is dependency-free
 **HTML/CSS/JS** (`web/`) that reads it.
 
-## Run it
+## Install uv
+
+Everything here runs through [uv](https://docs.astral.sh/uv/) — see the
+[install guide](https://docs.astral.sh/uv/getting-started/installation/) for all options:
+
+- **macOS** — `curl -LsSf https://astral.sh/uv/install.sh | sh`  (or `brew install uv`)
+- **Windows** — in PowerShell: `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
+
+## Run It
 
 ```bash
 # From the repo root — uses uv; no extra downloads (serve.py is stdlib-only):
@@ -36,7 +44,7 @@ miniserve . -p 8000
 > Why a server at all? Browsers block `fetch()` of local files opened via `file://`.
 > Serving over `http://localhost` fixes that and keeps the JSON as editable files.
 
-### Share on your LAN (LAN-only)
+### Share on Your LAN (LAN-only)
 
 By default the server binds to `127.0.0.1` (this machine only). To share the app with
 other devices **on your local network** while keeping it **off the public internet**,
@@ -101,7 +109,7 @@ stays in their own browser).
 6. **When done**, stop the server (Ctrl+C). Do **not** enable System Settings → General
    → Sharing → *Internet Sharing* (that changes your network exposure).
 
-### Sanity check & teardown
+### Sanity Check & Teardown
 
 - Verify from the host that it's listening on the LAN: another device on the same
   network should load the URL; a device on a *different* network (e.g. cellular, not the
@@ -122,14 +130,14 @@ stays in their own browser).
   domain weights), per-domain and per-task mastery bars, a readiness-over-time
   sparkline, and "revisit lab-NN" suggestions for weak areas.
 
-### Progress tracking
+### Progress Tracking
 
 Progress is cumulative and persists across sessions in your browser's `localStorage`
 (no accounts). Because it's browser-local, a different browser/profile or clearing
 site data starts fresh — use **Export** / **Import** on the Readiness view to back up
 or move your progress, or **Reset** to start over.
 
-## Content model (`data/`)
+## Content Model (`data/`)
 
 | File | What |
 |------|------|
@@ -139,7 +147,7 @@ or move your progress, or **Reset** to start over.
 | `concepts.json` | One explainer per task statement. |
 | `schema/*.schema.json` | JSON Schemas; every data file is validated against these. |
 
-### Adding or editing content
+### Adding or Editing Content
 
 Edit the JSON in `data/`, then validate:
 

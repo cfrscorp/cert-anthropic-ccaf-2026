@@ -58,6 +58,8 @@ dependencies.
 
 ## Quick Start
 
+First install [`uv`](https://docs.astral.sh/uv/) — macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`; Windows (PowerShell): `irm https://astral.sh/uv/install.ps1 | iex` ([full guide](https://docs.astral.sh/uv/getting-started/installation/)).
+
 ```bash
 git clone https://github.com/craigforr/cert-anthropic-ccaf-2026
 cd cert-anthropic-ccaf-2026
