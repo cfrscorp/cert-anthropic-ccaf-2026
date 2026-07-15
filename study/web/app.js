@@ -400,6 +400,15 @@
           var ok = !q || (d.getAttribute("data-search") || "").indexOf(q) >= 0;
           d.style.display = ok ? "" : "none";
           if (ok) shown++;
+          // A match hidden inside a collapsed body is invisible even though it's
+          // highlighted, so auto-reveal matches while searching. Only close what
+          // search itself opened, so this never overrides a manual expand/collapse.
+          if (q && ok) {
+            if (!d.open) { d.open = true; d.dataset.searchOpened = "1"; }
+          } else if (d.dataset.searchOpened === "1") {
+            d.open = false;
+            delete d.dataset.searchOpened;
+          }
         });
         section.style.display = shown ? "" : "none";
         if (shown) any = true;
