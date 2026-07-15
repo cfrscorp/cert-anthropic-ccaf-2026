@@ -43,5 +43,6 @@ None.
 - [x] BL-018 - Concepts: "Expand All" / "Collapse All" buttons in the filter bar (toggle every concept's `<details>`; work after any domain filter).
 - [x] BL-019 - Concepts: inline search box (beside Expand/Collapse) that live-filters concepts by task statement, title, and body text; hides empty domain sections and shows a no-results note.
 - [x] BL-020 - Concepts: aligned the filter controls by removing the "Domain" label (bare, aria-labelled select) so the dropdown lines up with the search box and buttons.
+- [x] BL-021 - Concepts: highlight search matches in place via the CSS Custom Highlight API (`::highlight(concept-search)`, amber `--hl-bg` in both themes) — no DOM mutation, so it never disturbs code spans; expand/collapse stays manual (highlights in a collapsed body appear once the user expands it).
 
 <!-- EOF -->

@@ -33,6 +33,7 @@
   --accent-ink: #b0512f;     /* text links on cream (>=4.5:1) */
   --accent-bright: #d97757;  /* highlight / hover */
   --accent-weak: #f1dccf;    /* clay tint */
+  --hl-bg: #f6d99a;          /* search-match highlight (amber) */
   --correct-bg: rgba(12,163,12,.12);
   --correct-bd: #0ca30c;
   --wrong-bg: rgba(192,71,58,.12);
@@ -64,6 +65,7 @@
   --accent-ink: #e5977a;     /* links on dark */
   --accent-bright: #e79070;
   --accent-weak: #3a2419;
+  --hl-bg: #6b5320;          /* search-match highlight (amber, dark) */
   --correct-bg: rgba(12,163,12,.20);
   --correct-bd: #0ca30c;
   --wrong-bg: rgba(224,106,92,.20);
@@ -197,6 +199,7 @@ select { max-width: 100%; min-width: 0; }
 }
 .search-input::placeholder { color: var(--ink-muted); }
 .search-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+::highlight(concept-search) { background-color: var(--hl-bg); color: var(--ink-1); }
 select:focus-visible, .btn:focus-visible, .option:focus-visible, .tab:focus-visible,
 .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn { font-weight: 600; transition: background .15s, border-color .15s, transform .05s; }

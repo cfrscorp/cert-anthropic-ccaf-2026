@@ -405,6 +405,32 @@
         if (shown) any = true;
       });
       document.getElementById("c-noresults").style.display = (q && !any) ? "" : "none";
+      highlightMatches(q);
+    }
+    // Highlight query matches in place via the CSS Custom Highlight API — no DOM
+    // mutation (so it never disturbs code spans), trivially cleared, and a no-op
+    // where unsupported. Highlights in a collapsed body only show once expanded.
+    function highlightMatches(q) {
+      if (!window.CSS || !CSS.highlights) return;
+      CSS.highlights.delete("concept-search");
+      var root = document.getElementById("c-list");
+      if (!q || !root) return;
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      var hl = new Highlight();
+      var node, found = false;
+      while ((node = walker.nextNode())) {
+        var text = node.nodeValue.toLowerCase();
+        var idx = text.indexOf(q);
+        while (idx !== -1) {
+          var r = document.createRange();
+          r.setStart(node, idx);
+          r.setEnd(node, idx + q.length);
+          hl.add(r);
+          found = true;
+          idx = text.indexOf(q, idx + q.length);
+        }
+      }
+      if (found) CSS.highlights.set("concept-search", hl);
     }
     paint("all");
 
