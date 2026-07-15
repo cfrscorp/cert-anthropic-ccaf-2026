@@ -371,10 +371,41 @@
   function renderConcepts() {
     view.innerHTML =
       '<div class="view-head"><h1>Concept Explainers</h1><p>One per exam task statement: the idea, why it matters, the common trap, and the lab to practice it.</p></div>' +
-      '<div class="card"><div class="row"><label class="field">Domain<select id="c-domain">' + domainOptions("all", DATA.concepts) + "</select></label></div></div>" +
-      '<div id="c-list"></div>';
+      '<div class="card"><div class="row">' +
+        '<select id="c-domain" aria-label="Filter by domain">' + domainOptions("all", DATA.concepts) + "</select>" +
+        '<span class="spacer"></span>' +
+        '<input type="search" id="c-search" class="search-input" placeholder="Search concepts…" aria-label="Search concepts">' +
+        '<button class="btn" id="c-expand">Expand All</button>' +
+        '<button class="btn" id="c-collapse">Collapse All</button>' +
+      "</div></div>" +
+      '<div id="c-list"></div>' +
+      '<div id="c-noresults" class="empty" style="display:none">No concepts match your search.</div>';
     var sel = document.getElementById("c-domain");
+    var search = document.getElementById("c-search");
     sel.addEventListener("change", function () { paint(sel.value); });
+    search.addEventListener("input", applyFilter);
+    function setAll(open) {
+      document.querySelectorAll("#c-list details.concept").forEach(function (d) { d.open = open; });
+    }
+    document.getElementById("c-expand").addEventListener("click", function () { setAll(true); });
+    document.getElementById("c-collapse").addEventListener("click", function () { setAll(false); });
+    // Live text filter: show only concepts whose searchable text matches; hide
+    // empty domain sections; surface a no-results note.
+    function applyFilter() {
+      var q = search.value.trim().toLowerCase();
+      var any = false;
+      document.querySelectorAll("#c-list .concept-domain").forEach(function (section) {
+        var shown = 0;
+        section.querySelectorAll("details.concept").forEach(function (d) {
+          var ok = !q || (d.getAttribute("data-search") || "").indexOf(q) >= 0;
+          d.style.display = ok ? "" : "none";
+          if (ok) shown++;
+        });
+        section.style.display = shown ? "" : "none";
+        if (shown) any = true;
+      });
+      document.getElementById("c-noresults").style.display = (q && !any) ? "" : "none";
+    }
     paint("all");
 
     function paint(dsel) {
@@ -388,8 +419,10 @@
         if (items.length === 0) return;
         html += '<section class="concept-domain"><h2><span class="dot" style="background:' + domainColor(d.id) + '"></span>D' + d.id + " · " + esc(d.name) + "</h2>";
         items.forEach(function (c) {
+          var searchText = (c.task_statement + " " + c.title + " " + c.concept + " " +
+            c.why_it_matters + " " + c.common_trap).toLowerCase();
           html +=
-            '<details class="concept"><summary><span class="tsid">' + esc(c.task_statement) + "</span> " + esc(c.title) + "</summary>" +
+            '<details class="concept" data-search="' + esc(searchText) + '"><summary><span class="tsid">' + esc(c.task_statement) + "</span> " + esc(c.title) + "</summary>" +
             '<div class="concept__body"><dl>' +
               "<dt>Concept</dt><dd>" + esc(c.concept) + "</dd>" +
               "<dt>Why it matters</dt><dd>" + esc(c.why_it_matters) + "</dd>" +
@@ -401,6 +434,7 @@
         html += "</section>";
       });
       list.innerHTML = html || emptyState("📘", "No concept explainers for this domain yet.");
+      applyFilter();
     }
   }
 

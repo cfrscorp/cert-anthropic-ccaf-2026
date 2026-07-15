@@ -40,5 +40,8 @@ None.
 - [x] BL-015 - Title Case for all headings in the remaining READMEs (labs/README.md, labs/_shared/README.md, study/README.md, 25 lab READMEs) via a script that skips code fences and preserves acronyms/code spans/filenames.
 - [x] BL-016 - study/README.md: added an "Install uv" quick start (macOS + Windows best-practice install) just before "Run It", linking the uv install guide.
 - [x] BL-017 - README (root): added a concise uv install line (macOS/Linux + Windows one-liners + link) under Quick Start.
+- [x] BL-018 - Concepts: "Expand All" / "Collapse All" buttons in the filter bar (toggle every concept's `<details>`; work after any domain filter).
+- [x] BL-019 - Concepts: inline search box (beside Expand/Collapse) that live-filters concepts by task statement, title, and body text; hides empty domain sections and shows a no-results note.
+- [x] BL-020 - Concepts: aligned the filter controls by removing the "Domain" label (bare, aria-labelled select) so the dropdown lines up with the search box and buttons.
 
 <!-- EOF -->
