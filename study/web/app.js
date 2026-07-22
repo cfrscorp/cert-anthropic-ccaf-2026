@@ -44,6 +44,15 @@
   function labLink(lab) {
     return '<a href="../../labs/' + esc(lab) + '/" target="_blank" rel="noopener">' + esc(lab) + "</a>";
   }
+  // Link text is a succinct, concept-tied label (not the raw video title, which
+  // is often a channel/series name); the real title becomes the link's `title`
+  // tooltip, standing in for alt text on a non-image link.
+  function videosHtml(videos, concept) {
+    return videos.map(function (v, i) {
+      var label = (videos.length > 1 ? "Video " + (i + 1) + ": " : "Video: ") + concept.title;
+      return '<a href="' + esc(v.url) + '" title="' + esc(v.title) + '" target="_blank" rel="noopener">' + esc(label) + "</a>";
+    }).join("<br>");
+  }
 
   /* ---- progress store --------------------------------------------------- */
   function loadProgress() {
@@ -463,6 +472,7 @@
               "<dt>Why it matters</dt><dd>" + esc(c.why_it_matters) + "</dd>" +
               "<dt>Common trap</dt><dd>" + esc(c.common_trap) + "</dd>" +
               (c.code_samples && c.code_samples.length ? "<dt>Code</dt><dd>" + codeSamplesHtml(c.code_samples) + "</dd>" : "") +
+              (c.videos && c.videos.length ? "<dt>Videos</dt><dd>" + videosHtml(c.videos, c) + "</dd>" : "") +
               (c.lab ? "<dt>Practice</dt><dd>" + labLink(c.lab) + "</dd>" : "") +
             "</dl></div></details>";
         });

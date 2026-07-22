@@ -47,5 +47,6 @@ None.
 - [x] BL-022 - Followed up on BL-021: a search match hidden inside a collapsed body was invisible even though highlighted (nothing expands by default), so search now auto-reveals only the concepts it matches, tracking what it opened so a manual Expand All / Collapse All choice is never overridden.
 - [x] BL-023 - Added `study/videos/` — one Markdown file per exam domain (D1–D5) linking 1-3 real YouTube videos per concept (55 unique links, every one verified to resolve via YouTube's oEmbed API), prioritizing Anthropic's official channel and hands-on coding demos, plus a `README.md` index.
 - [x] BL-024 - Added a `videos` array (`{title, url}`) to every concept in `concepts.json`, parsed from `study/videos/domain-*.md`; extended `concepts.schema.json` to validate it. `cd study && uv run pytest` green (30 concepts, 64 video entries).
+- [x] BL-025 - Concepts view: render each concept's `videos` as a "Videos" section (text links only, no thumbnails) between Code and Practice. Link text is a succinct, concept-tied label ("Video N: <concept title>"); the real video title becomes the link's `title` tooltip in place of alt text.
 
 <!-- EOF -->
