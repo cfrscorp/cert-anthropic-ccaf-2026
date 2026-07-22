@@ -13,6 +13,16 @@
         "language": "python",
         "code": "while True:\n    resp = client.messages.create(model=MODEL, messages=messages, tools=tools)\n    messages.append({\"role\": \"assistant\", \"content\": resp.content})\n\n    if resp.stop_reason == \"end_turn\":\n        return resp.text          # model is done -> stop on the SIGNAL, not on phrases\n\n    if resp.stop_reason == \"tool_use\":\n        results = []\n        for block in resp.tool_use_blocks():\n            output = run_tool(block.name, block.input)\n            results.append({\"type\": \"tool_result\",\n                            \"tool_use_id\": block.id, \"content\": output})\n        messages.append({\"role\": \"user\", \"content\": results})   # feed back, then iterate"
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect: Full Course Ep 01: Agentic Loops & stop_reason Explained",
+        "url": "https://www.youtube.com/watch?v=ldqOnljDINc"
+      },
+      {
+        "title": "How We Build Effective Agents: Barry Zhang, Anthropic",
+        "url": "https://www.youtube.com/watch?v=D7_ipDqhtwk"
+      }
     ]
   },
   {
@@ -22,7 +32,17 @@
     "concept": "A hub-and-spoke multi-agent system centers on a coordinator (the hub) that owns orchestration: it decomposes the query, delegates subtasks to specialized subagents (the spokes), routes all inter-subagent communication and error handling through itself, and aggregates results. Subagents run with isolated context, so they do not inherit the coordinator's history or each other's findings; needed context must be passed explicitly in their prompts. A capable coordinator analyzes query complexity to dynamically select which subagents to invoke instead of always running the full pipeline, partitions research scope across subagents (distinct subtopics or source types) to minimize duplication, and runs iterative refinement loops: evaluate the synthesis output for gaps, re-delegate targeted queries to search and analysis subagents, and re-invoke synthesis until coverage is sufficient.",
     "why_it_matters": "The exam repeatedly tests whether you can locate a failure at the orchestration layer rather than blaming a subagent that executed its assigned scope correctly. Understanding isolated context, centralized routing, dynamic selection, scope partitioning, and refinement loops lets you diagnose coverage gaps, latency, and reliability problems and choose proportionate fixes (e.g., broadening decomposition or adding a scoped tool) instead of over-provisioning agents.",
     "common_trap": "Assuming subagents share memory or that a subagent's success means the overall task succeeded. When a broad report misses whole domains, the cause is usually the coordinator's overly narrow decomposition, not a downstream search, analysis, or synthesis agent that worked correctly within the scope it was given.",
-    "lab": "lab-19-multi-agent-orchestration"
+    "lab": "lab-19-multi-agent-orchestration",
+    "videos": [
+      {
+        "title": "Multi-Agent Systems & Coordinator Patterns Explained | Claude Certified Architect Ep 02",
+        "url": "https://www.youtube.com/watch?v=ejPWvBcc_DU"
+      },
+      {
+        "title": "Exploring Subagents in Claude Code with Addy Osmani",
+        "url": "https://www.youtube.com/watch?v=o-kN3vkZcZ4"
+      }
+    ]
   },
   {
     "task_statement": "1.3",
@@ -43,6 +63,16 @@
         "language": "json",
         "code": "{\n  \"role\": \"assistant\",\n  \"content\": [\n    {\"type\": \"tool_use\", \"name\": \"Task\", \"id\": \"toolu_1\",\n     \"input\": {\"subagent_type\": \"web_search\",\n               \"prompt\": \"Research X. (Full context here; you inherit nothing.)\"}},\n    {\"type\": \"tool_use\", \"name\": \"Task\", \"id\": \"toolu_2\",\n     \"input\": {\"subagent_type\": \"doc_analysis\",\n               \"prompt\": \"Analyze Y. Prior findings, verbatim: [...]\"}}\n  ]\n}"
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect Ep 03 | Subagent Context Passing & Session Management | Full Course",
+        "url": "https://www.youtube.com/watch?v=a2N6vKdQUfE"
+      },
+      {
+        "title": "Claude Certified Architect Ep 04 | Multi-Agent System in Python & Claude SDK | Hands On",
+        "url": "https://www.youtube.com/watch?v=e7ijjK173zI"
+      }
     ]
   },
   {
@@ -58,6 +88,12 @@
         "caption": "Prerequisite gate: deterministic ordering a prompt cannot guarantee",
         "language": "python",
         "code": "class PrerequisiteGate:\n    \"\"\"Block process_refund until get_customer has VERIFIED the customer.\"\"\"\n    def __init__(self):\n        self.verified_customer_id = None\n\n    def record_tool_result(self, name, result):\n        if name == \"get_customer\" and result.get(\"verified\") and result.get(\"customer_id\"):\n            self.verified_customer_id = result[\"customer_id\"]\n\n    def check(self, tool):\n        if tool == \"process_refund\":\n            return self.verified_customer_id is not None   # gate, not a hope\n        return True"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect: Full Course Ep 05 — PreToolUse, PostToolUse Hooks & Task Decomposition",
+        "url": "https://www.youtube.com/watch?v=JJBcpwpsKzk"
       }
     ]
   },
@@ -80,6 +116,16 @@
         "language": "python",
         "code": "def post_tool_use_normalize(tool_name, result):\n    out = dict(result)\n    if \"timestamp\" in out:                 # Unix int OR ISO string -> canonical ISO-8601 UTC\n        out[\"timestamp\"] = to_iso8601(out[\"timestamp\"])\n    if \"status\" in out:                    # numeric HTTP code -> human-readable label\n        out[\"status\"] = status_label(out[\"status\"])\n    out[\"source_tool\"] = tool_name\n    return out"
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect: Full Course Ep 05 — PreToolUse, PostToolUse Hooks & Task Decomposition",
+        "url": "https://www.youtube.com/watch?v=JJBcpwpsKzk"
+      },
+      {
+        "title": "Hooks in Claude Code — Full Theory + Practical Use",
+        "url": "https://www.youtube.com/watch?v=oo1oADOiVmM"
+      }
     ]
   },
   {
@@ -89,7 +135,17 @@
     "concept": "Complex workflows are decomposed one of two ways. A fixed sequential pipeline (prompt chaining) hard-wires a known set of subtasks in a known order—for example, reviewing each file individually for local issues, then running a separate cross-file integration pass. Dynamic adaptive decomposition instead generates subtasks from what each step discovers, revising the plan as new dependencies surface—for example, mapping a legacy codebase's structure, finding high-impact areas, then building a prioritized test plan that adapts.",
     "why_it_matters": "Matching the pattern to the workflow drives reliability. Predictable, multi-aspect work runs best on a fixed chain, which is repeatable and cheap to reason about. Open-ended investigation needs adaptation because its subtasks are unknowable in advance. Splitting large reviews into per-file passes plus an integration pass also defeats attention dilution—the cause of shallow, inconsistent, and contradictory single-pass feedback.",
     "common_trap": "Assuming a larger context window fixes a bad multi-file review. Context size controls how much fits in the prompt, not attention quality—packing many files into one pass still dilutes per-file focus. The structural fix is decomposition (per-file passes plus an integration pass), not a bigger model or majority voting over the same diluted pass.",
-    "lab": "lab-16-decomposition-and-review"
+    "lab": "lab-16-decomposition-and-review",
+    "videos": [
+      {
+        "title": "#14 Prompt Chaining vs Dynamic Decomposition | DevCompass | Claude Certified Architect Prep Cohort",
+        "url": "https://www.youtube.com/watch?v=kEWsUYtldrA"
+      },
+      {
+        "title": "Claude Certified Architect: Full Course Ep 05 — PreToolUse, PostToolUse Hooks & Task Decomposition",
+        "url": "https://www.youtube.com/watch?v=JJBcpwpsKzk"
+      }
+    ]
   },
   {
     "task_statement": "1.7",
@@ -109,6 +165,16 @@
         "caption": "Fork a session to explore a divergent approach without contaminating it",
         "language": "python",
         "code": "from claude_agent_sdk import ClaudeAgentOptions\n\n# Branch an INDEPENDENT copy from a shared baseline; the original is untouched.\noptions = ClaudeAgentOptions(resume=\"analysis-baseline\", fork_session=True)\n\n# When resuming after code changed, name what moved so re-analysis is targeted\n# (vs. a fresh session + curated summary when prior tool results are fully stale).\nnotice = (\"Files changed since last active: api/auth.py, api/models.py. \"\n          \"Re-analyze ONLY these; treat earlier analysis of them as stale.\")"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect Ep 03 | Subagent Context Passing & Session Management | Full Course",
+        "url": "https://www.youtube.com/watch?v=a2N6vKdQUfE"
+      },
+      {
+        "title": "Stop Memorizing Random IDs 🛑 Claude Code Sessions Explained",
+        "url": "https://www.youtube.com/watch?v=GWG89MIjfHw"
       }
     ]
   },
@@ -131,6 +197,16 @@
         "language": "json",
         "code": "{\n  \"name\": \"extract_web_results\",\n  \"description\": \"Extract structured results from a web search response. Input: raw HTML or a search-results JSON payload (not a file path). Example: 'pull titles and URLs from these Google results'. Use this for web/search content; use extract_data_points for uploaded documents like PDFs or invoices.\",\n  \"input_schema\": {\n    \"type\": \"object\",\n    \"properties\": {\"payload\": {\"type\": \"string\", \"description\": \"HTML or search-results JSON\"}},\n    \"required\": [\"payload\"]\n  }\n}"
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect: Full Course Ep 06: Tool Descriptions & Tool Misrouting Explained",
+        "url": "https://www.youtube.com/watch?v=s1j1vTnCKns"
+      },
+      {
+        "title": "Getting Started with Tool Use in the Anthropic API",
+        "url": "https://www.youtube.com/watch?v=7xVmf9lIj14"
+      }
     ]
   },
   {
@@ -152,6 +228,12 @@
         "language": "json",
         "code": "{\n  \"isError\": true,\n  \"errorCategory\": \"business\",\n  \"isRetryable\": false,\n  \"message\": \"Refunds over $500 require manager approval and cannot be processed automatically.\"\n}"
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect Ep 07: Agent Error Handling & tool_choice Explained",
+        "url": "https://www.youtube.com/watch?v=eZj6FtTVV58"
+      }
     ]
   },
   {
@@ -168,6 +250,16 @@
         "language": "python",
         "code": "# auto: model may call a tool OR answer in text (mixed conversation/action)\ntool_choice = {\"type\": \"auto\"}\n\n# any: model MUST call some tool (it picks which) — guarantees structured output\ntool_choice = {\"type\": \"any\"}\n\n# forced: model MUST call this specific tool first (e.g. extract before enrich)\ntool_choice = {\"type\": \"tool\", \"name\": \"extract_metadata\"}"
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect Ep 07: Agent Error Handling & tool_choice Explained",
+        "url": "https://www.youtube.com/watch?v=eZj6FtTVV58"
+      },
+      {
+        "title": "How to Use Subagents in Claude Code",
+        "url": "https://www.youtube.com/watch?v=dk0kn2evY38"
+      }
     ]
   },
   {
@@ -183,6 +275,20 @@
         "caption": "Project-scoped .mcp.json (committed): the file holds only a ${GITHUB_TOKEN} placeholder; the real value lives in each developer's environment.",
         "language": "json",
         "code": "{\n  \"mcpServers\": {\n    \"github\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n      \"env\": {\n        \"GITHUB_TOKEN\": \"${GITHUB_TOKEN}\"\n      }\n    }\n  }\n}"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Claude Certified Architect: Full Course Ep 08 | MCP Servers, Config, Cline & More",
+        "url": "https://www.youtube.com/watch?v=IVUxGTxSuH8"
+      },
+      {
+        "title": "How to easily share the Claude Code MCP config with your team",
+        "url": "https://www.youtube.com/watch?v=l7FFoFpHMOM"
+      },
+      {
+        "title": "Adding MCP Servers to Claude Code: Real Examples That Work",
+        "url": "https://www.youtube.com/watch?v=YA1zexKqiDg"
       }
     ]
   },
@@ -205,6 +311,16 @@
         "language": "text",
         "code": "# Edit fails: \"status\" appears many times — anchor not unique\nEdit old_string=\"status\" new_string=\"state\"   # error: multiple matches\n\n# Reliable fallback: Read full file, then Write back the single intended change\nRead file_path=\"config.py\"\nWrite file_path=\"config.py\" content=\"<full contents with only that one line changed>\""
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Code Tools | E16 | Read, Edit, Write, Grep, Glob & Bash",
+        "url": "https://www.youtube.com/watch?v=OlTyh06tj2E"
+      },
+      {
+        "title": "Claude Certified Architect: Ep 09 | Claude Built-in Tools Explained | Full Course Series",
+        "url": "https://www.youtube.com/watch?v=eh-xxQpfBBY"
+      }
     ]
   },
   {
@@ -226,6 +342,20 @@
         "language": "markdown",
         "code": "# API package memory (directory-level)\n\n## API conventions\n\n- Validate every request body with a Pydantic model.\n- Version breaking changes under a new path prefix (/v2/...).\n\n## Testing for this package\n\n@../../standards/testing.md"
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Code best practices | Code w/ Claude",
+        "url": "https://www.youtube.com/watch?v=gv0WHhKelSE"
+      },
+      {
+        "title": "Anatomy of the .claude/ Folder — The Secret to 10x Claude Code",
+        "url": "https://www.youtube.com/watch?v=rX6DLHlaOhU"
+      },
+      {
+        "title": "Claude Code's Memory System: The Full Guide",
+        "url": "https://www.youtube.com/watch?v=FRwZg6VOjvQ"
+      }
     ]
   },
   {
@@ -241,6 +371,20 @@
         "caption": "SKILL.md frontmatter for .claude/skills/<name>/: context: fork isolates verbose output in a sub-agent, allowed-tools restricts capabilities, argument-hint prompts for a missing parameter.",
         "language": "markdown",
         "code": "---\nname: analyze-codebase\ndescription: >-\n  Map an unfamiliar codebase and return a concise summary. Use before a\n  large refactor. Produces verbose exploration, so it runs forked.\ncontext: fork\nallowed-tools: Read, Grep, Glob\nargument-hint: \"[directory or subsystem to analyze, e.g. src/api]\"\n---\n\n# analyze-codebase\n\nAnalyze the subsystem named in `$ARGUMENTS` and return only a short summary\nto the main session."
+      }
+    ],
+    "videos": [
+      {
+        "title": "Claude Code Skills & Agents — The .claude/ Folder Part 2",
+        "url": "https://www.youtube.com/watch?v=tol7eILAF8w"
+      },
+      {
+        "title": "Claude Code Skills: Build Custom Slash Commands",
+        "url": "https://www.youtube.com/watch?v=hyo13fgkegQ"
+      },
+      {
+        "title": "How to Create Claude Code Agent Skills in 2026",
+        "url": "https://www.youtube.com/watch?v=nbqqnl3JdR0"
       }
     ]
   },
@@ -258,6 +402,12 @@
         "language": "markdown",
         "code": "---\nname: testing\ndescription: Conventions for all test files, wherever they live in the tree.\npaths:\n  - \"**/*.test.tsx\"\n  - \"**/*.test.ts\"\n---\n\n# Testing conventions\n\nLoad automatically when editing a test file, regardless of its directory.\n\n- Use Vitest with describe / it; one top-level describe per unit.\n- Prefer screen.getByRole over getByTestId.\n- No network or real timers - tests must be deterministic and offline."
       }
+    ],
+    "videos": [
+      {
+        "title": "Anatomy of the .claude/ Folder — The Secret to 10x Claude Code",
+        "url": "https://www.youtube.com/watch?v=rX6DLHlaOhU"
+      }
     ]
   },
   {
@@ -267,7 +417,21 @@
     "concept": "Plan mode and direct execution are matched to task complexity. Plan mode is designed for complex work—large-scale changes, multiple valid approaches, architectural decisions, and multi-file modifications—because it enables safe codebase exploration and design before committing to changes, preventing costly rework. Direct execution suits simple, well-scoped changes such as a single-file bug fix with a clear stack trace or adding one validation conditional. The Explore subagent isolates verbose discovery output (large reads and searches) and returns a concise summary to the main conversation, preserving context during multi-phase tasks. A powerful combination is using plan mode for investigation and then direct execution for the implementation the plan defines.",
     "why_it_matters": "Choosing the mode by actual complexity is the skill the exam tests. Under-planning a large architectural or multi-file change causes late-discovered dependencies and rework; over-planning a trivial fix wastes effort. Recognizing that stated complexity justifies plan mode immediately—rather than 'switching later'—and that detailed upfront prompts cannot replace exploration are the distinctions that separate correct answers from plausible traps.",
     "common_trap": "Believing you can safely start every task in direct execution and switch to plan mode only if complexity emerges. When the requirements already describe a large-scale or architectural change, the complexity is known, not hypothetical, so plan mode is warranted from the start. A mirror trap is thinking a sufficiently detailed direct-execution prompt substitutes for plan mode—it presumes the correct structure is already known, which is exactly what exploration is needed to determine.",
-    "lab": "lab-08-plan-mode-and-refinement"
+    "lab": "lab-08-plan-mode-and-refinement",
+    "videos": [
+      {
+        "title": "Claude Code's Hidden Subagents: Plan + Explore → Team Mode",
+        "url": "https://www.youtube.com/watch?v=FUAqVZAKFf4"
+      },
+      {
+        "title": "Why You Need Plan Mode in Claude Code (Pro Tips)",
+        "url": "https://www.youtube.com/watch?v=FoRIj5qcslg"
+      },
+      {
+        "title": "Claude Code Plan Mode: Think Before You Build",
+        "url": "https://www.youtube.com/watch?v=wwWUkBGTLUE"
+      }
+    ]
   },
   {
     "task_statement": "3.5",
@@ -282,6 +446,20 @@
         "caption": "Iterative refinement: when a prose spec (\"normalize the amounts\") is read inconsistently, 2-3 concrete input -> output examples (including the null edge case) pin down the transformation better than rewording.",
         "language": "text",
         "code": "Rule (prose): normalize each amount to a number of cents; blank stays null.\n\nExample 1  input: \"$1,250.00\"  -> output: 125000\nExample 2  input: \"9.5\"        -> output: 950\nExample 3  input: \"\"           -> output: null   (edge case: no fabricated 0)\nExample 4  input: \"USD 40\"     -> output: 4000"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Red Green Refactor is OP With Claude Code",
+        "url": "https://www.youtube.com/watch?v=hYZdIwFIy-c"
+      },
+      {
+        "title": "Claude Code 'Interview' Mode in 6 Minutes",
+        "url": "https://www.youtube.com/watch?v=vgHBEju4kGE"
+      },
+      {
+        "title": "Claude Code best practices | Code w/ Claude",
+        "url": "https://www.youtube.com/watch?v=gv0WHhKelSE"
       }
     ]
   },
@@ -298,6 +476,20 @@
         "caption": "CI step running Claude Code non-interactively: -p prevents the hang, --output-format json + --json-schema force machine-parseable findings, and a committed review.CLAUDE.md supplies criteria to this independent (non-author) instance.",
         "language": "yaml",
         "code": "- name: Run Claude Code review (non-interactive)\n  env:\n    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}\n  run: |\n    git diff --name-only \"origin/${{ github.base_ref }}...HEAD\" > changed_files.txt\n    # -p = non-interactive; prior_findings.json dedupes across re-runs\n    claude -p \"Review files in changed_files.txt for bugs and security issues\n      using review.CLAUDE.md. Prior findings are in prior_findings.json - report\n      only NEW or still-unaddressed issues.\" \\\n      --output-format json \\\n      --json-schema review-schema.json \\\n      > review.json"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Claude Code + GitHub Actions",
+        "url": "https://www.youtube.com/watch?v=L_WFEgry87M"
+      },
+      {
+        "title": "Claude Code GitHub Action: Automated PR Reviews Setup",
+        "url": "https://www.youtube.com/watch?v=R1MvBwoyHxw"
+      },
+      {
+        "title": "I Asked Codex to Review Claude Code's Code. And Vice Versa.",
+        "url": "https://www.youtube.com/watch?v=lleyHrcp1is"
       }
     ]
   },
@@ -320,6 +512,16 @@
         "language": "markdown",
         "code": "- critical: data loss / security breach / crash on a common path\n  example: cursor.execute(f\"SELECT * FROM users WHERE id = {user_id}\")\n- high: wrong result or unhandled error on realistic input\n  example: return sum(xs) / len(xs)   # ZeroDivisionError on []\n- low: no behavioral impact (redundant branch, clarifying rename)\n  example: if is_ready == True:        # `if is_ready:` reads better\n"
       }
+    ],
+    "videos": [
+      {
+        "title": "Anthropic's NEW Claude Code Review Agent (Full Open Source Workflow)",
+        "url": "https://www.youtube.com/watch?v=nItsfXwujjg"
+      },
+      {
+        "title": "Claude Certified Architect: Ep 14 | Prompt Engineering — Explicit Criteria & False Positives",
+        "url": "https://www.youtube.com/watch?v=HqwULqy1egw"
+      }
     ]
   },
   {
@@ -335,6 +537,16 @@
         "caption": "2-4 few-shot examples showing the output format AND why one choice beats a plausible alternative",
         "language": "text",
         "code": "Study these examples, then match the format and reasoning exactly.\n\nInput:  if is_ready == True:\nOutput: {location: auth.py:20, issue: redundant comparison,\n         severity: low, suggested_fix: use `if is_ready:`}\nWhy: no behavior change -> low, not a high-severity bug.\n\nInput:  cursor.execute(f\"SELECT * FROM users WHERE id = {uid}\")\nOutput: {location: db.py:8, issue: SQL injection via unsanitized input,\n         severity: critical, suggested_fix: use a parameterized query}\nWhy: user input reaches the query -> critical, not medium.\n"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Prompting 101 | Code w/ Claude",
+        "url": "https://www.youtube.com/watch?v=ysPbXH0LpIE"
+      },
+      {
+        "title": "Building with Anthropic Claude: Prompt Workshop with Zack Witten",
+        "url": "https://www.youtube.com/watch?v=hkhDdcM5V94"
       }
     ]
   },
@@ -357,6 +569,20 @@
         "language": "python",
         "code": "resp = client.messages.create(\n    model=\"claude-sonnet-4-5\",\n    max_tokens=1024,\n    tools=[EXTRACTION_TOOL],\n    # forced selection -> must call this exact tool; use \"any\" if the\n    # document type is unknown and several schemas exist.\n    tool_choice={\"type\": \"tool\", \"name\": \"extract_invoice\"},\n    messages=[{\"role\": \"user\", \"content\": f\"<document>\\n{doc}\\n</document>\"}],\n)\ndata = next(b.input for b in resp.content if b.type == \"tool_use\")"
       }
+    ],
+    "videos": [
+      {
+        "title": "Claude Structured Outputs Demo: Guaranteed JSON Schema Compliance (No Regex, No \"Almost JSON\")",
+        "url": "https://www.youtube.com/watch?v=Qq6nTf6V10w"
+      },
+      {
+        "title": "Getting Started with Tool Use in the Anthropic API",
+        "url": "https://www.youtube.com/watch?v=7xVmf9lIj14"
+      },
+      {
+        "title": "Claude API: Strict Response Types/Schemas (for Dummies) - Anthropic",
+        "url": "https://www.youtube.com/watch?v=kiooXcT4E0g"
+      }
     ]
   },
   {
@@ -377,6 +603,16 @@
         "caption": "Semantic check tool use can't catch: calculated_total vs stated_total, with a detected_pattern label",
         "language": "python",
         "code": "@model_validator(mode=\"after\")\ndef reconcile(self):\n    calc = round(sum(i.amount for i in self.line_items), 2)\n    if abs(calc - self.stated_total) > 0.01:\n        raise ValueError(\n            f\"stated_total ({self.stated_total}) != sum of line items ({calc}) \"\n            \"[detected_pattern=stated_total_mismatch]\")\n    return self"
+      }
+    ],
+    "videos": [
+      {
+        "title": "#27 Validation & Retry | DevCompass | Claude Certified Architect Prep Cohort",
+        "url": "https://www.youtube.com/watch?v=zaDhWZ0sFtg"
+      },
+      {
+        "title": "Claude Code Patterns: Feedback loops",
+        "url": "https://www.youtube.com/watch?v=CNYE5nQfRaQ"
       }
     ]
   },
@@ -399,6 +635,12 @@
         "language": "python",
         "code": "def submission_interval(sla_hours, batch_window_hours=24):\n    interval = sla_hours - batch_window_hours\n    if interval <= 0:\n        raise ValueError(\"SLA must exceed the 24h batch window\")\n    return interval   # e.g. sla=30 -> submit at least every 6h"
       }
+    ],
+    "videos": [
+      {
+        "title": "#29 Batch Processing | DevCompass | Claude Certified Architect Prep Cohort",
+        "url": "https://www.youtube.com/watch?v=L6pcS70-whw"
+      }
     ]
   },
   {
@@ -419,6 +661,20 @@
         "caption": "Independent review instance (no generation context) beats self-review or extended thinking",
         "language": "text",
         "code": "Spawn a SECOND Claude instance with NO generation history to review\nthe code. The generator retains the reasoning it used to write the code\nand is less likely to question its own decisions in the same session.\nHave each finding self-report a calibrated confidence to route review:\n  confidence >= threshold -> auto-apply;  below -> human review.\n"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Self Code Review vs Claude Code Review",
+        "url": "https://www.youtube.com/watch?v=SIWS3An0J2o"
+      },
+      {
+        "title": "Anthropic's NEW Claude Code Review Agent (Full Open Source Workflow)",
+        "url": "https://www.youtube.com/watch?v=nItsfXwujjg"
+      },
+      {
+        "title": "Multi-Agent Code Review using Generative AI and LangGraph",
+        "url": "https://www.youtube.com/watch?v=pdnT3yLk70c"
       }
     ]
   },
@@ -441,6 +697,16 @@
         "language": "python",
         "code": "KEEP = (\"order_number\", \"status\", \"total\", \"delivered_at\")\n\ndef trim(tool_result: dict) -> dict:\n    # Drop tracking blobs, internal ids, carrier metadata, etc.\n    return {k: tool_result[k] for k in KEEP if k in tool_result}\n\nhistory.append({\"role\": \"tool\", \"content\": trim(raw_order_lookup)})"
       }
+    ],
+    "videos": [
+      {
+        "title": "Effective context engineering for AI agents by Anthropic",
+        "url": "https://www.youtube.com/watch?v=139Cfcrt2Mk"
+      },
+      {
+        "title": "Anthropic Workshop: Build Agents That Run for Hours — Ash Prabaker & Andrew Wilson",
+        "url": "https://www.youtube.com/watch?v=mR-WAvEPRwE"
+      }
     ]
   },
   {
@@ -456,6 +722,12 @@
         "caption": "Escalation decision driven by explicit structural triggers (human request, policy gap, no progress) and never by sentiment or self-reported confidence.",
         "language": "python",
         "code": "def decide(case: dict) -> str:\n    # Honor an explicit human request immediately, without investigating.\n    if case[\"asked_for_human\"]:\n        return \"ESCALATE\"\n    # Policy is silent / ambiguous / has a gap on this request.\n    if case[\"policy_state\"] in {\"gap\", \"silent\", \"ambiguous\"}:\n        return \"ESCALATE\"\n    # Cannot make meaningful progress (e.g. backend down) -> hand off.\n    if not case[\"can_make_progress\"]:\n        return \"ESCALATE\"\n    # Multiple records match -> get another identifier, do not guess.\n    if case[\"match_count\"] > 1:\n        return \"ASK_CLARIFY\"\n    # Straightforward and within capability. Sentiment is irrelevant.\n    return \"RESOLVE\""
+      }
+    ],
+    "videos": [
+      {
+        "title": "Build an AI Customer Support Email Agent using Claude Code | Agentic AI Project",
+        "url": "https://www.youtube.com/watch?v=ImbmSEPo7qI"
       }
     ]
   },
@@ -478,6 +750,20 @@
         "language": "json",
         "code": "{\n  \"failure_type\": \"empty_success\",\n  \"attempted\": \"search(index='filings', q='Q2 2026 revenue')\",\n  \"partial_results\": [],\n  \"note\": \"Query completed; no matching filings exist yet. Do NOT retry.\"\n}"
       }
+    ],
+    "videos": [
+      {
+        "title": "Building more effective AI agents",
+        "url": "https://www.youtube.com/watch?v=uhJJgc-0iTQ"
+      },
+      {
+        "title": "How We Build Effective Agents: Barry Zhang, Anthropic",
+        "url": "https://www.youtube.com/watch?v=D7_ipDqhtwk"
+      },
+      {
+        "title": "Exploring Multi-Agent Systems: Key Insights from Anthropic and Cognition",
+        "url": "https://www.youtube.com/watch?v=evDb9SQ15CQ"
+      }
     ]
   },
   {
@@ -487,7 +773,17 @@
     "concept": "Long exploration sessions suffer context degradation: as the window fills, the model gives inconsistent answers and references 'typical patterns' rather than the specific classes and files it discovered earlier. Four complementary techniques counteract this. (1) Scratchpad files persist key findings to disk so specifics survive across context boundaries and can be re-read for later questions. (2) Subagent delegation isolates verbose exploration output (e.g., 'find all test files,' 'trace refund flow dependencies') inside a subagent that returns only a concise result, while the main agent coordinates high-level understanding; summarizing each phase's findings and injecting them into the next phase's subagents carries knowledge forward compactly. (3) Structured state persistence enables crash recovery: each agent exports state to a known location, and on resume the coordinator loads a manifest of those exports and injects the recovered state into agent prompts. (4) /compact reduces context usage in place when the window fills with verbose discovery output.",
     "why_it_matters": "In real large-codebase work, the most valuable early discoveries are exactly what a saturated context loses first, turning a precise agent into one that hand-waves about 'typical' designs and contradicts itself. Externalizing findings (scratchpads, exported state manifests) and offloading verbosity (subagents, /compact) are what keep an extended, possibly multi-day, exploration accurate and resumable after crashes.",
     "common_trap": "Treating any single mechanism as the whole solution: assuming /compact alone (it is lossy and stays within one window) or the coordinator's live conversation history (volatile, lost on crash, and itself degrades) durably preserves findings. Durable recall requires writing specifics to a known location, and resumability requires a reloadable manifest, not reliance on in-context history.",
-    "lab": "lab-14-context-management"
+    "lab": "lab-14-context-management",
+    "videos": [
+      {
+        "title": "Context Management in Claude Code",
+        "url": "https://www.youtube.com/watch?v=eW3oTyfeWZ0"
+      },
+      {
+        "title": "Context Window Management in Claude Code",
+        "url": "https://www.youtube.com/watch?v=lN5tLx2_7HQ"
+      }
+    ]
   },
   {
     "task_statement": "5.5",
@@ -502,6 +798,12 @@
         "caption": "The extraction's scalar confidence is its weakest field; route to a human below threshold or when the source is contradictory, and auto-approve the calibrated remainder.",
         "language": "python",
         "code": "def overall_confidence(extraction: dict) -> float:\n    confs = extraction[\"confidences\"]  # e.g. {\"vendor\": 0.99, \"total\": 0.88}\n    return min(confs.values())  # a chain is only as strong as its weakest field\n\ndef route(extraction: dict, threshold: float) -> str:\n    if extraction.get(\"source_contradictory\"):\n        return \"REVIEW\"  # ambiguity overrides a high score\n    return \"REVIEW\" if overall_confidence(extraction) < threshold else \"AUTO_APPROVE\"\n\n# threshold is learned from a labeled validation set, not guessed.\nroute(item, threshold=0.95)"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Confidence scores for Box AI Extract: Know when to rely on your extractions",
+        "url": "https://www.youtube.com/watch?v=sTXMYV6gcvw"
       }
     ]
   },
@@ -518,6 +820,20 @@
         "caption": "Claim-source mapping: each claim keeps its sources with excerpts and publication dates, and conflicting statistics are annotated (not averaged or dropped).",
         "language": "json",
         "code": "{\n  \"claim\": \"2025 global EV sales\",\n  \"status\": \"contested\",\n  \"sources\": [\n    {\"name\": \"IEA report\", \"value\": \"17.1M units\",\n     \"excerpt\": \"...sales reached 17.1 million...\", \"published\": \"2026-04-10\"},\n    {\"name\": \"BNEF outlook\", \"value\": \"14.9M units\",\n     \"excerpt\": \"...an estimated 14.9 million...\", \"published\": \"2026-03-22\"}\n  ],\n  \"conflict\": \"IEA counts light commercial vehicles; BNEF passenger only\"\n}"
+      }
+    ],
+    "videos": [
+      {
+        "title": "Anthropic's Secret: How we Build Multi-Agent AI",
+        "url": "https://www.youtube.com/watch?v=os5Qxk9tfr0"
+      },
+      {
+        "title": "How Anthropic built their multi-agent research system?",
+        "url": "https://www.youtube.com/watch?v=9l4tvyRA1Ts"
+      },
+      {
+        "title": "#322 How to resolve knowledge conflicts during RAG in LLMs?",
+        "url": "https://www.youtube.com/watch?v=kc49P8VDwkI"
       }
     ]
   }

@@ -26,6 +26,18 @@
             "code": { "type": "string", "minLength": 1 }
           }
         }
+      },
+      "videos": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["title", "url"],
+          "properties": {
+            "title": { "type": "string", "minLength": 1 },
+            "url": { "type": "string", "format": "uri", "pattern": "^https://" }
+          }
+        }
       }
     }
   }
