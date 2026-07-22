@@ -44,5 +44,7 @@ None.
 - [x] BL-019 - Concepts: inline search box (beside Expand/Collapse) that live-filters concepts by task statement, title, and body text; hides empty domain sections and shows a no-results note.
 - [x] BL-020 - Concepts: aligned the filter controls by removing the "Domain" label (bare, aria-labelled select) so the dropdown lines up with the search box and buttons.
 - [x] BL-021 - Concepts: highlight search matches in place via the CSS Custom Highlight API (`::highlight(concept-search)`, amber `--hl-bg` in both themes) — no DOM mutation, so it never disturbs code spans; expand/collapse stays manual (highlights in a collapsed body appear once the user expands it).
+- [x] BL-022 - Followed up on BL-021: a search match hidden inside a collapsed body was invisible even though highlighted (nothing expands by default), so search now auto-reveals only the concepts it matches, tracking what it opened so a manual Expand All / Collapse All choice is never overridden.
+- [x] BL-023 - Added `study/video/` — one Markdown file per exam domain (D1–D5) linking 1-3 real YouTube videos per concept (55 unique links, every one verified to resolve via YouTube's oEmbed API), prioritizing Anthropic's official channel and hands-on coding demos, plus a `README.md` index.
 
 <!-- EOF -->
