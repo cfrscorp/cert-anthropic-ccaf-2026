@@ -43,6 +43,10 @@ class Color:
     RESET = "\033[0m"
     BOLD = "\033[1m"
     DIM = "\033[2m"
+    ITALIC = "\033[3m"
+    UNDERLINE = "\033[4m"
+
+    BLACK = "\033[30m"
     RED = "\033[31m"
     GREEN = "\033[32m"
     YELLOW = "\033[33m"
@@ -50,8 +54,24 @@ class Color:
     MAGENTA = "\033[35m"
     CYAN = "\033[36m"
     WHITE = "\033[37m"
-    BG_GREEN = "\033[42m"
+
+    BRIGHT_BLACK = "\033[90m"
+    BRIGHT_RED = "\033[91m"
+    BRIGHT_GREEN = "\033[92m"
+    BRIGHT_YELLOW = "\033[93m"
+    BRIGHT_BLUE = "\033[94m"
+    BRIGHT_MAGENTA = "\033[95m"
+    BRIGHT_CYAN = "\033[96m"
+    BRIGHT_WHITE = "\033[97m"
+
+    BG_BLACK = "\033[40m"
     BG_RED = "\033[41m"
+    BG_GREEN = "\033[42m"
+    BG_YELLOW = "\033[43m"
+    BG_BLUE = "\033[44m"
+    BG_MAGENTA = "\033[45m"
+    BG_CYAN = "\033[46m"
+    BG_WHITE = "\033[47m"
 
     @classmethod
     def wrap(cls, text, *codes):
@@ -233,12 +253,12 @@ def print_question(index, total, q):
     print(c(header, Color.BOLD, Color.CYAN) + c("   " + tag, Color.DIM))
     rule()
     if q.scenario:
-        print(c(q.scenario, Color.DIM))
+        print(c(q.scenario, Color.BLUE))
         print()
     print(c(q.stem, Color.BOLD))
     print()
     for opt in q.options:
-        print(f"  {c(opt['key'], Color.BOLD, Color.MAGENTA)}. {opt['text']}")
+        print(f"  {c(opt['key'], Color.BOLD, Color.CYAN)}. {opt['text']}")
     print()
 
 
