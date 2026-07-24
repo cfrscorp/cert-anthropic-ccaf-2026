@@ -73,6 +73,10 @@ class Color:
     BG_CYAN = "\033[46m"
     BG_WHITE = "\033[47m"
 
+    # True orange isn't in the standard 16-color set; this is the 256-color
+    # (xterm-256color) equivalent, near-universally supported in 2026.
+    ORANGE = "\033[38;5;208m"
+
     @classmethod
     def wrap(cls, text, *codes):
         if not cls.enabled:
@@ -88,10 +92,12 @@ def rule(char="─", width=72, color=Color.DIM):
     print(c(char * width, color))
 
 
-def bar(pct, width=24):
-    """A small colored proportion bar for percentages (0-100)."""
+def bar(pct, width=24, color=None):
+    """A small colored proportion bar for percentages (0-100). Pass `color`
+    to override the default green/yellow/red-by-pct coloring — e.g. to color
+    the bar by a different percentage than the one it's filled to."""
     filled = round(width * max(0.0, min(100.0, pct)) / 100)
-    color = Color.GREEN if pct >= 80 else Color.YELLOW if pct >= 60 else Color.RED
+    color = color or (Color.GREEN if pct >= 80 else Color.YELLOW if pct >= 60 else Color.RED)
     return c("█" * filled, color) + c("░" * (width - filled), Color.DIM)
 
 

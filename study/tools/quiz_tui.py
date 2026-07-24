@@ -99,6 +99,18 @@ def label_line(label, text, width=None):
 # state change (before answering, after answering, after skip/feedback).
 # --------------------------------------------------------------------------
 
+def accuracy_color(pct):
+    """Same 90/75/60 breakpoints as print_summary's Excellent/Solid/Keep
+    practicing/Needs review tiers, mapped to four colors instead of three."""
+    if pct >= 90:
+        return core.Color.GREEN
+    if pct >= 75:
+        return core.Color.YELLOW
+    if pct >= 60:
+        return core.Color.ORANGE
+    return core.Color.RED
+
+
 def render_frame(index, total, q, answered_state, running_correct, running_answered):
     """answered_state is None (not yet answered), or a dict with
     {"choice": str, "correct": bool, "skipped": bool} describing the result."""
@@ -112,7 +124,8 @@ def render_frame(index, total, q, answered_state, running_correct, running_answe
         tag += f" · difficulty {q.difficulty}/10"
     lines.append(core.c(header, core.Color.BOLD, core.Color.CYAN) + core.c("   " + tag, core.Color.DIM))
     lines.append("")
-    lines.append(core.bar(100 * index / total, width=min(40, term_width())) + core.c(f"  {index}/{total}", core.Color.DIM))
+    bar_color = accuracy_color(100 * running_correct / running_answered) if running_answered else core.Color.DIM
+    lines.append(core.bar(100 * index / total, width=min(40, term_width()), color=bar_color) + core.c(f"  {index}/{total}", core.Color.DIM))
     lines.append("")
 
     if q.scenario:
