@@ -2,6 +2,18 @@
 
 /.working/
 
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
