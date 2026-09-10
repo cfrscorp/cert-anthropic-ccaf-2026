@@ -174,6 +174,7 @@
       '<div class="view-head"><h1>Practice Quiz</h1><p>Scenario multiple-choice, exam-style. Pick a scope, then see the correct answer and why each distractor is wrong.</p></div>' +
       '<div class="card">' +
         '<div class="row">' +
+          '<label class="field">Question set<select id="q-set">' + setOptions("questions", DATA.currentQuestionSet) + "</select></label>" +
           '<label class="field">Domain<select id="q-domain">' + domainOptions("all") + "</select></label>" +
           '<label class="field">Task statement<select id="q-task">' + taskOptions("all", "all") + "</select></label>" +
           '<label class="field">Length<select id="q-len"><option value="10">10 questions</option><option value="20">20 questions</option><option value="0">All matching</option></select></label>' +
@@ -186,6 +187,9 @@
         "</div>" +
       "</div>";
 
+    document.getElementById("q-set").addEventListener("change", function (e) {
+      selectQuestionSet(e.target.value); renderQuiz();
+    });
     var dSel = document.getElementById("q-domain");
     var tSel = document.getElementById("q-task");
     dSel.addEventListener("change", function () {
@@ -327,10 +331,15 @@
     view.innerHTML =
       '<div class="view-head"><h1>Flashcards</h1><p>Fact recall for the exam appendix — CLI flags, <code>tool_choice</code> values, batch limits, and more. Click a card to flip.</p></div>' +
       '<div class="card"><div class="row">' +
+        '<label class="field">Flashcard set<select id="fc-set">' + setOptions("flashcards", DATA.currentFlashcardSet) + "</select></label>" +
         '<label class="field">Domain<select id="fc-domain">' + domainOptions(fc.domain, DATA.flashcards) + "</select></label>" +
         '<span class="spacer"></span>' +
         '<button class="btn" id="fc-shuffle">⇄ Shuffle</button>' +
       "</div></div>";
+
+    document.getElementById("fc-set").addEventListener("change", function (e) {
+      selectFlashcardSet(e.target.value); fc = null; renderFlashcards();
+    });
 
     if (fc.pool.length === 0) {
       view.insertAdjacentHTML("beforeend", emptyState("🗂", "No flashcards match this filter yet."));
@@ -747,13 +756,56 @@
     });
   }
 
+  /* ---- set picker (Quiz question sets, Flashcards sets) ----------------- */
+  // Every set listed in sets.json is eager-loaded at boot (small files, no
+  // per-selection fetch/loading-state complexity); switching sets just swaps
+  // which already-loaded array DATA.questions/DATA.flashcards points at.
+  var QUESTION_SET_KEY = "ccaf-study-question-set";
+  var FLASHCARD_SET_KEY = "ccaf-study-flashcard-set";
+
+  function pickInitialSetId(kind, key) {
+    var entries = DATA.sets[kind];
+    var saved = localStorage.getItem(key);
+    if (saved && entries.some(function (e) { return e.id === saved; })) return saved;
+    return entries[0].id;
+  }
+  function selectQuestionSet(id) {
+    DATA.currentQuestionSet = id;
+    DATA.questions = DATA.questionSets[id];
+    localStorage.setItem(QUESTION_SET_KEY, id);
+  }
+  function selectFlashcardSet(id) {
+    DATA.currentFlashcardSet = id;
+    DATA.flashcards = DATA.flashcardSets[id];
+    localStorage.setItem(FLASHCARD_SET_KEY, id);
+  }
+  function setOptions(kind, currentId) {
+    return DATA.sets[kind].map(function (e) {
+      return '<option value="' + esc(e.id) + '"' + (e.id === currentId ? " selected" : "") + ">" + esc(e.label) + "</option>";
+    }).join("");
+  }
+
   /* ---- boot ------------------------------------------------------------- */
+  function fetchJSON(u) {
+    return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
+  }
   function boot() {
     initTheme();
-    Promise.all(["../data/meta.json", "../data/questions-standard.json", "../data/flashcards.json", "../data/concepts.json", "../data/labs.json"]
-      .map(function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }); }))
+    Promise.all(["../data/meta.json", "../data/sets.json", "../data/concepts.json", "../data/labs.json"].map(fetchJSON))
       .then(function (res) {
-        DATA.meta = res[0]; DATA.questions = res[1]; DATA.flashcards = res[2]; DATA.concepts = res[3]; DATA.labs = res[4];
+        DATA.meta = res[0]; DATA.sets = res[1]; DATA.concepts = res[2]; DATA.labs = res[3];
+        return Promise.all([
+          Promise.all(DATA.sets.questions.map(function (e) { return fetchJSON("../data/" + e.file); })),
+          Promise.all(DATA.sets.flashcards.map(function (e) { return fetchJSON("../data/" + e.file); })),
+        ]);
+      })
+      .then(function (loaded) {
+        DATA.questionSets = {}; DATA.flashcardSets = {};
+        DATA.sets.questions.forEach(function (e, i) { DATA.questionSets[e.id] = loaded[0][i]; });
+        DATA.sets.flashcards.forEach(function (e, i) { DATA.flashcardSets[e.id] = loaded[1][i]; });
+        selectQuestionSet(pickInitialSetId("questions", QUESTION_SET_KEY));
+        selectFlashcardSet(pickInitialSetId("flashcards", FLASHCARD_SET_KEY));
+
         var appVersion = DATA.meta.config && DATA.meta.config.app_version;
         if (appVersion) {
           document.getElementById("app-version").textContent = "v" + appVersion;

@@ -40,6 +40,7 @@ QUESTIONS_ALL = QUESTIONS_STANDARD + QUESTIONS_INTERMEDIATE + QUESTIONS_HARD
 FLASHCARDS = _load(DATA / "flashcards.json")
 CONCEPTS = _load(DATA / "concepts.json")
 LABS = _load(DATA / "labs.json")
+SETS = _load(DATA / "sets.json")
 TASK_IDS = {ts["id"] for ts in META["task_statements"]}
 TASK_DOMAIN = {ts["id"]: ts["domain"] for ts in META["task_statements"]}
 
@@ -57,6 +58,7 @@ TASK_DOMAIN = {ts["id"]: ts["domain"] for ts in META["task_statements"]}
         ("flashcards.json", "flashcards.schema.json"),
         ("concepts.json", "concepts.schema.json"),
         ("labs.json", "labs.schema.json"),
+        ("sets.json", "sets.schema.json"),
     ],
 )
 def test_data_matches_schema(data_file, schema_file):
@@ -172,6 +174,27 @@ def test_concepts_reference_real_tasks_and_labs():
 def test_concepts_have_at_most_one_per_task_statement():
     seen = [c["task_statement"] for c in CONCEPTS]
     assert len(seen) == len(set(seen)), "more than one concept per task statement"
+
+
+# --------------------------------------------------------------------------- #
+# Set manifest (Web UI's dynamic set picker) — every listed file must exist,  #
+# and every questions-*.json / flashcards*.json file on disk must be listed,  #
+# so a new tier/set can never silently go unregistered.                       #
+# --------------------------------------------------------------------------- #
+def test_set_manifest_files_exist():
+    for kind in ("questions", "flashcards"):
+        for entry in SETS[kind]:
+            assert (DATA / entry["file"]).is_file(), f"{kind} set {entry['id']!r} → missing {entry['file']}"
+
+
+def test_set_manifest_covers_every_question_and_flashcard_file_on_disk():
+    listed = {entry["file"] for entry in SETS["questions"]}
+    on_disk = {p.name for p in DATA.glob("questions*.json")}
+    assert on_disk == listed, f"sets.json out of sync with study/data/ — on disk {on_disk}, listed {listed}"
+
+    listed = {entry["file"] for entry in SETS["flashcards"]}
+    on_disk = {p.name for p in DATA.glob("flashcards*.json")}
+    assert on_disk == listed, f"sets.json out of sync with study/data/ — on disk {on_disk}, listed {listed}"
 
 
 # --------------------------------------------------------------------------- #
