@@ -208,6 +208,10 @@ select:focus-visible, .btn:focus-visible, .option:focus-visible, .tab:focus-visi
 .btn--primary { background: var(--accent); color: #fff; border-color: transparent; }
 .btn--primary:hover { filter: brightness(1.05); background: var(--accent); }
 .btn--ghost { background: transparent; }
+.btn--good { background: var(--correct-bd); color: #fff; border-color: transparent; }
+.btn--good:hover { filter: brightness(1.05); background: var(--correct-bd); }
+.btn--bad { background: var(--wrong-bd); color: #fff; border-color: transparent; }
+.btn--bad:hover { filter: brightness(1.05); background: var(--wrong-bd); }
 .btn[disabled] { opacity: .5; cursor: not-allowed; }
 
 /* ---- quiz ---------------------------------------------------------------- */

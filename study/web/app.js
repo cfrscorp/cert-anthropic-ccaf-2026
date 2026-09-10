@@ -80,6 +80,27 @@
     saveProgress(p);
   }
 
+  /* ---- flashcard self-graded progress (separate store; not part of exam readiness) ---- */
+  var FC_PROGRESS_KEY = "ccaf-study-flashcard-progress-v1";
+  function loadFcProgress() {
+    try {
+      var p = JSON.parse(localStorage.getItem(FC_PROGRESS_KEY));
+      if (p && p.version === 1 && p.cards) return p;
+    } catch (e) { /* fall through */ }
+    return { version: 1, cards: {} };
+  }
+  function saveFcProgress(p) { localStorage.setItem(FC_PROGRESS_KEY, JSON.stringify(p)); }
+  function recordFlashcardAnswer(cid, gotIt) {
+    var p = loadFcProgress();
+    var c = p.cards[cid] || { seen: 0, correct: 0 };
+    c.seen += 1;
+    if (gotIt) c.correct += 1;
+    c.last = gotIt ? "correct" : "wrong";
+    c.ts = Date.now();
+    p.cards[cid] = c;
+    saveFcProgress(p);
+  }
+
   /* ---- readiness math --------------------------------------------------- */
   function computeReadiness(p) {
     var byTask = {}; // tid -> {seen, correct, total}
@@ -360,23 +381,28 @@
   var fc = null; // {pool, idx, flipped}
 
   function renderFlashcards() {
-    if (!fc) fc = { pool: shuffle(DATA.flashcards), idx: 0, flipped: false, domain: "all", task: "all" };
+    if (!fc) fc = { pool: shuffle(DATA.flashcards), idx: 0, flipped: false, domain: "all", task: "all", missedOnly: false };
     view.innerHTML =
-      '<div class="view-head"><h1>Flashcards</h1><p>Fact recall for the exam appendix — CLI flags, <code>tool_choice</code> values, batch limits, and more. Click a card to flip.</p></div>' +
+      '<div class="view-head"><h1>Flashcards</h1><p>Fact recall for the exam appendix — CLI flags, <code>tool_choice</code> values, batch limits, and more. Click a card to flip, then grade yourself.</p></div>' +
       '<div class="card"><div class="row">' +
         '<label class="field">Flashcard set<select id="fc-set">' + setOptions("flashcards", DATA.currentFlashcardSet) + "</select></label>" +
         '<label class="field">Domain<select id="fc-domain">' + domainOptions(fc.domain, DATA.flashcards) + "</select></label>" +
         '<label class="field">Task statement<select id="fc-task">' + taskOptions(fc.domain, fc.task, DATA.flashcards) + "</select></label>" +
         '<span class="spacer"></span>' +
+        '<label class="row" style="gap:.4rem;font-size:.85rem;color:var(--ink-2)"><input type="checkbox" id="fc-missed"' + (fc.missedOnly ? " checked" : "") + '> Only previously missed</label>' +
         '<button class="btn" id="fc-shuffle">⇄ Shuffle</button>' +
       "</div></div>";
 
     document.getElementById("fc-set").addEventListener("change", function (e) {
       selectFlashcardSet(e.target.value); fc = null; renderFlashcards();
     });
+    document.getElementById("fc-missed").addEventListener("change", function (e) {
+      fc.missedOnly = e.target.checked;
+      applyFcFilter();
+    });
 
     if (fc.pool.length === 0) {
-      view.insertAdjacentHTML("beforeend", emptyState("🗂", "No flashcards match this filter yet."));
+      view.insertAdjacentHTML("beforeend", emptyState("🗂", fc.missedOnly ? "No previously-missed cards match this filter." : "No flashcards match this filter yet."));
       wireFcDomain(); return;
     }
     fc.idx = Math.min(fc.idx, fc.pool.length - 1);
@@ -387,6 +413,10 @@
           '<div class="flashcard__face flashcard__face--front"><div class="flashcard__label">' + esc(card.task_statement) + " · " + esc(domainName(card.domain)) + '</div><div class="flashcard__body">' + esc(card.front) + '</div><div class="flashcard__hint">Reveal Answer</div></div>' +
           '<div class="flashcard__face flashcard__face--back"><div class="flashcard__label">Answer</div><div class="flashcard__body">' + esc(card.back) + '</div><div class="flashcard__hint">Flip Back</div></div>' +
         "</div></button>" +
+      '<div class="row" id="fc-grade-row" style="margin-top:.8rem;justify-content:center;gap:.6rem;display:' + (fc.flipped ? "flex" : "none") + '">' +
+        '<button class="btn btn--bad" id="fc-missed-it">✗ Missed It</button>' +
+        '<button class="btn btn--good" id="fc-got-it">✓ Got It</button>' +
+      "</div>" +
       '<div class="row" style="margin-top:1rem"><button class="btn" id="fc-prev">← Prev</button>' +
         '<span class="spacer"></span><span class="pill">' + (fc.idx + 1) + " / " + fc.pool.length + '</span><span class="spacer"></span>' +
         '<button class="btn" id="fc-next">Next →</button></div>');
@@ -394,6 +424,7 @@
     document.getElementById("fc-card").addEventListener("click", function () {
       fc.flipped = !fc.flipped;
       document.getElementById("fc-card").classList.toggle("flipped");
+      document.getElementById("fc-grade-row").style.display = fc.flipped ? "flex" : "none";
     });
     document.getElementById("fc-prev").addEventListener("click", function () {
       fc.idx = (fc.idx - 1 + fc.pool.length) % fc.pool.length; fc.flipped = false; renderFlashcards();
@@ -404,12 +435,26 @@
     document.getElementById("fc-shuffle").addEventListener("click", function () {
       fc.pool = shuffle(fc.pool); fc.idx = 0; fc.flipped = false; renderFlashcards();
     });
+    document.getElementById("fc-got-it").addEventListener("click", function () { gradeCard(true); });
+    document.getElementById("fc-missed-it").addEventListener("click", function () { gradeCard(false); });
     wireFcDomain();
 
+    function gradeCard(gotIt) {
+      recordFlashcardAnswer(card.id, gotIt);
+      fc.idx = (fc.idx + 1) % fc.pool.length;
+      fc.flipped = false;
+      renderFlashcards();
+    }
+
     function applyFcFilter() {
+      var progress = loadFcProgress();
       fc.pool = shuffle(DATA.flashcards.filter(function (c) {
         if (fc.domain !== "all" && String(c.domain) !== String(fc.domain)) return false;
         if (fc.task !== "all" && c.task_statement !== fc.task) return false;
+        if (fc.missedOnly) {
+          var rec = progress.cards[c.id];
+          if (!rec || rec.last !== "wrong") return false;
+        }
         return true;
       }));
       fc.idx = 0; fc.flipped = false; renderFlashcards();
