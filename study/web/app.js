@@ -151,9 +151,9 @@
     });
     return o;
   }
-  function taskOptions(domainSel, taskSel) {
+  function taskOptions(domainSel, taskSel, items) {
     var have = {};
-    DATA.questions.forEach(function (q) { have[q.task_statement] = true; });
+    (items || DATA.questions).forEach(function (q) { have[q.task_statement] = true; });
     var o = '<option value="all">All task statements</option>';
     DATA.meta.task_statements.forEach(function (t) {
       if (!have[t.id]) return;
@@ -360,12 +360,13 @@
   var fc = null; // {pool, idx, flipped}
 
   function renderFlashcards() {
-    if (!fc) fc = { pool: shuffle(DATA.flashcards), idx: 0, flipped: false, domain: "all" };
+    if (!fc) fc = { pool: shuffle(DATA.flashcards), idx: 0, flipped: false, domain: "all", task: "all" };
     view.innerHTML =
       '<div class="view-head"><h1>Flashcards</h1><p>Fact recall for the exam appendix — CLI flags, <code>tool_choice</code> values, batch limits, and more. Click a card to flip.</p></div>' +
       '<div class="card"><div class="row">' +
         '<label class="field">Flashcard set<select id="fc-set">' + setOptions("flashcards", DATA.currentFlashcardSet) + "</select></label>" +
         '<label class="field">Domain<select id="fc-domain">' + domainOptions(fc.domain, DATA.flashcards) + "</select></label>" +
+        '<label class="field">Task statement<select id="fc-task">' + taskOptions(fc.domain, fc.task, DATA.flashcards) + "</select></label>" +
         '<span class="spacer"></span>' +
         '<button class="btn" id="fc-shuffle">⇄ Shuffle</button>' +
       "</div></div>";
@@ -405,13 +406,23 @@
     });
     wireFcDomain();
 
+    function applyFcFilter() {
+      fc.pool = shuffle(DATA.flashcards.filter(function (c) {
+        if (fc.domain !== "all" && String(c.domain) !== String(fc.domain)) return false;
+        if (fc.task !== "all" && c.task_statement !== fc.task) return false;
+        return true;
+      }));
+      fc.idx = 0; fc.flipped = false; renderFlashcards();
+    }
     function wireFcDomain() {
       document.getElementById("fc-domain").addEventListener("change", function (e) {
         fc.domain = e.target.value;
-        fc.pool = shuffle(DATA.flashcards.filter(function (c) {
-          return fc.domain === "all" || String(c.domain) === String(fc.domain);
-        }));
-        fc.idx = 0; fc.flipped = false; renderFlashcards();
+        fc.task = "all";
+        applyFcFilter();
+      });
+      document.getElementById("fc-task").addEventListener("change", function (e) {
+        fc.task = e.target.value;
+        applyFcFilter();
       });
     }
   }
