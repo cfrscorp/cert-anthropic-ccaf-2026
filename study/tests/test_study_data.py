@@ -117,21 +117,30 @@ def test_questions_reference_real_task_statements():
         assert q["domain"] == TASK_DOMAIN[q["task_statement"]], q["id"]
 
 
-def test_question_options_are_A_B_C_D():
+def test_question_options_are_sequential_A_through_E():
+    # 4 options (A-D) is the norm; multi-response items may have 5 (A-E).
     for q in QUESTIONS_ALL:
         keys = [o["key"] for o in q["options"]]
-        assert keys == ["A", "B", "C", "D"], q["id"]
+        assert keys == ["A", "B", "C", "D", "E"][: len(keys)], q["id"]
+
+
+def _correct_set(q):
+    """correct is a single letter for a normal item, or a list of 2+ letters
+    for a multi-response ('Select N') item."""
+    correct = q["correct"]
+    return set(correct) if isinstance(correct, list) else {correct}
 
 
 def test_correct_answer_is_a_real_option():
     for q in QUESTIONS_ALL:
         keys = {o["key"] for o in q["options"]}
-        assert q["correct"] in keys, q["id"]
+        assert _correct_set(q) <= keys, q["id"]
 
 
 def test_every_distractor_has_a_rationale():
     for q in QUESTIONS_ALL:
-        expected = {"A", "B", "C", "D"} - {q["correct"]}
+        option_keys = {o["key"] for o in q["options"]}
+        expected = option_keys - _correct_set(q)
         got = set(q["rationale"]["distractors"].keys())
         assert got == expected, f"{q['id']}: distractor rationales {got} != {expected}"
 

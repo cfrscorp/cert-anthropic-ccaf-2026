@@ -122,6 +122,8 @@ def render_frame(index, total, q, answered_state, running_correct, running_answe
     tag = f"Domain {q.domain} · Task {q.task_statement}"
     if q.difficulty is not None:
         tag += f" · difficulty {q.difficulty}/10"
+    if isinstance(q.correct, list):
+        tag += f" · Select {len(q.correct)}"
     lines.append(core.c(header, core.Color.BOLD, core.Color.CYAN) + core.c("   " + tag, core.Color.DIM))
     lines.append("")
     bar_color = accuracy_color(100 * running_correct / running_answered) if running_answered else core.Color.DIM
@@ -151,16 +153,26 @@ def render_frame(index, total, q, answered_state, running_correct, running_answe
             lines.append(core.c("Skipped.", core.Color.DIM))
         else:
             choice = answered_state["choice"]
+            is_multi = isinstance(q.correct, list)
+            correct_set = set(q.correct) if is_multi else {q.correct}
+            chosen_set = set(choice) if is_multi else {choice}
             if answered_state["correct"]:
                 lines.append(core.c("✓ Correct!", core.Color.BOLD, core.Color.GREEN))
             else:
-                lines.append(core.c(f"✗ Incorrect — correct answer is {q.correct}.", core.Color.BOLD, core.Color.RED))
+                answer_label = ", ".join(sorted(q.correct)) if is_multi else q.correct
+                verb = "are" if is_multi else "is"
+                lines.append(core.c(f"✗ Incorrect — correct answer{'s' if is_multi else ''} {verb} {answer_label}.", core.Color.BOLD, core.Color.RED))
             lines.append("")
             lines.append(label_line("Why: ", q.rationale.get("correct", "")))
             if not answered_state["correct"]:
-                distractor = q.rationale.get("distractors", {}).get(choice)
-                if distractor:
-                    lines.append(label_line(f"About {choice}: ", distractor))
+                for key in sorted(chosen_set - correct_set):
+                    distractor = q.rationale.get("distractors", {}).get(key)
+                    if distractor:
+                        lines.append(label_line(f"About {key}: ", distractor))
+                if is_multi:
+                    missed = sorted(correct_set - chosen_set)
+                    if missed:
+                        lines.append(label_line("Missed: ", f"{', '.join(missed)} should also have been selected."))
             if q.lab:
                 lines.append(core.c(f"Practice: {q.lab}", core.Color.DIM))
         lines.append("")
@@ -173,18 +185,33 @@ def render_frame(index, total, q, answered_state, running_correct, running_answe
 # Session loop
 # --------------------------------------------------------------------------
 
-def prompt_answer(valid_keys):
+def prompt_answer(valid_keys, select_count=None):
+    """select_count is None for a normal single-answer item, or an int (2+)
+    for a multi-response ('Select N') item — in which case this returns a
+    list of letters instead of a single letter."""
+    label = "Your answer" if select_count is None else f"Your answer (select {select_count})"
     while True:
-        raw = input(core.c("Your answer ", core.Color.CYAN) + core.c("(or 'skip', 'quit')", core.Color.DIM) + core.c(": ", core.Color.CYAN)).strip()
+        raw = input(core.c(label + " ", core.Color.CYAN) + core.c("(or 'skip', 'quit')", core.Color.DIM) + core.c(": ", core.Color.CYAN)).strip()
         low = raw.lower()
         if low in ("q", "quit", "exit"):
             return "quit"
         if low in ("s", "skip"):
             return "skip"
-        up = raw.upper()
-        if up in valid_keys:
-            return up
-        print(core.c(f"  Please enter one of {', '.join(valid_keys)}, or 'skip'/'quit'.", core.Color.YELLOW))
+        if select_count is None:
+            up = raw.upper()
+            if up in valid_keys:
+                return up
+            print(core.c(f"  Please enter one of {', '.join(valid_keys)}, or 'skip'/'quit'.", core.Color.YELLOW))
+            continue
+        letters = []
+        for ch in raw.upper():
+            if ch.isalpha() and ch not in letters:
+                letters.append(ch)
+        if len(letters) != select_count or any(ch not in valid_keys for ch in letters):
+            example = "".join(valid_keys[:select_count])
+            print(core.c(f"  Please enter exactly {select_count} of {', '.join(valid_keys)} (e.g. \"{example}\"), or 'skip'/'quit'.", core.Color.YELLOW))
+            continue
+        return letters
 
 
 def wait_continue():
@@ -204,9 +231,10 @@ def run_tui_session(questions, history, history_path, source_files, filters):
     try:
         for i, q in enumerate(questions, start=1):
             valid_keys = [o["key"] for o in q.options]
+            select_count = len(q.correct) if isinstance(q.correct, list) else None
 
             render_frame(i, len(questions), q, None, correct_count, answered)
-            choice = prompt_answer(valid_keys)
+            choice = prompt_answer(valid_keys, select_count)
 
             if choice == "quit":
                 ended_early = True
@@ -220,7 +248,7 @@ def run_tui_session(questions, history, history_path, source_files, filters):
                 continue
 
             answered += 1
-            is_correct = choice == q.correct
+            is_correct = set(choice) == set(q.correct) if isinstance(q.correct, list) else choice == q.correct
             if is_correct:
                 correct_count += 1
             core.record_answer(history, q, is_correct)

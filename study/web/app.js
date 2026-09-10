@@ -236,6 +236,7 @@
     var q = quiz.pool[quiz.idx];
     if (!q) { renderQuizSummary(); return; }
     var pct = Math.round((quiz.idx / quiz.pool.length) * 100);
+    var isMulti = Array.isArray(q.correct);
     var opts = q.options.map(function (o) {
       return '<button class="option" data-key="' + o.key + '">' +
         '<span class="option__key">' + o.key + "</span>" +
@@ -244,6 +245,7 @@
 
     view.innerHTML =
       '<div class="quiz-meta"><span class="pill">D' + q.domain + " · " + esc(q.task_statement) + "</span>" +
+        (isMulti ? '<span class="pill">Select ' + q.correct.length + "</span>" : "") +
         '<div class="progressbar"><span style="width:' + pct + '%"></span></div>' +
         "<span>Q " + (quiz.idx + 1) + "/" + quiz.pool.length + " · Score " + quiz.score + "</span></div>" +
       '<div class="card">' +
@@ -254,15 +256,35 @@
         '<div class="row" style="margin-top:1rem">' +
           '<button class="btn btn--ghost" id="q-quit">End Quiz</button>' +
           '<span class="spacer"></span>' +
+          (isMulti ? '<button class="btn btn--primary" id="q-submit" disabled>Submit (0/' + q.correct.length + ")</button>" : "") +
           '<button class="btn btn--primary" id="q-next" disabled>Next →</button>' +
         "</div>" +
       "</div>";
 
     quiz.answered = false;
-    document.getElementById("opts").addEventListener("click", function (e) {
-      var btn = e.target.closest(".option");
-      if (btn) answerQuiz(q, btn.getAttribute("data-key"));
-    });
+    if (isMulti) {
+      quiz.selected = [];
+      document.getElementById("opts").addEventListener("click", function (e) {
+        if (quiz.answered) return;
+        var btn = e.target.closest(".option");
+        if (!btn) return;
+        var key = btn.getAttribute("data-key");
+        var at = quiz.selected.indexOf(key);
+        if (at >= 0) { quiz.selected.splice(at, 1); btn.classList.remove("is-selected"); }
+        else { quiz.selected.push(key); btn.classList.add("is-selected"); }
+        var submitBtn = document.getElementById("q-submit");
+        submitBtn.textContent = "Submit (" + quiz.selected.length + "/" + q.correct.length + ")";
+        submitBtn.disabled = quiz.selected.length !== q.correct.length;
+      });
+      document.getElementById("q-submit").addEventListener("click", function () {
+        answerQuiz(q, quiz.selected);
+      });
+    } else {
+      document.getElementById("opts").addEventListener("click", function (e) {
+        var btn = e.target.closest(".option");
+        if (btn) answerQuiz(q, btn.getAttribute("data-key"));
+      });
+    }
     document.getElementById("q-next").addEventListener("click", function () {
       quiz.idx += 1; renderQuizQuestion();
     });
@@ -274,23 +296,34 @@
   function answerQuiz(q, key) {
     if (quiz.answered) return;
     quiz.answered = true;
-    var correct = key === q.correct;
+    var isMulti = Array.isArray(q.correct);
+    var correctSet = isMulti ? q.correct.slice().sort() : null;
+    var chosenSet = isMulti ? key.slice().sort() : null;
+    var correct = isMulti
+      ? (chosenSet.length === correctSet.length && chosenSet.every(function (k, i) { return k === correctSet[i]; }))
+      : key === q.correct;
     if (correct) quiz.score += 1;
     recordAnswer(q.id, correct);
 
     document.querySelectorAll("#opts .option").forEach(function (btn) {
       var k = btn.getAttribute("data-key");
       btn.setAttribute("disabled", "true");
-      if (k === q.correct) btn.classList.add("is-correct");
-      else if (k === key) btn.classList.add("is-wrong");
+      if (isMulti) {
+        if (correctSet.indexOf(k) >= 0) btn.classList.add("is-correct");
+        else if (chosenSet.indexOf(k) >= 0) btn.classList.add("is-wrong");
+      } else {
+        if (k === q.correct) btn.classList.add("is-correct");
+        else if (k === key) btn.classList.add("is-wrong");
+      }
     });
 
     var distractors = Object.keys(q.rationale.distractors).sort().map(function (k) {
       return '<div class="rationale__item"><b>' + k + " —</b> " + esc(q.rationale.distractors[k]) + "</div>";
     }).join("");
+    var answerLabel = isMulti ? correctSet.join(", ") : q.correct;
     var rat = document.getElementById("rat");
     rat.innerHTML =
-      '<h3>' + (correct ? "✓ Correct" : "✕ Not quite") + " — answer " + q.correct + "</h3>" +
+      '<h3>' + (correct ? "✓ Correct" : "✕ Not quite") + " — answer" + (isMulti ? "s " : " ") + answerLabel + "</h3>" +
       '<div class="rationale__correct">' + esc(q.rationale.correct) + "</div>" +
       '<h3>Why the others are wrong</h3><div class="rationale__list">' + distractors + "</div>" +
       (q.lab ? '<p class="muted" style="margin-top:.7rem;font-size:.85rem">Practice this hands-on: ' + labLink(q.lab) + "</p>" : "");

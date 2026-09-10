@@ -244,6 +244,8 @@ select:focus-visible, .btn:focus-visible, .option:focus-visible, .tab:focus-visi
 .option.is-correct .option__key { background: var(--correct-bd); color: #fff; }
 .option.is-wrong { background: var(--wrong-bg); border-color: var(--wrong-bd); }
 .option.is-wrong .option__key { background: var(--wrong-bd); color: #fff; }
+.option.is-selected:not(.is-correct):not(.is-wrong) { background: var(--accent-weak); border-color: var(--accent); }
+.option.is-selected:not(.is-correct):not(.is-wrong) .option__key { background: var(--accent); color: #fff; }
 
 .rationale { margin-top: 1rem; display: none; }
 .rationale.show { display: block; animation: fade .25s ease; }

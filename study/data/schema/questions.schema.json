@@ -15,18 +15,30 @@
       "options": {
         "type": "array",
         "minItems": 4,
-        "maxItems": 4,
+        "maxItems": 5,
         "items": {
           "type": "object",
           "additionalProperties": false,
           "required": ["key", "text"],
           "properties": {
-            "key": { "enum": ["A", "B", "C", "D"] },
+            "key": { "enum": ["A", "B", "C", "D", "E"] },
             "text": { "type": "string", "minLength": 1 }
           }
         }
       },
-      "correct": { "enum": ["A", "B", "C", "D"] },
+      "correct": {
+        "description": "A single letter for a normal item, or an array of 2+ letters for a multi-response ('Select N') item.",
+        "oneOf": [
+          { "enum": ["A", "B", "C", "D", "E"] },
+          {
+            "type": "array",
+            "items": { "enum": ["A", "B", "C", "D", "E"] },
+            "minItems": 2,
+            "maxItems": 5,
+            "uniqueItems": true
+          }
+        ]
+      },
       "rationale": {
         "type": "object",
         "additionalProperties": false,
@@ -40,7 +52,8 @@
               "A": { "type": "string", "minLength": 1 },
               "B": { "type": "string", "minLength": 1 },
               "C": { "type": "string", "minLength": 1 },
-              "D": { "type": "string", "minLength": 1 }
+              "D": { "type": "string", "minLength": 1 },
+              "E": { "type": "string", "minLength": 1 }
             }
           }
         }

@@ -256,6 +256,8 @@ def print_question(index, total, q):
     tag = f"Domain {q.domain} · Task {q.task_statement}"
     if q.difficulty is not None:
         tag += f" · difficulty {q.difficulty}/10"
+    if isinstance(q.correct, list):
+        tag += f" · Select {len(q.correct)}"
     print(c(header, Color.BOLD, Color.CYAN) + c("   " + tag, Color.DIM))
     rule()
     if q.scenario:
@@ -268,32 +270,58 @@ def print_question(index, total, q):
     print()
 
 
-def prompt_answer(valid_keys):
+def prompt_answer(valid_keys, select_count=None):
+    """select_count is None for a normal single-answer item, or an int (2+)
+    for a multi-response ('Select N') item — in which case this returns a
+    list of letters instead of a single letter."""
+    label = "Your answer" if select_count is None else f"Your answer (select {select_count})"
     while True:
-        raw = input(c("Your answer ", Color.CYAN) + c("(or 'skip', 'quit')", Color.DIM) + c(": ", Color.CYAN)).strip()
+        raw = input(c(label + " ", Color.CYAN) + c("(or 'skip', 'quit')", Color.DIM) + c(": ", Color.CYAN)).strip()
         low = raw.lower()
         if low in ("q", "quit", "exit"):
             return "quit"
         if low in ("s", "skip"):
             return "skip"
-        up = raw.upper()
-        if up in valid_keys:
-            return up
-        print(c(f"  Please enter one of {', '.join(valid_keys)}, or 'skip'/'quit'.", Color.YELLOW))
+        if select_count is None:
+            up = raw.upper()
+            if up in valid_keys:
+                return up
+            print(c(f"  Please enter one of {', '.join(valid_keys)}, or 'skip'/'quit'.", Color.YELLOW))
+            continue
+        # Accept letters in any of "AC", "A,C", "A C" and de-dupe while preserving order.
+        letters = []
+        for ch in raw.upper():
+            if ch.isalpha() and ch not in letters:
+                letters.append(ch)
+        if len(letters) != select_count or any(ch not in valid_keys for ch in letters):
+            example = "".join(valid_keys[:select_count])
+            print(c(f"  Please enter exactly {select_count} of {', '.join(valid_keys)} (e.g. \"{example}\"), or 'skip'/'quit'.", Color.YELLOW))
+            continue
+        return letters
 
 
 def show_feedback(q, chosen):
-    correct = chosen == q.correct
+    is_multi = isinstance(q.correct, list)
+    correct_set = set(q.correct) if is_multi else {q.correct}
+    chosen_set = set(chosen) if is_multi else {chosen}
+    correct = chosen_set == correct_set
     if correct:
         print(c("  ✓ Correct!", Color.BOLD, Color.GREEN))
     else:
-        print(c(f"  ✗ Incorrect — correct answer is {q.correct}.", Color.BOLD, Color.RED))
+        answer_label = ", ".join(sorted(q.correct)) if is_multi else q.correct
+        verb = "are" if is_multi else "is"
+        print(c(f"  ✗ Incorrect — correct answer{'s' if is_multi else ''} {verb} {answer_label}.", Color.BOLD, Color.RED))
     print()
     print(c("  Why: ", Color.BOLD) + q.rationale.get("correct", ""))
     if not correct:
-        distractor = q.rationale.get("distractors", {}).get(chosen)
-        if distractor:
-            print(c(f"  About {chosen}: ", Color.BOLD) + distractor)
+        for key in sorted(chosen_set - correct_set):
+            distractor = q.rationale.get("distractors", {}).get(key)
+            if distractor:
+                print(c(f"  About {key}: ", Color.BOLD) + distractor)
+        if is_multi:
+            missed = sorted(correct_set - chosen_set)
+            if missed:
+                print(c("  Missed: ", Color.BOLD) + f"{', '.join(missed)} should also have been selected.")
     if q.lab:
         print(c(f"  Practice: {q.lab}", Color.DIM))
     return correct
@@ -308,7 +336,8 @@ def run_session(questions, history, history_path, source_files, filters):
     for i, q in enumerate(questions, start=1):
         print_question(i, len(questions), q)
         valid_keys = [o["key"] for o in q.options]
-        choice = prompt_answer(valid_keys)
+        select_count = len(q.correct) if isinstance(q.correct, list) else None
+        choice = prompt_answer(valid_keys, select_count)
         if choice == "quit":
             print(c("\nEnding session early.", Color.YELLOW))
             break
