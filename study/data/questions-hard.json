@@ -129,49 +129,6 @@
     ]
   },
   {
-    "id": "q-1.2-101",
-    "domain": 1,
-    "task_statement": "1.2",
-    "scenario": "A research coordinator decomposes each user topic into subtopics up front, delegates them in parallel, and synthesizes. Reports on narrow topics are strong. On broad topics they cover only part of the space. Topics are user-submitted and their breadth is not known in advance, so you cannot enumerate the right subtopic set when writing the coordinator prompt.",
-    "stem": "What is the most effective change?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Move gap detection into the synthesis subagent, having it flag uncovered areas in the report so the reader knows exactly what was and was not researched."
-      },
-      {
-        "key": "B",
-        "text": "Expand the coordinator's system prompt with instructions to decompose broadly and consider adjacent domains before delegating."
-      },
-      {
-        "key": "C",
-        "text": "Add an iterative refinement loop: the coordinator evaluates synthesis output for gaps and re-delegates targeted queries until coverage is sufficient."
-      },
-      {
-        "key": "D",
-        "text": "Raise the number of subagents spawned per topic so more of the space is covered by sheer parallelism."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "The constraint is decisive: breadth is unknown before the work starts, so no amount of up-front prompt tuning reliably produces the right decomposition on the first pass. An iterative loop moves the judgment to where the evidence exists — after synthesis, when the coordinator can see what was actually covered — and lets it re-delegate against observed gaps until coverage is adequate.",
-      "distractors": {
-        "A": "Annotating gaps is genuinely valuable and belongs in the final report, but it documents the shortfall rather than correcting it. Detection without re-delegation still ships an incomplete report.",
-        "B": "Prompting for broader decomposition is the standard first move and would help on average, which makes it tempting. It still commits to a single up-front guess about a topic whose breadth is unknowable in advance, so it narrows the failure rate without closing the loop.",
-        "D": "More subagents multiplies effort against the same flawed subtopic list. If the coordinator only generated visual-arts subtopics, ten subagents will research visual arts ten ways. Parallelism scales throughput, not coverage."
-      }
-    },
-    "lab": "lab-19-multi-agent-orchestration",
-    "difficulty": 8,
-    "tags": [
-      "coordinator",
-      "task-decomposition",
-      "iterative-refinement",
-      "coverage-gap",
-      "constraint-driven"
-    ]
-  },
-  {
     "id": "q-1.2-102",
     "domain": 1,
     "task_statement": "1.2",
@@ -254,48 +211,6 @@
       "dynamic-selection",
       "cost",
       "delegation"
-    ]
-  },
-  {
-    "id": "q-1.3-101",
-    "domain": 1,
-    "task_statement": "1.3",
-    "scenario": "You define three `AgentDefinition` entries and a coordinator prompt instructing the coordinator to delegate to them. At runtime the coordinator never delegates: it answers everything itself using its own tools, and the subagent definitions appear correctly registered in the SDK configuration dump.",
-    "stem": "What is the most likely cause?",
-    "options": [
-      {
-        "key": "A",
-        "text": "The subagent descriptions are too vague for the coordinator to tell when each one applies, so it defaults to handling the work directly."
-      },
-      {
-        "key": "B",
-        "text": "The subagents inherit no context from the coordinator, so the coordinator suppresses delegation it predicts will fail."
-      },
-      {
-        "key": "C",
-        "text": "The coordinator's `allowedTools` does not include `\"Task\"`, so it has no mechanism to spawn a subagent at all."
-      },
-      {
-        "key": "D",
-        "text": "The coordinator's prompt states delegation as guidance rather than a hard requirement, so compliance is probabilistic and it is choosing the cheaper path."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "Registering agent definitions makes subagents available; it does not grant the coordinator the ability to invoke them. Spawning happens through the Task tool, so `\"Task\"` must be present in the coordinator's `allowedTools`. Without it there is no delegation mechanism at all, which matches the observed absolute failure rather than intermittent under-delegation.",
-      "distractors": {
-        "A": "Weak subagent descriptions are a real cause of poor delegation and would be worth fixing anyway. They produce misrouted or inconsistent delegation, not zero delegation across every request.",
-        "B": "It is true that subagents do not inherit parent context, but that governs what you must pass in the prompt, not whether spawning is possible. The coordinator does not preemptively suppress delegation on those grounds.",
-        "D": "Prompt-based guidance is indeed probabilistic, and this is the right diagnosis for an agent that delegates sometimes. A model with the capability available would occasionally use it; a rate of exactly zero points to a missing capability rather than weak instruction."
-      }
-    },
-    "lab": "lab-19-multi-agent-orchestration",
-    "difficulty": 8,
-    "tags": [
-      "subagent",
-      "Task-tool",
-      "allowedTools",
-      "diagnose"
     ]
   },
   {
@@ -424,90 +339,6 @@
       "deterministic-vs-probabilistic",
       "constraint-driven",
       "enforcement"
-    ]
-  },
-  {
-    "id": "q-1.4-102",
-    "domain": 1,
-    "task_statement": "1.4",
-    "scenario": "When your agent escalates mid-conversation, the receiving human agent opens a ticket that contains only the escalation reason string. They have no access to the conversation transcript. Post-escalation handling time is high because the human re-asks the customer questions the agent already answered.",
-    "stem": "What should the escalation handoff carry?",
-    "options": [
-      {
-        "key": "A",
-        "text": "A structured handoff summary: customer ID, diagnosed root cause, transactional facts, what was attempted, and a recommended action."
-      },
-      {
-        "key": "B",
-        "text": "The full verbatim conversation transcript, so the human has complete information and nothing is lost to summarization."
-      },
-      {
-        "key": "C",
-        "text": "The escalation reason plus the last three turns of conversation, which carry the immediate context without overwhelming the reader."
-      },
-      {
-        "key": "D",
-        "text": "A link that lets the human replay the agent session interactively and query it for details as needed."
-      }
-    ],
-    "correct": "A",
-    "rationale": {
-      "correct": "The human is picking up mid-process without the transcript, so the handoff has to stand alone. A structured summary carrying identity, diagnosed root cause, the specific transactional facts, what was already tried, and a recommendation is what lets them act immediately rather than reconstructing the case from the customer.",
-      "distractors": {
-        "B": "The full transcript is unambiguously complete and avoids any summarization loss, which is a real argument for it. It shifts the reconstruction work to the human, who must now read the whole exchange to extract the same handful of facts — so handling time stays high even though the information is technically present.",
-        "C": "A recency window is cheap and often carries the immediate issue, so it is a reasonable heuristic. Facts established early — identity, order number, amount — fall outside it, and those are exactly the details being re-asked.",
-        "D": "Interactive replay is a genuinely useful debugging affordance and preserves detail. It makes the human query for facts one at a time at the moment they are most time-pressured, and it presumes tooling and session retention that the described setup does not have."
-      }
-    },
-    "lab": "lab-11-hooks-and-enforcement",
-    "difficulty": 8,
-    "tags": [
-      "handoff",
-      "escalation",
-      "structured-summary",
-      "human-in-the-loop"
-    ]
-  },
-  {
-    "id": "q-1.4-103",
-    "domain": 1,
-    "task_statement": "1.4",
-    "scenario": "A customer writes: a damaged item from order #A1, a duplicate charge on order #B2, and a request to update the card on file. Your agent addresses the damaged item thoroughly, mentions the duplicate charge in one line, and ignores the card update. This pattern repeats across multi-issue messages.",
-    "stem": "What is the most effective way to restructure how the agent handles these?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Decompose the request into distinct items, investigate each in parallel against shared context, then synthesize one unified resolution."
-      },
-      {
-        "key": "B",
-        "text": "Add few-shot examples of multi-issue messages with complete responses covering every raised concern."
-      },
-      {
-        "key": "C",
-        "text": "Instruct the agent to read the entire message carefully and address every issue the customer raises before responding."
-      },
-      {
-        "key": "D",
-        "text": "Have the agent handle the highest-priority issue and explicitly ask the customer to open a separate contact for each remaining one."
-      }
-    ],
-    "correct": "A",
-    "rationale": {
-      "correct": "The failure is structural: a single undifferentiated pass lets attention concentrate on whichever concern is most salient. Explicitly decomposing into items makes each one a tracked unit of work, parallel investigation against shared context keeps them from being handled in isolation, and a synthesis step returns one coherent reply rather than three disjointed ones.",
-      "distractors": {
-        "B": "Few-shot examples of complete multi-issue responses would demonstrate the target format and are a reasonable complement. They teach what a good answer looks like without giving the agent a mechanism for tracking multiple open items, so coverage stays dependent on a single pass holding everything at once.",
-        "C": "A direct instruction is the cheapest thing to try and will improve results somewhat. It asks the model to overcome attention dilution by effort alone, without changing the single-pass structure that produces it, so later-mentioned issues keep getting shortchanged.",
-        "D": "Deflecting to separate contacts guarantees each issue gets full attention and is defensible when issues genuinely need different specialists. It pushes work onto the customer and directly undermines first-contact resolution, which is the metric this kind of agent exists to serve."
-      }
-    },
-    "lab": "lab-11-hooks-and-enforcement",
-    "difficulty": 8,
-    "tags": [
-      "task-decomposition",
-      "multi-concern",
-      "attention-dilution",
-      "synthesis"
     ]
   },
   {
@@ -974,48 +805,6 @@
     ]
   },
   {
-    "id": "q-2.1-103",
-    "domain": 2,
-    "task_statement": "2.1",
-    "scenario": "A research agent has `analyze_content` (\"Analyzes content and extracts relevant information\") and `analyze_document` (\"Analyzes a document and extracts relevant information\"). The first is meant for web search results, the second for uploaded PDFs. The agent routes between them essentially at random.",
-    "stem": "What is the most effective fix?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Add a required `source_type` parameter to both tools so the model must declare what it is passing."
-      },
-      {
-        "key": "B",
-        "text": "Rename `analyze_content` to `extract_web_results` and rewrite its description to be explicitly web-specific."
-      },
-      {
-        "key": "C",
-        "text": "Merge them into a single `analyze` tool, since both extract relevant information from text and the distinction is an implementation detail."
-      },
-      {
-        "key": "D",
-        "text": "Add few-shot examples to the system prompt showing web results routed to `analyze_content` and PDFs routed to `analyze_document`."
-      }
-    ],
-    "correct": "B",
-    "rationale": {
-      "correct": "The two descriptions are near-identical, so the model has no basis for choosing between them — random routing is the expected outcome. Renaming to signal the specific purpose and rewriting the description to be web-specific removes the overlap at its source, which is where selection reliability comes from.",
-      "distractors": {
-        "A": "A declared `source_type` makes the caller's intent explicit and is defensible interface design. It relocates the same ambiguity into a parameter the model must now populate correctly, while the two tools continue to present indistinguishable descriptions at selection time.",
-        "C": "Merging is the right move when tools genuinely overlap, and the shared verb makes them look like they do. Web results and PDFs differ in structure and handling, so a merged tool would need internal branching and would present one vague description in place of two — the same problem at a coarser grain.",
-        "D": "Few-shot examples would raise accuracy on the demonstrated cases and are a legitimate technique for ambiguous selection. They add token overhead on every request to compensate for an ambiguity that a one-time description rewrite eliminates outright, and they generalize poorly to source types the examples do not cover."
-      }
-    },
-    "lab": "lab-05-tool-interface-design",
-    "difficulty": 7,
-    "tags": [
-      "tool-selection",
-      "tool-naming",
-      "description-quality",
-      "ambiguity"
-    ]
-  },
-  {
     "id": "q-2.2-101",
     "domain": 2,
     "task_statement": "2.2",
@@ -1142,48 +931,6 @@
     ]
   },
   {
-    "id": "q-2.3-101",
-    "domain": 2,
-    "task_statement": "2.3",
-    "scenario": "Your document-processing pipeline requires that `extract_metadata` run before any enrichment tool, because enrichment depends on the document type it returns. The agent usually does this but occasionally starts with an enrichment tool, producing wrong results. Enrichment steps themselves vary by document and must remain model-selected.",
-    "stem": "What is the most appropriate mechanism?",
-    "options": [
-      {
-        "key": "A",
-        "text": "State in the system prompt that `extract_metadata` must always be called first, with a few-shot example demonstrating the order."
-      },
-      {
-        "key": "B",
-        "text": "Remove the enrichment tools from the initial request so only `extract_metadata` is available, then add them back for subsequent turns."
-      },
-      {
-        "key": "C",
-        "text": "Set `tool_choice: \"any\"` so the model is guaranteed to call a tool rather than returning text."
-      },
-      {
-        "key": "D",
-        "text": "Force `tool_choice: {\"type\": \"tool\", \"name\": \"extract_metadata\"}` on the first turn, then use normal selection in follow-up turns."
-      }
-    ],
-    "correct": "D",
-    "rationale": {
-      "correct": "Forced tool selection guarantees a specific named tool is called on that turn, which is exactly the deterministic ordering requirement here. Applying it only to the first turn and reverting to normal selection afterward preserves the model-driven choice among enrichment tools, which the scenario requires.",
-      "distractors": {
-        "A": "Prompt instruction plus an example is the cheapest option and would improve the ordering rate. Compliance stays probabilistic, and the scenario describes an occasional violation with concretely wrong output, which is the situation where a deterministic mechanism is warranted.",
-        "B": "Dynamically narrowing the available tool set does enforce the ordering and is a legitimate technique. It means reconfiguring the tool list between turns, which is more machinery than forcing one call, and a shifting tool surface complicates caching and makes the agent's capabilities harder to reason about across a session.",
-        "C": "`\"any\"` guarantees that some tool is called but not which one, so the model remains free to open with an enrichment tool. It solves a different problem — preventing conversational text where a tool call is required."
-      }
-    },
-    "lab": "lab-09-errors-and-tool-distribution",
-    "difficulty": 8,
-    "tags": [
-      "tool_choice",
-      "forced-tool",
-      "ordering",
-      "deterministic-vs-probabilistic"
-    ]
-  },
-  {
     "id": "q-2.3-102",
     "domain": 2,
     "task_statement": "2.3",
@@ -1223,48 +970,6 @@
       "least-privilege",
       "scoped-tools",
       "separation-of-concerns"
-    ]
-  },
-  {
-    "id": "q-2.3-103",
-    "domain": 2,
-    "task_statement": "2.3",
-    "scenario": "A document-analysis subagent has a general `fetch_url` tool. It has begun following citation links out to arbitrary third-party pages, pulling in unvetted content that then appears in synthesized reports. Its actual need is to load documents from your organization's document store and a fixed list of approved publisher domains.",
-    "stem": "What is the most effective change?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Keep `fetch_url` and add a `PostToolUse` hook that discards fetched content when the source domain is not approved."
-      },
-      {
-        "key": "B",
-        "text": "Keep `fetch_url` and add a system-prompt rule listing the approved domains the agent may fetch from."
-      },
-      {
-        "key": "C",
-        "text": "Remove `fetch_url` entirely and have the coordinator pre-fetch every document the analysis subagent might need before delegating."
-      },
-      {
-        "key": "D",
-        "text": "Replace `fetch_url` with a constrained `load_document` tool that validates inputs against the approved store and publisher list."
-      }
-    ],
-    "correct": "D",
-    "rationale": {
-      "correct": "Replacing a general-purpose tool with a constrained alternative that validates its inputs is the direct fix: the capability the agent should not have simply stops existing. Validation lives inside the tool, so the restriction holds regardless of what the model decides to attempt.",
-      "distractors": {
-        "A": "A `PostToolUse` filter does prevent unapproved content from reaching the model, and it is a reasonable defense layer. The fetch has already happened by then, so the request still leaves your network — an outbound-traffic and privacy exposure that a pre-execution constraint avoids entirely.",
-        "B": "A prompt rule is the cheapest option and would cut the behavior substantially. Compliance is probabilistic, and this is an unvetted-content ingestion path where an occasional violation has real consequences, so a capability restriction is the appropriate control.",
-        "C": "Coordinator pre-fetching enforces the boundary and centralizes access, which is defensible for a small fixed document set. It requires knowing in advance every document the analysis agent will need, which defeats the point of letting it follow leads within approved sources."
-      }
-    },
-    "lab": "lab-09-errors-and-tool-distribution",
-    "difficulty": 7,
-    "tags": [
-      "constrained-tools",
-      "least-privilege",
-      "tool-distribution",
-      "validation"
     ]
   },
   {
@@ -1604,90 +1309,6 @@
     ]
   },
   {
-    "id": "q-3.1-103",
-    "domain": 3,
-    "task_statement": "3.1",
-    "scenario": "A reviewer objects to the line `@../../docs/standards/graphql.md` in `packages/api/CLAUDE.md`, arguing that pasting the standards inline would be simpler and produce identical behavior. The standards file is also read by humans and is referenced by two other packages.",
-    "stem": "What is the strongest argument for keeping the import?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Imports are resolved lazily and are exempt from position effects, since imported content is injected at the start of the loaded context."
-      },
-      {
-        "key": "B",
-        "text": "The standards stay a single source of truth: one canonical file serves human readers, and all three packages pick up changes automatically."
-      },
-      {
-        "key": "C",
-        "text": "Imports are resolved lazily, so the standards consume context only when a GraphQL file is being edited."
-      },
-      {
-        "key": "D",
-        "text": "Inlining would exceed the practical size limit for a package-level `CLAUDE.md`."
-      }
-    ],
-    "correct": "B",
-    "rationale": {
-      "correct": "The reviewer is right that the loaded content ends up equivalent — the value of `@import` is maintenance, not behavior. One canonical file serves both human readers and three packages, and updating it propagates everywhere without touching any package's configuration. Inlining creates three copies that drift.",
-      "distractors": {
-        "A": "There is no such exemption. Imported content is assembled into the memory file like any other content and is subject to the same position effects.",
-        "C": "Conditional loading is a genuine and valuable capability, which is what makes this plausible. It comes from `.claude/rules/` with path globs in the frontmatter, not from `@import` — imports are resolved as part of assembling the memory file, so the content loads regardless of which file is open.",
-        "D": "Keeping memory files lean is legitimately good practice and oversized configuration does cause problems. There is no specific size limit being invoked here, and the reviewer's objection is about duplication versus reference rather than about size."
-      }
-    },
-    "lab": "lab-02-claude-code-config-foundations",
-    "difficulty": 8,
-    "tags": [
-      "import-syntax",
-      "single-source-of-truth",
-      "misconception",
-      "maintainability"
-    ]
-  },
-  {
-    "id": "q-3.2-101",
-    "domain": 3,
-    "task_statement": "3.2",
-    "scenario": "A `/analyze-schema` skill inspects the database schema and reports inconsistencies. It works, but it emits several thousand tokens of table dumps into the conversation, and developers report that Claude becomes vague about their original task afterward. The skill is in `.claude/skills/` and shared with the team.",
-    "stem": "What is the most appropriate change?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Move the skill to `~/.claude/skills/` so its output affects only the developer who invokes it."
-      },
-      {
-        "key": "B",
-        "text": "Rewrite the skill to summarize the schema itself and emit only the inconsistencies it finds."
-      },
-      {
-        "key": "C",
-        "text": "Instruct developers to run `/compact` after invoking the skill, clearing the table dumps from context before they continue with their task."
-      },
-      {
-        "key": "D",
-        "text": "Add `context: fork` to the skill's frontmatter so it runs in an isolated sub-agent context and returns only its findings."
-      }
-    ],
-    "correct": "D",
-    "rationale": {
-      "correct": "`context: fork` exists for exactly this: skills that produce verbose intermediate output run in an isolated sub-agent context, so the main conversation receives the result without the noise. It is a one-line frontmatter change and it protects every invocation automatically.",
-      "distractors": {
-        "A": "Skill scope controls who can invoke a skill, not how its output interacts with context. Moving it to user scope would deprive the team of a working skill while leaving the verbosity problem exactly as it is for whoever runs it.",
-        "B": "Reducing the skill's output at the source is genuinely good design and would help. Some verbosity is inherent to inspecting a schema, and any remaining intermediate reasoning still lands in the main conversation — forking removes the whole class of problem rather than shrinking it.",
-        "C": "Running `/compact` afterward does reclaim context and is a reasonable manual remedy. It is reactive, depends on developers remembering, and compaction condenses the original task context too, so some of the vagueness it is meant to fix can survive."
-      }
-    },
-    "lab": "lab-07-rules-commands-skills",
-    "difficulty": 8,
-    "tags": [
-      "skills",
-      "context-fork",
-      "verbose-output",
-      "context-management"
-    ]
-  },
-  {
     "id": "q-3.2-102",
     "domain": 3,
     "task_statement": "3.2",
@@ -1898,48 +1519,6 @@
     ]
   },
   {
-    "id": "q-3.4-101",
-    "domain": 3,
-    "task_statement": "3.4",
-    "scenario": "A production bug has a clear stack trace pointing at one function in one file. The fix is a null check on a single parameter. A teammate suggests entering plan mode first \"because it is safer to plan before changing production code.\"",
-    "stem": "How should you respond?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Use plan mode but skip the exploration phase, going straight to writing the plan so the overhead is minimal."
-      },
-      {
-        "key": "B",
-        "text": "Use direct execution, but only because the change is small; if it touched two or more files, plan mode would be required regardless of clarity."
-      },
-      {
-        "key": "C",
-        "text": "Use direct execution: the scope is clear, the location is known, and there are no competing approaches or architectural decisions."
-      },
-      {
-        "key": "D",
-        "text": "Agree, since any change to production code carries risk and planning reduces it at low cost."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "Plan mode is for large-scale changes, multiple valid approaches, architectural decisions, and multi-file work. None applies: the stack trace localizes the defect, the fix is a single well-understood conditional, and there is no design choice to make. Direct execution is the appropriate mode, and using plan mode here is overhead rather than safety.",
-      "distractors": {
-        "A": "Plan mode without exploration discards the part that creates the value — surveying the code before committing to an approach. What remains is a formality that delays a change whose shape is already known.",
-        "B": "This reaches the right conclusion, which makes it superficially attractive. The stated rule is wrong: file count is not the criterion. A two-file change with an obvious fix still suits direct execution, and a single-file change with several competing designs can genuinely warrant planning.",
-        "D": "Caution about production code is reasonable and this reflects a sound instinct. Plan mode's value comes from resolving uncertainty about approach and scope, and neither is uncertain here — so it adds ceremony without reducing the actual risk, which is better handled by tests and review."
-      }
-    },
-    "lab": "lab-08-plan-mode-and-refinement",
-    "difficulty": 7,
-    "tags": [
-      "plan-mode",
-      "direct-execution",
-      "design-choice",
-      "misconception"
-    ]
-  },
-  {
     "id": "q-3.4-102",
     "domain": 3,
     "task_statement": "3.4",
@@ -1979,88 +1558,6 @@
       "Explore-subagent",
       "context-management",
       "diagnose"
-    ]
-  },
-  {
-    "id": "q-3.4-103",
-    "domain": 3,
-    "task_statement": "3.4",
-    "scenario": "You used plan mode to design a migration and the resulting plan is clear, sequenced, and agreed by the team. Execution involves 45 mechanical edits following the approved approach, with no remaining design questions.",
-    "stem": "How should you carry out the plan?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Stay in plan mode throughout execution so each edit is checked against the plan before it is applied."
-      },
-      {
-        "key": "B",
-        "text": "Start a fresh session for execution without the plan in context, so prior reasoning does not bias the implementation."
-      },
-      {
-        "key": "C",
-        "text": "Switch to direct execution, since the uncertainty plan mode addressed has been resolved."
-      },
-      {
-        "key": "D",
-        "text": "Re-enter plan mode before each group of related files, to confirm the plan still holds as the codebase changes."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "Plan mode and direct execution are complementary phases of one task. Planning resolved the questions about approach and scope; what remains is mechanical work against an agreed design. Switching to direct execution for implementation is the intended pairing.",
-      "distractors": {
-        "A": "Staying in plan mode sounds disciplined and appeals to a desire for verification at each step. Plan mode exists to explore and design before committing, not to gate individual edits, so using it this way stalls execution without adding meaningful safety.",
-        "B": "Discarding prior reasoning is the right move when you want an independent perspective — reviewing generated code, for instance. Here the plan is the thing being implemented, so dropping it from context means executing without the design you just agreed on.",
-        "D": "Periodic re-planning is a defensible hedge on a long migration and would catch genuine surprises. It reintroduces planning overhead for a plan the team already agreed to, and if a surprise does surface it will announce itself during execution — at which point re-planning is a response rather than a routine."
-      }
-    },
-    "lab": "lab-08-plan-mode-and-refinement",
-    "difficulty": 7,
-    "tags": [
-      "plan-mode",
-      "direct-execution",
-      "phase-pairing"
-    ]
-  },
-  {
-    "id": "q-3.5-101",
-    "domain": 3,
-    "task_statement": "3.5",
-    "scenario": "You have asked three times for a data-cleaning function that \"normalizes messy customer names.\" Each attempt interprets it differently: one title-cases everything including `McDonald`, one strips all punctuation including legitimate hyphens, one reorders `Last, First` inconsistently. Your prose description is detailed and has not helped.",
-    "stem": "What is the most effective next step?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Write a test suite covering the edge cases first, then iterate by sharing the failures."
-      },
-      {
-        "key": "B",
-        "text": "Rewrite the prose description with more precision, enumerating each transformation rule explicitly."
-      },
-      {
-        "key": "C",
-        "text": "Use the interview pattern, having Claude ask questions about the normalization rules before implementing."
-      },
-      {
-        "key": "D",
-        "text": "Provide two or three concrete input/output pairs so the transformation is specified by example rather than description."
-      }
-    ],
-    "correct": "D",
-    "rationale": {
-      "correct": "Prose has now failed three times against the same ambiguity, and concrete input/output examples are the most effective way to communicate an expected transformation when descriptions are interpreted inconsistently. Each pair pins down one contested behavior unambiguously, which is what prose has been unable to do.",
-      "distractors": {
-        "A": "Test-driven iteration is a strong technique and would eventually converge, since failures are concrete feedback. It is a heavier loop than needed — the examples that would make good tests can specify the behavior directly, without requiring a generate-fail-share cycle per case.",
-        "B": "More precise prose is the obvious next escalation and is what most people reach for. Three detailed attempts have already failed, which is the signal that the medium — not the level of detail — is the constraint.",
-        "C": "The interview pattern is genuinely valuable for surfacing considerations you have not thought of, which is the situation where requirements are underexplored. Here you already know what you want; the gap is conveying it, so questioning adds a round trip without addressing the transmission problem."
-      }
-    },
-    "lab": "lab-08-plan-mode-and-refinement",
-    "difficulty": 8,
-    "tags": [
-      "iterative-refinement",
-      "input-output-examples",
-      "ambiguity"
     ]
   },
   {
@@ -2105,47 +1602,6 @@
     ]
   },
   {
-    "id": "q-3.5-103",
-    "domain": 3,
-    "task_statement": "3.5",
-    "scenario": "You need a caching layer for a service in a domain you do not know well. You can describe roughly what you want but suspect there are considerations — invalidation strategy, stampede behavior, failure modes when the cache is unavailable — that you have not thought through.",
-    "stem": "Which refinement technique fits best?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Write a test suite covering the behaviors you can think of, then iterate on failures."
-      },
-      {
-        "key": "B",
-        "text": "Use the interview pattern: have Claude ask questions to surface considerations you have not anticipated before implementing."
-      },
-      {
-        "key": "C",
-        "text": "Provide input/output examples of cache hits, misses, and expirations to specify the expected behavior precisely before implementation."
-      },
-      {
-        "key": "D",
-        "text": "Ask for three candidate implementations with different trade-offs and choose among them."
-      }
-    ],
-    "correct": "B",
-    "rationale": {
-      "correct": "The stated problem is unknown unknowns in an unfamiliar domain. The interview pattern is designed for exactly that: questions surface design considerations you would not have raised yourself, before implementation locks in assumptions. The scenario even names the kind of issues it would expose.",
-      "distractors": {
-        "A": "Test-driven iteration is excellent when you know the target behavior, and it would firm up what you can already articulate. Tests can only cover behaviors you thought of, so the considerations you have not anticipated remain untested and unaddressed.",
-        "C": "Input/output examples resolve ambiguity in a transformation you can already describe. Cache invalidation and failure modes are design decisions rather than input/output mappings, so examples cannot express them.",
-        "D": "Comparing candidate implementations does expose trade-offs concretely and is a legitimate way to learn a domain. It is more expensive than asking, and it leaves you evaluating options against criteria you have not yet worked out — which is the actual gap."
-      }
-    },
-    "lab": "lab-08-plan-mode-and-refinement",
-    "difficulty": 7,
-    "tags": [
-      "iterative-refinement",
-      "interview-pattern",
-      "unfamiliar-domain"
-    ]
-  },
-  {
     "id": "q-3.6-101",
     "domain": 3,
     "task_statement": "3.6",
@@ -2185,48 +1641,6 @@
       "json-schema",
       "structured-output",
       "output-format"
-    ]
-  },
-  {
-    "id": "q-3.6-102",
-    "domain": 3,
-    "task_statement": "3.6",
-    "scenario": "Your CI review posts findings on each push. On a PR with six pushes, developers received the same three unaddressed findings six times, generating 18 comments. They have started ignoring the bot. Each CI run invokes Claude Code fresh with only the current diff.",
-    "stem": "What is the most effective fix?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Review only the incremental diff since the previous push rather than the full PR diff."
-      },
-      {
-        "key": "B",
-        "text": "Run the review only once, when the PR is first marked ready for review."
-      },
-      {
-        "key": "C",
-        "text": "Include the prior review's findings in each subsequent run's context, instructing Claude to report only new or still-unaddressed issues."
-      },
-      {
-        "key": "D",
-        "text": "Deduplicate downstream by hashing each finding's file, line, and message, and suppress any comment already posted on the PR."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "Each run is stateless, so it rediscovers everything and has no way to know what was already said. Feeding prior findings into context and instructing Claude to report only what is new or still unaddressed gives the review the memory it lacks, while keeping full-diff analysis so nothing is missed.",
-      "distractors": {
-        "A": "Incremental-diff review reduces repetition and cuts cost, which is genuinely attractive. It also blinds the review to issues introduced earlier in the PR and to regressions where a later push breaks something reviewed clean before, so coverage suffers.",
-        "B": "A single review at ready-for-review eliminates duplicates outright and is defensible for small PRs. It gives up continuous feedback, so problems introduced after that point go unreviewed — which is most of what the automation was for.",
-        "D": "Downstream deduplication would suppress the repeat comments and is straightforward to implement, making it a solid answer. It is a presentation-layer patch: the model still re-reports resolved and unresolved issues indiscriminately, and exact hashing fails as soon as line numbers shift or wording varies slightly between runs."
-      }
-    },
-    "lab": "lab-21-claude-code-cicd",
-    "difficulty": 8,
-    "tags": [
-      "ci-cd",
-      "duplicate-comments",
-      "prior-findings",
-      "developer-trust"
     ]
   },
   {
@@ -2311,89 +1725,6 @@
       "precision",
       "false-positives",
       "misconception"
-    ]
-  },
-  {
-    "id": "q-4.1-102",
-    "domain": 4,
-    "task_statement": "4.1",
-    "scenario": "Your review bot reports across three categories. Security and null-safety findings are accurate and valued. Naming-convention findings are 70% false positives. Developers have begun dismissing all findings without reading them, including security ones. Rewriting the naming criteria properly will take about two weeks.",
-    "stem": "What should you do in the meantime?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Keep all four categories running but mark naming findings as low severity so developers can prioritize."
-      },
-      {
-        "key": "B",
-        "text": "Temporarily disable the naming-convention category so the accurate categories regain trust, re-enabling it once its criteria are rewritten."
-      },
-      {
-        "key": "C",
-        "text": "Keep all four but post naming findings to a separate low-visibility channel rather than as inline PR comments."
-      },
-      {
-        "key": "D",
-        "text": "Disable the bot entirely until all three categories have been validated, so developers never learn to distrust a tool that is partly broken."
-      }
-    ],
-    "correct": "B",
-    "rationale": {
-      "correct": "The concrete harm is that one bad category is destroying trust in two good ones, and dismissal has already generalized. Temporarily disabling the offending category restores the signal-to-noise ratio immediately and preserves the value of the accurate categories while its criteria are fixed.",
-      "distractors": {
-        "A": "Severity labeling is reasonable when findings are accurate but differ in importance. It does not help here, because the problem is correctness rather than priority — a low-severity false positive is still wrong, and the noise remains in the same stream developers have learned to ignore.",
-        "C": "Routing noisy findings elsewhere is a genuine improvement over inline comments and preserves the data for tuning, which makes it a strong second choice. The false positives still exist and still consume attention in the other channel, and it requires building and maintaining a second surface to house output you have already judged unreliable.",
-        "D": "Refusing to ship a partly broken tool is a defensible standard. It discards two weeks of accurate security and null-safety findings to avoid one bad category, which is a worse outcome than removing the category that is actually causing harm."
-      }
-    },
-    "lab": "lab-06-few-shot-and-criteria",
-    "difficulty": 8,
-    "tags": [
-      "false-positives",
-      "developer-trust",
-      "category-management",
-      "explicit-criteria"
-    ]
-  },
-  {
-    "id": "q-4.1-103",
-    "domain": 4,
-    "task_statement": "4.1",
-    "scenario": "Reviews assign severity inconsistently: the same missing-input-validation pattern is labeled critical in one PR and low in another. The prompt says \"assign a severity of critical, high, medium, or low based on the impact of the issue.\"",
-    "stem": "What most improves consistency?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Have the model assign a 1–100 impact score and map score ranges onto the four severity labels."
-      },
-      {
-        "key": "B",
-        "text": "Reduce the scale to two levels — blocking and non-blocking — so there are fewer boundaries to draw."
-      },
-      {
-        "key": "C",
-        "text": "Define each severity level with explicit criteria and a concrete code example illustrating what qualifies."
-      },
-      {
-        "key": "D",
-        "text": "Run each review three times and take the majority severity for each finding."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "\"Based on the impact of the issue\" leaves every boundary to the model's judgment, which is why the same pattern lands differently across runs. Explicit criteria per level, anchored by a concrete code example, give the model a reference to classify against rather than a subjective scale to interpret.",
-      "distractors": {
-        "A": "A numeric score with defined ranges looks more rigorous and makes the mapping explicit. The variance simply relocates into the score itself, since \"impact\" remains undefined — an uncalibrated 1–100 judgment is less stable than a four-way choice, not more.",
-        "B": "Fewer levels does reduce the number of boundaries and would genuinely cut some variance, so this is a reasonable simplification. The remaining boundary is still undefined, so the same input can land on either side of it — and you lose prioritization granularity to buy partial relief.",
-        "D": "Majority voting across runs would smooth some inconsistency and is a recognized ensembling technique. It triples cost, still produces arbitrary-but-stable answers where criteria are genuinely undefined, and treats the symptom rather than the missing definition."
-      }
-    },
-    "lab": "lab-06-few-shot-and-criteria",
-    "difficulty": 7,
-    "tags": [
-      "explicit-criteria",
-      "severity",
-      "consistency"
     ]
   },
   {
@@ -2900,48 +2231,6 @@
     ]
   },
   {
-    "id": "q-4.6-101",
-    "domain": 4,
-    "task_statement": "4.6",
-    "scenario": "After generating a payment-reconciliation module, you append to the same session: \"Now carefully review the code you just wrote and report any bugs.\" It reports no issues. QA later finds an off-by-one in a loop boundary that the model itself wrote. Repeating the request with stronger wording and with extended thinking enabled produces the same clean bill of health.",
-    "stem": "What explains this and what is the fix?",
-    "options": [
-      {
-        "key": "A",
-        "text": "The model retains its generation reasoning in-session and will not question it; use a second independent instance without that context."
-      },
-      {
-        "key": "B",
-        "text": "The module is too large for a single review pass; splitting it into functions and reviewing each separately would catch the boundary error."
-      },
-      {
-        "key": "C",
-        "text": "The review instruction is too general; asking for specific checks such as boundary conditions and off-by-one errors would surface it."
-      },
-      {
-        "key": "D",
-        "text": "Extended thinking was not given enough budget to reconsider the loop logic thoroughly."
-      }
-    ],
-    "correct": "A",
-    "rationale": {
-      "correct": "Self-review in the same session is limited by construction: the reasoning that produced the off-by-one is still in context and still looks correct, so the model is reviewing its conclusion rather than the code. That neither stronger wording nor extended thinking helped is the signature of this blind spot. An independent instance without that reasoning context evaluates the code on its own terms.",
-      "distractors": {
-        "B": "Splitting large reviews into focused passes is the correct remedy for attention dilution across many files, and it is a real technique. A single module with one off-by-one is not an attention-dilution case, and each smaller pass in the same session carries the same generation context.",
-        "C": "Specific review criteria genuinely improve review quality and would be worth adding to any review prompt. They do not remove the anchoring — the model would check boundary conditions and conclude, from the same reasoning that produced them, that they are right.",
-        "D": "More thinking budget lets the model reason longer, which helps on genuinely hard problems. The scenario states extended thinking was already tried without effect, and more of the same reasoning does not escape an anchor built into the context."
-      }
-    },
-    "lab": "lab-16-decomposition-and-review",
-    "difficulty": 9,
-    "tags": [
-      "self-review",
-      "independent-review",
-      "session-isolation",
-      "diagnose"
-    ]
-  },
-  {
     "id": "q-4.6-102",
     "domain": 4,
     "task_statement": "4.6",
@@ -3023,48 +2312,6 @@
       "multi-pass",
       "design-choice",
       "self-review"
-    ]
-  },
-  {
-    "id": "q-5.1-101",
-    "domain": 5,
-    "task_statement": "5.1",
-    "scenario": "A long support conversation uses progressive summarization to stay within budget. Early in the conversation the customer stated order #4471, a $128.40 disputed charge, and a promised delivery date of March 3. Forty turns later the agent tells the customer \"we'll refund the amount in question for your recent order,\" having lost the specific figures to summarization.",
-    "stem": "What is the most effective fix?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Stop summarizing and pass the complete conversation history on every request so no detail is ever lost."
-      },
-      {
-        "key": "B",
-        "text": "Place the earliest turns at the end of the prompt so the original figures land in the high-recall tail rather than the middle."
-      },
-      {
-        "key": "C",
-        "text": "Instruct the summarizer to preserve all numbers, dates, and identifiers verbatim when condensing."
-      },
-      {
-        "key": "D",
-        "text": "Extract transactional facts into a persistent \"case facts\" block included in every prompt, kept outside the summarized history."
-      }
-    ],
-    "correct": "D",
-    "rationale": {
-      "correct": "Summarization is lossy by design, so the durable fix is to remove critical facts from its scope entirely. A persistent case-facts block holds the identifiers, amounts, and dates as structured data included in every prompt, so they survive regardless of how aggressively the conversational history is condensed.",
-      "distractors": {
-        "A": "Full history guarantees nothing is lost and is the simplest correct-by-construction option, which is why it appeals. It is exactly what the token budget forbids in a forty-turn conversation, and unbounded growth eventually forces truncation anyway — usually of the oldest turns, where these facts live.",
-        "B": "Position-aware ordering is a real technique for mitigating lost-in-the-middle effects and is worth applying to long aggregated inputs. The figures here were removed by summarization rather than under-attended, so reordering what remains cannot recover them.",
-        "C": "Instructing the summarizer to retain numbers verbatim is a sensible and cheap improvement that would help in many turns. It keeps the critical facts inside the lossy channel, so compliance is probabilistic and degrades as the history grows and each successive summary summarizes a summary."
-      }
-    },
-    "lab": "lab-14-context-management",
-    "difficulty": 8,
-    "tags": [
-      "context-management",
-      "case-facts",
-      "progressive-summarization",
-      "transactional-facts"
     ]
   },
   {
@@ -3152,47 +2399,6 @@
     ]
   },
   {
-    "id": "q-5.2-101",
-    "domain": 5,
-    "task_statement": "5.2",
-    "scenario": "A customer opens with: \"This is the third time I've contacted you about this. I want to speak to a manager.\" The underlying issue is a duplicate charge, which your agent is fully capable of refunding autonomously.",
-    "stem": "What should the agent do?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Investigate the duplicate charge and resolve it, then offer to connect the customer to a manager if they still want one after seeing it fixed."
-      },
-      {
-        "key": "B",
-        "text": "Investigate the charge and gather the order details first so the handoff summary is complete, then escalate with that summary attached."
-      },
-      {
-        "key": "C",
-        "text": "Escalate to a human immediately, since the customer has explicitly requested one."
-      },
-      {
-        "key": "D",
-        "text": "Acknowledge the frustration and ask whether the customer would prefer the agent resolve the charge now or wait for a manager."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "An explicit request for a human is an escalation trigger in its own right and should be honored immediately, without first attempting investigation. The agent's capability to resolve the issue does not override a clearly stated preference, particularly on a third contact where prior attempts have already failed the customer.",
-      "distractors": {
-        "A": "Resolving first and offering the manager afterward maximizes first-contact resolution and would satisfy many customers. It substitutes the agent's judgment for a clearly stated preference, which is the behavior that turns a solvable complaint into a serious one.",
-        "B": "A complete, well-researched handoff is genuinely good practice and would produce the best-informed escalation, which makes this the closest alternative. It delays an explicit request for a human in order to build a case file — the escalation should carry what is already known rather than pausing to gather more.",
-        "D": "Acknowledging frustration while offering resolution is the correct pattern when a customer expresses anger without explicitly demanding a human. Here the request is unambiguous, so re-asking reads as deflection and adds friction on a third contact."
-      }
-    },
-    "lab": "lab-12-escalation",
-    "difficulty": 8,
-    "tags": [
-      "escalation-trigger",
-      "customer-request",
-      "escalation"
-    ]
-  },
-  {
     "id": "q-5.2-102",
     "domain": 5,
     "task_statement": "5.2",
@@ -3232,48 +2438,6 @@
       "policy-gap",
       "escalation",
       "ambiguity"
-    ]
-  },
-  {
-    "id": "q-5.2-103",
-    "domain": 5,
-    "task_statement": "5.2",
-    "scenario": "A customer provides only the name \"J. Martinez.\" The `get_customer` tool returns three matching records with different addresses and order histories. The agent currently picks the record with the most recent activity and proceeds.",
-    "stem": "What should it do instead?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Escalate to a human, since ambiguous identity is a case the agent cannot safely resolve."
-      },
-      {
-        "key": "B",
-        "text": "Continue with the most recent record but confirm one detail from it, such as the last order date, before proceeding."
-      },
-      {
-        "key": "C",
-        "text": "Ask the customer for an additional identifier — order number, email, or postal code — before acting on any account."
-      },
-      {
-        "key": "D",
-        "text": "Present all three records to the customer and ask which one is theirs."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "When a lookup returns multiple matches, the agent should request additional identifiers rather than selecting heuristically. Recency is not evidence of identity, and acting on the wrong account risks exposing one customer's data and applying changes to another's. Asking for one more identifier is low-friction and resolves the ambiguity properly.",
-      "distractors": {
-        "A": "Escalating avoids an unsafe automated decision and is defensible when identity cannot be established. It spends human capacity on something a single clarifying question resolves, and escalation is warranted when the customer cannot disambiguate — not before asking.",
-        "B": "Confirming a detail before proceeding is more careful than blind selection and shows the right instinct. It leaks information from an account that may not be the customer's, and a confirmation question sourced from a guessed record invites a false positive when the customer answers agreeably.",
-        "D": "Asking the customer to choose does resolve the ambiguity through their input, which is directionally right. Displaying three customers' addresses and order histories discloses other people's personal data to an unverified caller, which is a serious privacy failure."
-      }
-    },
-    "lab": "lab-12-escalation",
-    "difficulty": 8,
-    "tags": [
-      "ambiguity-resolution",
-      "multiple-matches",
-      "identifiers",
-      "privacy"
     ]
   },
   {
@@ -3319,48 +2483,6 @@
     ]
   },
   {
-    "id": "q-5.3-102",
-    "domain": 5,
-    "task_statement": "5.3",
-    "scenario": "One of six research subagents fails permanently: its data source is decommissioned. Your coordinator currently aborts the entire workflow when any subagent fails. The other five subagents returned solid findings covering most of the requested scope.",
-    "stem": "What should the coordinator do?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Retry the failed subagent with exponential backoff, and abort only after the retry budget is exhausted."
-      },
-      {
-        "key": "B",
-        "text": "Proceed with the five results and re-delegate the failed subagent's scope to whichever remaining subagent has the most relevant tools."
-      },
-      {
-        "key": "C",
-        "text": "Proceed with the five results and annotate coverage, distinguishing well-supported findings from areas left unaddressed."
-      },
-      {
-        "key": "D",
-        "text": "Abort as it does now, since a partial report may mislead the reader about the completeness of the research."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "Terminating an entire workflow on a single subagent failure is an anti-pattern; five sixths of the research is real value. Proceeding while annotating coverage — marking which findings are well-supported and which areas have gaps due to an unavailable source — delivers that value without overstating completeness.",
-      "distractors": {
-        "A": "Bounded retry with backoff is the correct response to a transient failure and belongs in the design generally. This failure is permanent by construction, so the retries are guaranteed to fail and the workflow still aborts — spending time to arrive at the same wrong outcome.",
-        "B": "Reassigning the scope is enterprising and would be right if another agent could genuinely cover it. The source is decommissioned, so no remaining agent can reach that data, and silently reassigning risks a substitute source being presented as though it answered the original question.",
-        "D": "The concern about misleading readers is legitimate and is exactly what coverage annotations exist to answer. Discarding five successful subagents' work to avoid a problem that transparent annotation solves is a large cost for no gain."
-      }
-    },
-    "lab": "lab-20-error-propagation-provenance",
-    "difficulty": 8,
-    "tags": [
-      "error-propagation",
-      "partial-results",
-      "coverage-annotation",
-      "coordinator"
-    ]
-  },
-  {
     "id": "q-5.3-103",
     "domain": 5,
     "task_statement": "5.3",
@@ -3400,48 +2522,6 @@
       "error-propagation",
       "coordinator",
       "recovery"
-    ]
-  },
-  {
-    "id": "q-5.4-101",
-    "domain": 5,
-    "task_statement": "5.4",
-    "scenario": "Three hours into exploring a large service, an agent that earlier gave precise answers citing `OrderReconciler` and `PaymentGatewayAdapter` by name now answers with phrases like \"typically in a service like this, the reconciliation logic would live in a dedicated class.\" It has stopped referencing the specific classes it found earlier.",
-    "stem": "What is happening and what is the appropriate response?",
-    "options": [
-      {
-        "key": "A",
-        "text": "The agent has exhausted its context window; run `/compact` and continue the exploration."
-      },
-      {
-        "key": "B",
-        "text": "Context has degraded over the long session; have the agent keep a scratchpad file of key findings and reference it for later questions."
-      },
-      {
-        "key": "C",
-        "text": "The service is too large for one agent; delegate the remaining exploration to subagents scoped to individual modules."
-      },
-      {
-        "key": "D",
-        "text": "The agent's earlier answers were confabulated; the class names should be verified before trusting any of the session's conclusions."
-      }
-    ],
-    "correct": "B",
-    "rationale": {
-      "correct": "Answering from 'typical patterns' rather than specific discovered classes is the recognizable signature of context degradation in an extended session. A scratchpad file persists key findings outside the conversation, so specific names and locations survive across context boundaries and can be referenced rather than recalled.",
-      "distractors": {
-        "A": "Compaction is a legitimate tool for extended sessions and would reclaim room, so this is a reasonable move. It condenses the very details that are already being lost, and reclaiming space does not restore specificity — the same drift resumes as new material accumulates.",
-        "C": "Subagent delegation genuinely helps isolate verbose exploration and is part of the right toolkit for large codebases. It addresses future exploration while doing nothing to recover the findings already degrading in the main session, and it is a larger restructuring than the situation requires.",
-        "D": "Skepticism about specific claims is healthy, and verification is cheap. The pattern described is the opposite of confabulation: the agent was specific when the findings were fresh and became vague as context degraded, so the early answers are the more reliable ones."
-      }
-    },
-    "lab": "lab-14-context-management",
-    "difficulty": 8,
-    "tags": [
-      "context-degradation",
-      "scratchpad",
-      "codebase-exploration",
-      "diagnose"
     ]
   },
   {
@@ -3652,131 +2732,6 @@
       "confidence-routing",
       "human-review",
       "capacity"
-    ]
-  },
-  {
-    "id": "q-5.6-101",
-    "domain": 5,
-    "task_statement": "5.6",
-    "scenario": "Two credible sources report different figures for the same metric: an industry association says the market grew 12% and a government statistics office says 8%. Your synthesis agent currently picks one — usually whichever appeared first in its input — and states it as fact.",
-    "stem": "What should the synthesis output do instead?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Report the average of the two figures, noting the range in a footnote."
-      },
-      {
-        "key": "B",
-        "text": "Present both figures with source attribution and methodological context, distinguishing well-established findings from contested ones."
-      },
-      {
-        "key": "C",
-        "text": "Prefer the government statistics office, since official figures are generally more authoritative than industry association estimates."
-      },
-      {
-        "key": "D",
-        "text": "Omit the metric, since a figure that credible sources disagree on cannot be reported reliably."
-      }
-    ],
-    "correct": "B",
-    "rationale": {
-      "correct": "Conflicting figures from credible sources should be annotated with attribution rather than silently resolved. Preserving both values and the methodological context each source provides lets the reader judge, and structuring the report to separate well-established findings from contested ones makes the epistemic status of each claim explicit.",
-      "distractors": {
-        "A": "Averaging produces a single usable number and acknowledges the range, which feels like a compromise. A 10% figure appears in neither source and misrepresents both, and if the difference comes from different definitions the average is meaningless rather than merely imprecise.",
-        "C": "Source-authority heuristics are reasonable in many contexts and government statistics are often more rigorous, so this is a defensible editorial policy. It still silently discards a credible data point, and the two figures may differ because they measure different things — scope, timeframe, methodology — which authority ranking cannot detect.",
-        "D": "Omitting a contested figure avoids asserting something wrong and is the cautious option. It withholds information the reader needs, and disagreement between credible sources is itself a finding worth reporting rather than a reason for silence."
-      }
-    },
-    "lab": "lab-20-error-propagation-provenance",
-    "difficulty": 8,
-    "tags": [
-      "provenance",
-      "conflict-annotation",
-      "synthesis",
-      "contested-findings"
-    ]
-  },
-  {
-    "id": "q-5.6-102",
-    "domain": 5,
-    "task_statement": "5.6",
-    "scenario": "A synthesis flags a contradiction: one source reports 4.2 million users, another 6.8 million. Investigation shows the first figure is from a 2023 annual report and the second from a 2025 filing. The subagents' structured findings carry claims and source names but no dates.",
-    "stem": "What is the underlying design defect?",
-    "options": [
-      {
-        "key": "A",
-        "text": "The synthesis agent should prefer the more recent source, which requires only that findings be ordered by recency."
-      },
-      {
-        "key": "B",
-        "text": "The coordinator should restrict sources to a single reporting period so temporal variation cannot arise."
-      },
-      {
-        "key": "C",
-        "text": "Subagent outputs must include publication or collection dates, since without them normal change over time looks like contradiction."
-      },
-      {
-        "key": "D",
-        "text": "The synthesis agent should be instructed to check whether apparent contradictions are explained by timing before flagging them."
-      }
-    ],
-    "correct": "C",
-    "rationale": {
-      "correct": "The metadata needed to interpret these figures correctly was never captured. Requiring publication or collection dates in subagent structured outputs is what lets downstream synthesis distinguish growth over two years from a factual dispute. Without it, correct interpretation is impossible regardless of how the synthesis agent is instructed.",
-      "distractors": {
-        "A": "Preferring the most recent figure is often right for a current-state question and is a reasonable editorial default. It still requires the dates that are missing, and blanket recency preference discards legitimately contested cases and historical context where the older figure is the relevant one.",
-        "B": "Restricting to a single reporting period would remove temporal variation and is defensible for a strictly point-in-time comparison. It discards most available evidence, makes trend analysis impossible, and solves a metadata problem by shrinking the research scope.",
-        "D": "Instructing the synthesis agent to consider timing is sensible and would help wherever dates happen to appear in excerpts. It asks the agent to reason about information its input does not contain, so the instruction cannot be acted on in the general case."
-      }
-    },
-    "lab": "lab-20-error-propagation-provenance",
-    "difficulty": 9,
-    "tags": [
-      "provenance",
-      "temporal-data",
-      "metadata",
-      "diagnose"
-    ]
-  },
-  {
-    "id": "q-5.6-103",
-    "domain": 5,
-    "task_statement": "5.6",
-    "scenario": "A synthesis output covering quarterly revenue figures, recent news developments, and technical benchmark findings renders everything as uniform prose paragraphs. Readers report that the revenue comparisons are hard to follow and the benchmark results are difficult to scan.",
-    "stem": "What should the synthesis agent do differently?",
-    "options": [
-      {
-        "key": "A",
-        "text": "Keep uniform prose but add clear section headers so readers can locate the material they need."
-      },
-      {
-        "key": "B",
-        "text": "Render each content type in the form that suits it — financial data as tables, news as prose, technical findings as structured lists."
-      },
-      {
-        "key": "C",
-        "text": "Split the report into three separate documents, one per content type, each formatted appropriately."
-      },
-      {
-        "key": "D",
-        "text": "Add a summary table at the top of the report covering all three content types, keeping the body of the report as uniform prose."
-      }
-    ],
-    "correct": "B",
-    "rationale": {
-      "correct": "Different content types have different natural presentations, and flattening them all into prose is what makes the revenue comparisons and benchmark results hard to use. Rendering financial data as tables, news as prose, and technical findings as structured lists matches form to content within a single coherent report.",
-      "distractors": {
-        "A": "Section headers improve navigation and are worth having regardless — they help with position effects too. They help readers find the revenue section without making the figures inside it any easier to compare.",
-        "C": "Separate per-type documents would let each be formatted well and is reasonable when audiences genuinely differ. It fragments a synthesis whose value lies in relating the three kinds of evidence, and readers must now reconcile three documents themselves.",
-        "D": "A summary table up front genuinely helps and is a good report-writing habit, so this is a partial improvement. The detailed figures remain buried in prose, so anyone who needs more than the summary faces the original problem."
-      }
-    },
-    "lab": "lab-20-error-propagation-provenance",
-    "difficulty": 7,
-    "tags": [
-      "synthesis",
-      "content-rendering",
-      "report-structure"
     ]
   }
 ]
