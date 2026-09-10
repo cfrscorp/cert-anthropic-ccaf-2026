@@ -750,10 +750,16 @@
   /* ---- boot ------------------------------------------------------------- */
   function boot() {
     initTheme();
-    Promise.all(["../data/meta.json", "../data/questions.json", "../data/flashcards.json", "../data/concepts.json", "../data/labs.json"]
+    Promise.all(["../data/meta.json", "../data/questions-standard.json", "../data/flashcards.json", "../data/concepts.json", "../data/labs.json"]
       .map(function (u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }); }))
       .then(function (res) {
         DATA.meta = res[0]; DATA.questions = res[1]; DATA.flashcards = res[2]; DATA.concepts = res[3]; DATA.labs = res[4];
+        var appVersion = DATA.meta.config && DATA.meta.config.app_version;
+        if (appVersion) {
+          document.getElementById("app-version").textContent = "v" + appVersion;
+          document.getElementById("app-version").hidden = false;
+          document.getElementById("app-version-sep").hidden = false;
+        }
         window.addEventListener("hashchange", router);
         if (!location.hash) location.hash = "#/concepts";
         router();

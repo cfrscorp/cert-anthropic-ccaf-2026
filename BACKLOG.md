@@ -7,19 +7,27 @@ Usage:
 
 Sequencing note: BL-001 adds a **Labs** nav entry that does not exist until BL-003 ships, so the recommended order is **BL-002 → BL-003 → BL-001** (a deliberate deviation from strict top-down).
 
+Sequencing note: BL-026–BL-037 are one epic (question-tier restructuring, dynamic set loading, versioning, flashcard overhaul) scoped via a feedback pass — see full findings/rationale for each in the plan file used to derive them. Recommended order, since several depend on foundations landing first: **BL-027 → BL-026 → BL-028 → BL-033 → BL-030 → BL-029 → BL-032 → BL-031**, with **BL-034 → BL-035 → BL-036 → BL-037** runnable in parallel on the flashcards side.
+
 ## Open
 
 ### Fixes
 
-None.
+- [ ] BL-032 - Quiz questions: cross-source duplicate/overlap pass across the three difficulty tiers (BL-028). Confirmed concrete near-duplicates between Standard and Intermediate already (e.g. the $500-refund-hook scenario, the verbose-skill-context-isolation scenario, the comment-accuracy-false-positive scenario, the `stop_reason` control-loop concept — 64 shared tags overall). For each overlapping cluster, delete the true duplicate or deliberately differentiate it per-tier. Run before BL-031's expansion; must also cover Hard-tier content once BL-029 lands.
+- [ ] BL-034 - Flashcards: single-concept overhaul. ~1/3 to just under half of the 90 cards conflate 2-3 distinct facts onto one card (e.g. `fc-1.3-003`, `fc-4.3-003`, `fc-5.3-003`, `fc-3.6-001`, `fc-1.2-001`). Split conflated cards into clean single-concept cards; majority of cards are already fine and don't need touching. Settle a per-task-statement target count (today: flat 3/task) before authoring.
 
 ### Changes
 
-None.
+- [ ] BL-031 - Quiz questions: expand the Intermediate tier to close 4 missing task-statement gaps (1.5, 2.2, 4.2, 5.3) and recalibrate difficulty (currently skews *easier* than Standard, not "intermediate") to reach the 50-minimum/100-preferred target. Do after BL-032's dedup pass.
 
 ### Additions
 
-None.
+- [ ] BL-029 - Quiz questions: adopt the untracked, unreferenced `study/data/questions-lvl2.json` (90 Qs, full 30-task-statement coverage, difficulty concentrated 7-9, schema-valid) as the Hard tier's base, pending your own quality review of a larger sample and BL-032's dedup pass.
+- [ ] BL-030 - Quiz questions: add real multi-select ("select N of M") item support — schema (`correct` as single value or array), `quiz.py`/`quiz_tui.py` grading (set comparison, multi-letter input), and `study/web/app.js`'s Quiz UI (checkboxes vs. radio buttons). Matches the real exam's confirmed item format (verified against the official Sept-2026 PDF); every existing question (387 total) is single-select only today. 3 real "Select TWO" questions excluded earlier this session are ready source/test material. Should land before BL-029's Hard-tier content is finalized if multi-select items belong in it.
+- [ ] BL-033 - Web UI: dynamic question-set and flashcard-set picker. `app.js`'s loader is a fixed 5-URL array with no manifest/discovery mechanism, and `serve.py` is plain static serving with no directory-listing endpoint. Add a generated manifest (e.g. `study/data/sets.json`, mirroring the `labs.json` precedent) and a new dropdown in both the Quiz view (layered above the existing domain→task cascade) and Flashcards view; eager-load all manifest-listed sets at boot.
+- [ ] BL-035 - Flashcards Web UI: add a task-statement filter alongside the existing domain-only select, mirroring Quiz's existing two-tier domain→task cascade (`domainOptions()`/`taskOptions()` already generic/reusable). Every flashcard already has `task_statement`; it's just not exposed as a filter yet.
+- [ ] BL-036 - Flashcards: self-graded recall tracking (flip → "got it"/"missed it", Anki/Leitner-style), enabling a "review missed" mode. New history data model needed (flashcards currently have zero progress-tracking concept, unlike quiz questions) — likely mirroring `quiz.py`'s `{attempts, correct, last_result, last_seen}` shape.
+- [ ] BL-037 - New Flashcards TUI (`study/tools/flashcards_tui.py`), mirroring `quiz_tui.py`'s architecture: a `flashcards.py` "core" module (data model, loading, history per BL-036, filtering) imported by a thin presentation-only TUI script. Depends on BL-036's history model being settled first.
 
 ## Completed
 
@@ -48,5 +56,8 @@ None.
 - [x] BL-023 - Added `study/videos/` — one Markdown file per exam domain (D1–D5) linking 1-3 real YouTube videos per concept (55 unique links, every one verified to resolve via YouTube's oEmbed API), prioritizing Anthropic's official channel and hands-on coding demos, plus a `README.md` index.
 - [x] BL-024 - Added a `videos` array (`{title, url}`) to every concept in `concepts.json`, parsed from `study/videos/domain-*.md`; extended `concepts.schema.json` to validate it. `cd study && uv run pytest` green (30 concepts, 64 video entries).
 - [x] BL-025 - Concepts view: render each concept's `videos` as a "Videos" section (text links only, no thumbnails) between Code and Practice. Link text is a succinct, concept-tied label ("Video N: <concept title>"); the real video title becomes the link's `title` tooltip in place of alt text.
+- [x] BL-027 - Docs: repointed `README.md`, `.claude/CLAUDE.md`, and `labs/README.md`'s broken links from the renamed `anthropic-ccaf-exam-guide-2026.md` to `anthropic-ccaf-exam-guide-2026-07.md` (verified verbatim-current against the official Sept-2026 exam guide PDF); repo-wide sweep confirmed no other stale references remain.
+- [x] BL-026 - Site: version number in the footer. Added `config.app_version` (`"1.1.0"`) to `meta.json` (+ `meta.schema.json`), rendered in the footer via `app.js`'s `boot()` (hidden spans in `index.html` unhidden once `DATA.meta` loads); `study/pyproject.toml` and `study/serve.py`'s `__version__` bumped to match, with two new `test_study_data.py` tests asserting all three stay in sync. `cd study && uv run pytest` green (23 passed).
+- [x] BL-028 - Quiz questions: renamed/relocated into three difficulty tiers — `study/data/questions-standard.json` (was `questions.json`, 240 Qs), `study/data/questions-intermediate.json` (was `.working/questions2.json`, 57 Qs, now a real tracked file), `study/data/questions-hard.json` (was the untracked `study/data/questions-lvl2.json`, 90 Qs — see BL-029). Updated `app.js`'s fetch (still Standard-only until BL-033's picker lands), all `quiz.py`/`quiz_tui.py` CLI examples, and `study/README.md`'s content-model table. `test_study_data.py` now schema-validates and structurally checks all three tiers combined (global ID-uniqueness, real task statements, A-D options, distractor completeness, lab links), added a 50-question-minimum-per-tier guard, and kept the 8/task coverage target scoped to Standard only (where it was calibrated). Verified end-to-end: web server serves `questions-standard.json` (240 Qs, 200 OK), and `quiz.py --list` runs clean against all three files. `cd study && uv run pytest` green (26 passed).
 
 <!-- EOF -->

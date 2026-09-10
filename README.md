@@ -28,7 +28,7 @@ dependencies.
 
 | Path | What it is |
 |------|------------|
-| [`anthropic-ccaf-exam-guide-2026.md`](anthropic-ccaf-exam-guide-2026.md) | The exam guide: 5 domains, 30 task statements, 6 scenarios, sample questions, prep exercises. |
+| [`anthropic-ccaf-exam-guide-2026-07.md`](anthropic-ccaf-exam-guide-2026-07.md) | The exam guide: 5 domains, 30 task statements, 6 scenarios, sample questions, prep exercises. |
 | [`labs/`](labs/) | 25 hands-on labs + a shared test harness. Start at [`labs/README.md`](labs/README.md). |
 | [`labs/README.md`](labs/README.md) | Master matrix: labs by dependency tier & difficulty, with effort estimates and a full task-statement → lab / scenario → capstone traceability map. |
 | [`labs/_shared/`](labs/_shared/) | Reusable test harness (deterministic mock Claude client, `starter`/`solution` switching, opt-in LLM grading). See [`labs/_shared/README.md`](labs/_shared/README.md). |

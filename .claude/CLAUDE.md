@@ -4,7 +4,7 @@ Study materials for the **Claude Certified Architect – Foundations (CCAF)** ex
 
 ## Layout
 
-- `anthropic-ccaf-exam-guide-2026.md` — the exam guide (5 domains, 30 task statements, 6 scenarios). Source of truth for all content.
+- `anthropic-ccaf-exam-guide-2026-07.md` — the exam guide (5 domains, 30 task statements, 6 scenarios). Source of truth for all content.
 - `labs/` — 25 hands-on labs + a shared offline test harness (`labs/_shared/`). See `labs/README.md`.
 - `study/` — a local, offline, single-user study app (practice quiz, flashcards, concept explainers, readiness dashboard). See `study/README.md`.
 - `BACKLOG.md` — the running task backlog (see below).

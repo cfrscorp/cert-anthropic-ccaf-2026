@@ -1,6 +1,6 @@
 [project]
 name = "ccaf-study"
-version = "1.0.0"
+version = "1.1.0"
 description = "Local, offline study app + content for the CCAF exam (question bank, flashcards, concepts, readiness)"
 requires-python = ">=3.11"
 dependencies = [

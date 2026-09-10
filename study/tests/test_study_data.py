@@ -13,6 +13,8 @@ domains are authored.
 from __future__ import annotations
 
 import json
+import re
+import tomllib
 from pathlib import Path
 
 import jsonschema
@@ -31,7 +33,10 @@ def _load(path: Path):
 
 
 META = _load(DATA / "meta.json")
-QUESTIONS = _load(DATA / "questions.json")
+QUESTIONS_STANDARD = _load(DATA / "questions-standard.json")
+QUESTIONS_INTERMEDIATE = _load(DATA / "questions-intermediate.json")
+QUESTIONS_HARD = _load(DATA / "questions-hard.json")
+QUESTIONS_ALL = QUESTIONS_STANDARD + QUESTIONS_INTERMEDIATE + QUESTIONS_HARD
 FLASHCARDS = _load(DATA / "flashcards.json")
 CONCEPTS = _load(DATA / "concepts.json")
 LABS = _load(DATA / "labs.json")
@@ -46,7 +51,9 @@ TASK_DOMAIN = {ts["id"]: ts["domain"] for ts in META["task_statements"]}
     "data_file, schema_file",
     [
         ("meta.json", "meta.schema.json"),
-        ("questions.json", "questions.schema.json"),
+        ("questions-standard.json", "questions.schema.json"),
+        ("questions-intermediate.json", "questions.schema.json"),
+        ("questions-hard.json", "questions.schema.json"),
         ("flashcards.json", "flashcards.schema.json"),
         ("concepts.json", "concepts.schema.json"),
         ("labs.json", "labs.schema.json"),
@@ -56,6 +63,22 @@ def test_data_matches_schema(data_file, schema_file):
     data = _load(DATA / data_file)
     schema = _load(SCHEMA / schema_file)
     jsonschema.validate(instance=data, schema=schema)
+
+
+# --------------------------------------------------------------------------- #
+# Version consistency — meta.json's config.app_version is the single source   #
+# of truth; pyproject.toml and serve.py must not silently drift from it.      #
+# --------------------------------------------------------------------------- #
+def test_app_version_matches_pyproject():
+    pyproject = tomllib.loads((STUDY_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert pyproject["project"]["version"] == META["config"]["app_version"]
+
+
+def test_app_version_matches_serve_py():
+    serve_py = (STUDY_ROOT / "serve.py").read_text(encoding="utf-8")
+    match = re.search(r'^__version__ = "([^"]+)"', serve_py, re.MULTILINE)
+    assert match, "serve.py must define __version__ = \"X.Y.Z\""
+    assert match.group(1) == META["config"]["app_version"]
 
 
 # --------------------------------------------------------------------------- #
@@ -77,42 +100,54 @@ def test_meta_lab_links_resolve():
 
 
 # --------------------------------------------------------------------------- #
-# Question integrity                                                           #
+# Question integrity — across all three difficulty tiers combined, since IDs   #
+# must stay globally unique (progress history is keyed by bare id) and every   #
+# tier must meet the same structural bar, not just Standard.                  #
 # --------------------------------------------------------------------------- #
 def test_question_ids_unique():
-    ids = [q["id"] for q in QUESTIONS]
-    assert len(ids) == len(set(ids)), "duplicate question ids"
+    ids = [q["id"] for q in QUESTIONS_ALL]
+    assert len(ids) == len(set(ids)), "duplicate question ids across tiers"
 
 
 def test_questions_reference_real_task_statements():
-    for q in QUESTIONS:
+    for q in QUESTIONS_ALL:
         assert q["task_statement"] in TASK_IDS, q["id"]
         assert q["domain"] == TASK_DOMAIN[q["task_statement"]], q["id"]
 
 
 def test_question_options_are_A_B_C_D():
-    for q in QUESTIONS:
+    for q in QUESTIONS_ALL:
         keys = [o["key"] for o in q["options"]]
         assert keys == ["A", "B", "C", "D"], q["id"]
 
 
 def test_correct_answer_is_a_real_option():
-    for q in QUESTIONS:
+    for q in QUESTIONS_ALL:
         keys = {o["key"] for o in q["options"]}
         assert q["correct"] in keys, q["id"]
 
 
 def test_every_distractor_has_a_rationale():
-    for q in QUESTIONS:
+    for q in QUESTIONS_ALL:
         expected = {"A", "B", "C", "D"} - {q["correct"]}
         got = set(q["rationale"]["distractors"].keys())
         assert got == expected, f"{q['id']}: distractor rationales {got} != {expected}"
 
 
 def test_question_lab_links_resolve():
-    for q in QUESTIONS:
+    for q in QUESTIONS_ALL:
         if q.get("lab"):
             assert (LABS_ROOT / q["lab"]).is_dir(), f"{q['id']} → missing lab {q['lab']}"
+
+
+def test_each_tier_meets_minimum_question_count():
+    tiers = {
+        "questions-standard.json": QUESTIONS_STANDARD,
+        "questions-intermediate.json": QUESTIONS_INTERMEDIATE,
+        "questions-hard.json": QUESTIONS_HARD,
+    }
+    shortfalls = {name: len(qs) for name, qs in tiers.items() if len(qs) < 50}
+    assert not shortfalls, f"tiers below the 50-question minimum: {shortfalls}"
 
 
 # --------------------------------------------------------------------------- #
@@ -158,9 +193,12 @@ def test_labs_slugs_resolve_and_have_content():
 # Coverage (gated by PILOT_DOMAINS)                                            #
 # --------------------------------------------------------------------------- #
 def test_question_coverage_meets_target_for_pilot_domains():
+    # Scoped to the Standard tier only — the per-task target was calibrated
+    # against it; Intermediate/Hard have their own (lower, still-being-built)
+    # coverage bars tracked separately (see BL-031 in BACKLOG.md).
     target = META["config"]["questions_per_task_target"]
     counts: dict[str, int] = {tid: 0 for tid in TASK_IDS}
-    for q in QUESTIONS:
+    for q in QUESTIONS_STANDARD:
         counts[q["task_statement"]] += 1
     shortfalls = {
         tid: counts[tid]

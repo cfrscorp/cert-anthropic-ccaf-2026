@@ -39,9 +39,10 @@
     "config": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["questions_per_task_target"],
+      "required": ["questions_per_task_target", "app_version"],
       "properties": {
-        "questions_per_task_target": { "type": "integer", "minimum": 1 }
+        "questions_per_task_target": { "type": "integer", "minimum": 1 },
+        "app_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
       }
     }
   }

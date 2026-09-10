@@ -260,27 +260,27 @@ def run_tui_session(questions, history, history_path, source_files, filters):
 EPILOG = """\
 Examples (run from the repo root):
   # Fixed-layout quiz on the main study bank
-  uv run study/tools/quiz_tui.py study/data/questions.json
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json
 
   # Shuffle and cap the session at 20 random questions
-  uv run study/tools/quiz_tui.py study/data/questions.json --shuffle --num 20
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json --shuffle --num 20
 
   # Drill just one domain or task statement
-  uv run study/tools/quiz_tui.py study/data/questions.json --domain 1
-  uv run study/tools/quiz_tui.py study/data/questions.json --task 4.3
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json --domain 1
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json --task 4.3
 
   # Re-drill only questions you've gotten wrong before (shared history with quiz.py)
-  uv run study/tools/quiz_tui.py study/data/questions.json --review-missed
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json --review-missed
 
   # View cumulative stats or list domains/tasks without quizzing
-  uv run study/tools/quiz_tui.py study/data/questions.json --stats
-  uv run study/tools/quiz_tui.py study/data/questions.json --list
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json --stats
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json --list
 
   # Use a separate history file
-  uv run study/tools/quiz_tui.py study/data/questions.json --history .working/my_history.json
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json --history .working/my_history.json
 
   # Disable color (feedback/verdict text still appears above the input line)
-  uv run study/tools/quiz_tui.py study/data/questions.json --no-color
+  uv run study/tools/quiz_tui.py study/data/questions-standard.json --no-color
 
   # Show the script version
   uv run study/tools/quiz_tui.py --version
@@ -390,3 +390,5 @@ def main(argv=None):
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+# EOF

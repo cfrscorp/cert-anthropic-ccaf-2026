@@ -142,7 +142,7 @@ or move your progress, or **Reset** to start over.
 | File | What |
 |------|------|
 | `meta.json` | Domains + exam weights, the 30 task statements, and the task → lab map. |
-| `questions.json` | Scenario multiple-choice questions (stem, 4 options, correct, per-distractor rationale, lab link). |
+| `questions-standard.json`, `questions-intermediate.json`, `questions-hard.json` | Scenario multiple-choice questions by difficulty tier (stem, 4 options, correct, per-distractor rationale, lab link). The Web UI currently reads `questions-standard.json`; `quiz.py`/`quiz_tui.py` accept any of the three (or several at once). |
 | `flashcards.json` | Front/back fact-recall cards. |
 | `concepts.json` | One explainer per task statement. |
 | `schema/*.schema.json` | JSON Schemas; every data file is validated against these. |

@@ -39,6 +39,7 @@
     { "id": "5.6", "domain": 5, "title": "Provenance & uncertainty in synthesis", "labs": ["lab-20-error-propagation-provenance", "lab-24-capstone-research-system"] }
   ],
   "config": {
-    "questions_per_task_target": 8
+    "questions_per_task_target": 8,
+    "app_version": "1.1.0"
   }
 }
