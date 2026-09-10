@@ -36,11 +36,24 @@
     "id": "fc-1.2-001",
     "domain": 1,
     "task_statement": "1.2",
-    "front": "In a hub-and-spoke multi-agent system, what does the coordinator (hub) do that subagents (spokes) do not?",
-    "back": "The coordinator decomposes the query, delegates subtasks, dynamically decides which subagents to invoke based on complexity, routes ALL inter-subagent communication and error handling, aggregates results, and runs iterative refinement loops. Subagents do only their specialized work within an assigned scope.",
+    "front": "In a hub-and-spoke multi-agent system, how does work get from the coordinator to the subagents?",
+    "back": "The coordinator decomposes the query into subtasks, delegates them to subagents, and dynamically decides which subagents to invoke based on task complexity.",
     "tags": [
       "coordinator",
-      "hub-and-spoke"
+      "hub-and-spoke",
+      "delegation"
+    ]
+  },
+  {
+    "id": "fc-1.2-004",
+    "domain": 1,
+    "task_statement": "1.2",
+    "front": "Besides delegating work, what two coordination duties belong solely to the hub, not to subagents?",
+    "back": "The coordinator routes ALL inter-subagent communication and error handling (subagents never talk to each other directly), and aggregates subagents' results into the final output.",
+    "tags": [
+      "coordinator",
+      "hub-and-spoke",
+      "aggregation"
     ]
   },
   {
@@ -92,12 +105,22 @@
     "id": "fc-1.3-003",
     "domain": 1,
     "task_statement": "1.3",
-    "front": "How do you spawn parallel subagents, and what does `AgentDefinition` configure?",
-    "back": "Spawn parallel subagents by emitting multiple Task calls in a SINGLE coordinator response (not across separate turns). `AgentDefinition` configures each subagent type's description, system prompt, and tool restrictions. (Forking sessions is separate: it explores divergent approaches from a shared baseline.)",
+    "front": "How do you spawn multiple subagents in PARALLEL rather than sequentially?",
+    "back": "Emit multiple Task calls within a SINGLE coordinator response (not across separate turns). Issuing them across separate turns runs them sequentially instead of concurrently.",
     "tags": [
       "parallel-spawn",
+      "task-tool"
+    ]
+  },
+  {
+    "id": "fc-1.3-004",
+    "domain": 1,
+    "task_statement": "1.3",
+    "front": "What does an `AgentDefinition` configure for a subagent type?",
+    "back": "Each subagent type's description, system prompt, and tool restrictions — the configuration that determines how that subagent type behaves and what it can access.",
+    "tags": [
       "AgentDefinition",
-      "fork-session"
+      "subagent-config"
     ]
   },
   {
@@ -238,11 +261,21 @@
     "id": "fc-2.1-001",
     "domain": 2,
     "task_statement": "2.1",
-    "front": "What is the primary mechanism an LLM uses to select tools, and what belongs in a strong tool description?",
-    "back": "Tool descriptions are the primary selection mechanism; minimal descriptions cause unreliable selection among similar tools. A strong description states the tool's purpose, the input formats it accepts, example queries, edge cases, and boundaries explaining when to use it versus similar alternatives.",
+    "front": "What is the primary mechanism an LLM uses to select which tool to call?",
+    "back": "The tool's description. Minimal or vague descriptions cause unreliable selection among similar tools, since the description is effectively the model's only basis for choosing.",
     "tags": [
       "tool-descriptions",
-      "tool-selection",
+      "tool-selection"
+    ]
+  },
+  {
+    "id": "fc-2.1-004",
+    "domain": 2,
+    "task_statement": "2.1",
+    "front": "What should a strong tool description include?",
+    "back": "The tool's purpose, the input formats it accepts, example queries, edge cases, and boundaries explaining when to use it versus similar alternatives.",
+    "tags": [
+      "tool-descriptions",
       "boundaries"
     ]
   },
@@ -274,10 +307,19 @@
     "id": "fc-2.2-001",
     "domain": 2,
     "task_statement": "2.2",
-    "front": "In MCP, how does a tool tell the agent that a call failed, and what are the four error categories to distinguish?",
-    "back": "Return a tool result with `isError: true` plus descriptive content. Distinguish transient (timeouts, service unavailability — retryable), validation (invalid input — fix and retry), business (policy violations — not retryable), and permission (insufficient access) errors, because each drives a different recovery decision.",
+    "front": "In MCP, how does a tool tell the agent that a call failed?",
+    "back": "Return a tool result with `isError: true` plus descriptive content explaining the failure.",
     "tags": [
-      "isError",
+      "isError"
+    ]
+  },
+  {
+    "id": "fc-2.2-004",
+    "domain": 2,
+    "task_statement": "2.2",
+    "front": "What four error categories should a failed tool call distinguish, and why?",
+    "back": "Transient (timeouts, service unavailability — retryable), validation (invalid input — fix and retry), business (policy violations — not retryable), and permission (insufficient access). Each category drives a different recovery decision.",
+    "tags": [
       "error-categories"
     ]
   },
@@ -297,10 +339,19 @@
     "id": "fc-2.2-003",
     "domain": 2,
     "task_statement": "2.2",
-    "front": "How should a subagent handle failures before reporting to a coordinator, and how do access failures differ from valid empty results?",
-    "back": "Recover transient failures locally; propagate only unresolvable errors to the coordinator, including partial results and what was attempted. An access failure (e.g., DB unreachable) needs `isError: true` with retry metadata, while a valid empty result (successful query, no matches) is a normal successful empty response — never flag it as an error.",
+    "front": "How should a subagent handle failures before reporting anything to the coordinator?",
+    "back": "Recover transient failures locally; propagate to the coordinator only unresolvable errors, including partial results and what was attempted.",
     "tags": [
-      "local-recovery",
+      "local-recovery"
+    ]
+  },
+  {
+    "id": "fc-2.2-005",
+    "domain": 2,
+    "task_statement": "2.2",
+    "front": "How does an access failure differ from a valid empty result, and how should each be reported?",
+    "back": "An access failure (e.g., DB unreachable) needs `isError: true` with retry metadata. A valid empty result (a successful query that found no matches) is a normal successful empty response — never flag it as an error.",
+    "tags": [
       "empty-result",
       "access-failure"
     ]
@@ -427,23 +478,42 @@
     "id": "fc-3.1-002",
     "domain": 3,
     "task_statement": "3.1",
-    "front": "What are the three levels of the CLAUDE.md hierarchy, and how does precedence work between a root file and a subdirectory file?",
-    "back": "User-level (`~/.claude/CLAUDE.md`, personal), project-level (root `CLAUDE.md` or `.claude/CLAUDE.md`, shared), and directory-level (subdirectory `CLAUDE.md`). Files are additive and load based on the file being worked on; where they conflict, the more specific file (closer to the edited file) takes precedence over the broader one.",
+    "front": "What are the three levels of the CLAUDE.md hierarchy?",
+    "back": "User-level (`~/.claude/CLAUDE.md`, personal), project-level (root `CLAUDE.md` or `.claude/CLAUDE.md`, shared), and directory-level (subdirectory `CLAUDE.md`).",
     "tags": [
       "hierarchy",
-      "precedence",
       "scoping"
+    ]
+  },
+  {
+    "id": "fc-3.1-004",
+    "domain": 3,
+    "task_statement": "3.1",
+    "front": "When a root CLAUDE.md and a subdirectory CLAUDE.md conflict, which one wins?",
+    "back": "CLAUDE.md files are additive and all load based on the file being worked on; where they conflict, the more specific file (closer to the file being edited) takes precedence over the broader one.",
+    "tags": [
+      "precedence",
+      "hierarchy"
     ]
   },
   {
     "id": "fc-3.1-003",
     "domain": 3,
     "task_statement": "3.1",
-    "front": "What are `@import` and `.claude/rules/` used for, and how do you check which memory files are loaded?",
-    "back": "`@import` references external files to keep a CLAUDE.md modular and single-sourced (e.g., importing only the standards relevant to a package). `.claude/rules/` holds topic-specific files (e.g., `testing.md`, `api-conventions.md`, `deployment.md`) as an alternative to one monolithic CLAUDE.md. The `/memory` command lists the memory files currently loaded to diagnose inconsistent behavior.",
+    "front": "What are `@import` and `.claude/rules/` used for?",
+    "back": "`@import` references external files to keep a CLAUDE.md modular and single-sourced (e.g., importing only the standards relevant to a package). `.claude/rules/` holds topic-specific files (e.g., testing.md, api-conventions.md, deployment.md) as an alternative to one monolithic CLAUDE.md — both are ways to organize memory content without one giant file.",
     "tags": [
       "import",
-      "claude-rules",
+      "claude-rules"
+    ]
+  },
+  {
+    "id": "fc-3.1-005",
+    "domain": 3,
+    "task_statement": "3.1",
+    "front": "How do you check which memory files are currently loaded in a session?",
+    "back": "Run the `/memory` command — it lists the memory files currently in effect, which helps diagnose inconsistent or unexpected behavior caused by an unintended file taking precedence.",
+    "tags": [
       "memory-command"
     ]
   },
@@ -462,13 +532,32 @@
     "id": "fc-3.2-002",
     "domain": 3,
     "task_statement": "3.2",
-    "front": "Name the three SKILL.md frontmatter fields and what each does.",
-    "back": "`context: fork` runs the skill in an isolated sub-agent context so verbose or exploratory output does not pollute the main conversation. `allowed-tools` restricts which tools the skill may use (e.g., limit to file writes to prevent destructive actions). `argument-hint` prompts the developer for required parameters when the skill is invoked without arguments.",
+    "front": "What does the `context: fork` SKILL.md frontmatter field do?",
+    "back": "It runs the skill in an isolated sub-agent context so verbose or exploratory output does not pollute the main conversation.",
     "tags": [
       "skills",
-      "frontmatter",
-      "context-fork",
-      "allowed-tools",
+      "context-fork"
+    ]
+  },
+  {
+    "id": "fc-3.2-004",
+    "domain": 3,
+    "task_statement": "3.2",
+    "front": "What does the `allowed-tools` SKILL.md frontmatter field do?",
+    "back": "It restricts which tools the skill may use (e.g., limiting it to file writes to prevent destructive actions).",
+    "tags": [
+      "skills",
+      "allowed-tools"
+    ]
+  },
+  {
+    "id": "fc-3.2-005",
+    "domain": 3,
+    "task_statement": "3.2",
+    "front": "What does the `argument-hint` SKILL.md frontmatter field do?",
+    "back": "It prompts the developer for required parameters when the skill is invoked without arguments.",
+    "tags": [
+      "skills",
       "argument-hint"
     ]
   },
@@ -548,12 +637,22 @@
     "id": "fc-3.4-003",
     "domain": 3,
     "task_statement": "3.4",
-    "front": "What is the Explore subagent for, and how does it combine with the two modes?",
-    "back": "The Explore subagent isolates verbose discovery (large reads/greps) and returns a concise summary, preserving the main conversation's context during multi-phase tasks. A common pattern is plan-mode investigation (optionally via Explore) to design an approach, then direct execution to implement the now well-scoped steps.",
+    "front": "What is the Explore subagent for?",
+    "back": "It isolates verbose discovery (large reads/greps) in a subagent and returns a concise summary, preserving the main conversation's context during multi-phase tasks.",
     "tags": [
       "explore-subagent",
-      "context-management",
-      "combining-modes"
+      "context-management"
+    ]
+  },
+  {
+    "id": "fc-3.4-004",
+    "domain": 3,
+    "task_statement": "3.4",
+    "front": "What is the common pattern for combining the Explore subagent with plan mode and direct execution?",
+    "back": "Plan-mode investigation (optionally delegating discovery to Explore) to design an approach, followed by direct execution to implement the now well-scoped steps.",
+    "tags": [
+      "combining-modes",
+      "plan-mode"
     ]
   },
   {
@@ -582,10 +681,19 @@
     "id": "fc-3.5-003",
     "domain": 3,
     "task_statement": "3.5",
-    "front": "What is the interview pattern, and when do you bundle issues in one message vs. fix them sequentially?",
-    "back": "Interview pattern: have Claude ask you clarifying questions BEFORE implementing to surface considerations you did not anticipate (e.g., cache invalidation, staleness, failure modes)—best for unfamiliar domains. Provide all issues in a single detailed message when they INTERACT (a coherent fix must reconcile them); fix INDEPENDENT issues sequentially since no fix constrains another.",
+    "front": "What is the interview pattern, and when is it most useful?",
+    "back": "Have Claude ask you clarifying questions BEFORE implementing, to surface considerations you did not anticipate (e.g., cache invalidation, staleness, failure modes). It is most useful in unfamiliar domains where you can't anticipate all the considerations yourself.",
     "tags": [
-      "interview-pattern",
+      "interview-pattern"
+    ]
+  },
+  {
+    "id": "fc-3.5-004",
+    "domain": 3,
+    "task_statement": "3.5",
+    "front": "When do you bundle multiple issues into one message vs. fix them sequentially?",
+    "back": "Provide all issues in a single detailed message when they INTERACT (a coherent fix must reconcile them together). Fix INDEPENDENT issues sequentially, since no one fix constrains another.",
+    "tags": [
       "single-message-vs-sequential"
     ]
   },
@@ -593,13 +701,22 @@
     "id": "fc-3.6-001",
     "domain": 3,
     "task_statement": "3.6",
-    "front": "Which Claude Code flag prevents a CI job from hanging on interactive input, and what do `--output-format json` + `--json-schema` add?",
-    "back": "`-p` (or `--print`) runs Claude Code non-interactively: it processes the prompt, prints to stdout, and exits. `--output-format json` with `--json-schema` enforces schema-conforming structured output that a pipeline can post as inline PR comments. (Note: `CLAUDE_HEADLESS` and `--batch` are not real features.)",
+    "front": "Which Claude Code flag prevents a CI job from hanging on interactive input?",
+    "back": "`-p` (or `--print`) runs Claude Code non-interactively: it processes the prompt, prints to stdout, and exits — no interactive prompt to hang on. (`CLAUDE_HEADLESS` and `--batch` are not real flags.)",
     "tags": [
       "print-flag",
-      "output-format-json",
-      "json-schema",
       "ci-cd"
+    ]
+  },
+  {
+    "id": "fc-3.6-004",
+    "domain": 3,
+    "task_statement": "3.6",
+    "front": "What do `--output-format json` and `--json-schema` add for CI pipelines?",
+    "back": "They enforce schema-conforming structured JSON output instead of free text, so a pipeline can reliably parse the result and, e.g., post it as inline PR comments.",
+    "tags": [
+      "output-format-json",
+      "json-schema"
     ]
   },
   {
@@ -618,13 +735,22 @@
     "id": "fc-3.6-003",
     "domain": 3,
     "task_statement": "3.6",
-    "front": "In CI, how do you stop a re-run from re-posting old findings, and how do CLAUDE.md and existing test files improve output?",
-    "back": "Include the prior review's findings in context and instruct Claude to report only new or still-unaddressed issues. CLAUDE.md supplies testing standards, fixtures, and review criteria as project context; providing existing test files lets test generation target gaps instead of duplicating covered scenarios.",
+    "front": "In CI, how do you stop a re-run from re-posting the same old findings?",
+    "back": "Include the prior review's findings in context and instruct Claude to report only new or still-unaddressed issues.",
     "tags": [
       "finding-dedupe",
-      "claude-md",
-      "existing-tests",
       "prior-findings"
+    ]
+  },
+  {
+    "id": "fc-3.6-005",
+    "domain": 3,
+    "task_statement": "3.6",
+    "front": "How do CLAUDE.md and existing test files improve CI-driven review/test-generation output?",
+    "back": "CLAUDE.md supplies testing standards, fixtures, and review criteria as project context. Providing existing test files lets test generation target coverage gaps instead of duplicating already-covered scenarios.",
+    "tags": [
+      "claude-md",
+      "existing-tests"
     ]
   },
   {
@@ -667,11 +793,21 @@
     "id": "fc-4.2-001",
     "domain": 4,
     "task_statement": "4.2",
-    "front": "When detailed instructions alone produce inconsistent output, what is the most effective technique for consistently formatted, actionable results, and how many examples should you use for ambiguous cases?",
-    "back": "Few-shot examples are the most effective technique. For ambiguous scenarios, use 2-4 targeted examples that each show the reasoning for why one action was chosen over plausible alternatives, rather than escalating instruction detail or pasting large example dumps.",
+    "front": "When detailed instructions alone produce inconsistent output, what is the most effective technique for consistently formatted, actionable results?",
+    "back": "Few-shot examples — rather than escalating instruction detail further or pasting large example dumps, showing the model concrete examples of the desired output most reliably fixes inconsistency.",
     "tags": [
       "few-shot",
-      "output-consistency",
+      "output-consistency"
+    ]
+  },
+  {
+    "id": "fc-4.2-004",
+    "domain": 4,
+    "task_statement": "4.2",
+    "front": "How many few-shot examples should you use for ambiguous scenarios, and what should each one show?",
+    "back": "Use 2-4 targeted examples, each showing the reasoning for why one action was chosen over plausible alternatives — not just the final answer.",
+    "tags": [
+      "few-shot",
       "example-count"
     ]
   },
@@ -725,10 +861,20 @@
     "id": "fc-4.3-003",
     "domain": 4,
     "task_statement": "4.3",
-    "front": "Two schema-design patterns for structured extraction: how do you prevent fabrication and how do you handle extensible categories?",
-    "back": "Prevent fabrication: make fields optional/nullable so the model returns `null` when info is absent instead of inventing a value to satisfy a required field. Extensible categories: use an enum of known values plus an `\"other\"` value with a detail string to capture cases outside the taxonomy (and add `\"unclear\"` for ambiguous cases).",
+    "front": "In structured extraction, how do you prevent the model from fabricating a value when information is absent?",
+    "back": "Make the field optional/nullable, so the model returns `null` when info is absent instead of inventing a value to satisfy a required field.",
     "tags": [
       "nullable-fields",
+      "schema-design"
+    ]
+  },
+  {
+    "id": "fc-4.3-004",
+    "domain": 4,
+    "task_statement": "4.3",
+    "front": "In structured extraction, how do you design a schema field for a category that isn't fully known in advance?",
+    "back": "Use an enum of known values plus an `\"other\"` value with a detail string to capture cases outside the taxonomy (and consider adding `\"unclear\"` for ambiguous cases).",
+    "tags": [
       "enum",
       "schema-design"
     ]
@@ -760,12 +906,22 @@
     "id": "fc-4.4-003",
     "domain": 4,
     "task_statement": "4.4",
-    "front": "Name three structured fields that support validation and false-positive analysis in extraction/finding pipelines.",
-    "back": "1) `calculated_total` extracted alongside `stated_total` to flag arithmetic discrepancies (self-correction). 2) `conflict_detected` boolean set when sources disagree, surfacing inconsistent source data instead of silently resolving it. 3) `detected_pattern` recording which code construct triggered a finding, so dismissals can be aggregated to find false-positive patterns.",
+    "front": "Name two structured fields used in extraction pipelines to support automatic validation of the extracted data.",
+    "back": "`calculated_total` extracted alongside `stated_total` to flag arithmetic discrepancies (self-correction), and a `conflict_detected` boolean set when sources disagree — surfacing inconsistent source data instead of silently resolving it.",
     "tags": [
       "calculated-total",
-      "conflict_detected",
-      "detected_pattern"
+      "conflict_detected"
+    ]
+  },
+  {
+    "id": "fc-4.4-004",
+    "domain": 4,
+    "task_statement": "4.4",
+    "front": "What is `detected_pattern` used for in a code-review findings pipeline?",
+    "back": "It records which code construct triggered a finding, so dismissed findings can be aggregated by pattern to identify and fix systematic false-positive sources.",
+    "tags": [
+      "detected_pattern",
+      "false-positive-analysis"
     ]
   },
   {
@@ -783,10 +939,19 @@
     "id": "fc-4.5-002",
     "domain": 4,
     "task_statement": "4.5",
-    "front": "How do you correlate batch responses to requests, and how should you handle failures?",
-    "back": "Set a unique `custom_id` on each request; the same `custom_id` comes back on each result, so ordering does not matter. On failure, resubmit ONLY the failed items (found by `custom_id`) with appropriate modifications, e.g., chunking documents that exceeded the context window.",
+    "front": "How do you correlate Message Batches API responses back to their original requests?",
+    "back": "Set a unique `custom_id` on each request; the same `custom_id` is returned on each corresponding result, so response ordering does not matter.",
     "tags": [
-      "custom_id",
+      "custom_id"
+    ]
+  },
+  {
+    "id": "fc-4.5-004",
+    "domain": 4,
+    "task_statement": "4.5",
+    "front": "How should you handle failed items in a Message Batches API run?",
+    "back": "Resubmit ONLY the failed items (identified by their `custom_id`) with appropriate modifications — e.g., chunking documents that exceeded the context window — rather than resubmitting the whole batch.",
+    "tags": [
       "failure-handling",
       "chunking"
     ]
@@ -795,10 +960,19 @@
     "id": "fc-4.5-003",
     "domain": 4,
     "task_statement": "4.5",
-    "front": "Does the Message Batches API support multi-turn tool calling in a single request, and how do you compute submission cadence for an SLA?",
-    "back": "No. A batch request cannot execute tools mid-request and feed results back in, so interactive agentic loops stay on the synchronous API. For SLA math: total time = wait-until-next-submission + up to 24h processing. To meet a 30-hour SLA, cap the wait at 6 hours, i.e., submit a batch at least every 6 hours.",
+    "front": "Does the Message Batches API support multi-turn tool calling within a single batch request?",
+    "back": "No. A batch request cannot execute tools mid-request and feed results back in, so interactive agentic loops must stay on the synchronous API.",
     "tags": [
-      "multi-turn-tools",
+      "multi-turn-tools"
+    ]
+  },
+  {
+    "id": "fc-4.5-005",
+    "domain": 4,
+    "task_statement": "4.5",
+    "front": "How do you compute the required batch-submission cadence to meet a given SLA?",
+    "back": "Total time = wait-until-next-submission + up to 24h processing. To meet a 30-hour SLA, cap the wait at 6 hours — i.e., submit a new batch at least every 6 hours.",
+    "tags": [
       "sla-math",
       "submission-frequency"
     ]
@@ -865,10 +1039,19 @@
     "id": "fc-5.1-003",
     "domain": 5,
     "task_statement": "5.1",
-    "front": "How should verbose tool results and upstream agent outputs be handled to protect a limited context budget?",
-    "back": "Trim tool outputs to only relevant fields before they accumulate in context (e.g., keep return-relevant fields, not all 40+). For downstream agents, return structured data (key facts, citations, relevance scores, metadata like dates/sources) instead of verbose content and reasoning chains.",
+    "front": "How do you protect a limited context budget from verbose raw tool results?",
+    "back": "Trim tool outputs to only relevant fields before they accumulate in context — e.g., keep the return-relevant fields, not all 40+ fields a raw API response might include.",
     "tags": [
-      "tool-output-trimming",
+      "tool-output-trimming"
+    ]
+  },
+  {
+    "id": "fc-5.1-004",
+    "domain": 5,
+    "task_statement": "5.1",
+    "front": "What should an upstream agent return to a downstream agent, instead of its verbose content and reasoning chain?",
+    "back": "Structured data: key facts, citations, relevance scores, and metadata like dates/sources — so the downstream agent gets what it needs without inheriting the verbose exploration.",
+    "tags": [
       "structured-output"
     ]
   },
@@ -899,10 +1082,19 @@
     "id": "fc-5.2-003",
     "domain": 5,
     "task_statement": "5.2",
-    "front": "How should an agent handle (a) an explicit request for a human and (b) a tool returning multiple customer matches?",
-    "back": "(a) Escalate immediately, honoring the explicit request without first attempting investigation. (b) Ask for an additional identifier (email, order number, ZIP) to disambiguate rather than selecting a record by heuristic. Only offer to resolve first when the issue is straightforward and no human was explicitly demanded.",
+    "front": "How should an agent respond to an explicit customer request to speak to a human?",
+    "back": "Escalate immediately, honoring the explicit request without first attempting investigation. Only offer to resolve first when the issue is straightforward and no human was explicitly demanded.",
     "tags": [
-      "explicit-request",
+      "explicit-request"
+    ]
+  },
+  {
+    "id": "fc-5.2-004",
+    "domain": 5,
+    "task_statement": "5.2",
+    "front": "How should an agent handle a tool call that returns multiple possible customer matches?",
+    "back": "Ask the customer for an additional identifier (email, order number, ZIP) to disambiguate, rather than selecting a record by heuristic.",
+    "tags": [
       "multiple-matches",
       "clarification"
     ]
@@ -933,11 +1125,30 @@
     "id": "fc-5.3-003",
     "domain": 5,
     "task_statement": "5.3",
-    "front": "Name the two error-propagation anti-patterns, and state the subagent recovery-and-propagation rule plus how synthesis handles gaps.",
-    "back": "Anti-patterns: (1) silently suppressing errors by returning empty results as success, and (2) terminating the entire workflow on a single failure. Rule: subagents do local recovery for transient failures and only propagate unresolved errors, including what was attempted and partial results. Synthesis adds coverage annotations flagging which findings are well-supported versus which topic areas have gaps from unavailable sources.",
+    "front": "Name the two error-propagation anti-patterns in a multi-agent system.",
+    "back": "(1) Silently suppressing errors by returning empty results as if they were success. (2) Terminating the entire workflow on a single subagent failure.",
     "tags": [
-      "anti-pattern",
+      "anti-pattern"
+    ]
+  },
+  {
+    "id": "fc-5.3-004",
+    "domain": 5,
+    "task_statement": "5.3",
+    "front": "What is the subagent recovery-and-propagation rule for handling failures?",
+    "back": "Subagents do local recovery for transient failures, and only propagate errors that could not be resolved locally — including what was attempted and any partial results.",
+    "tags": [
       "local-recovery",
+      "coordinator-recovery"
+    ]
+  },
+  {
+    "id": "fc-5.3-005",
+    "domain": 5,
+    "task_statement": "5.3",
+    "front": "How does synthesis handle gaps left by unavailable sources or unresolved errors?",
+    "back": "It adds coverage annotations flagging which findings are well-supported versus which topic areas have gaps due to unavailable sources — rather than presenting a gap-free-looking result.",
+    "tags": [
       "coverage-annotations"
     ]
   },
@@ -967,11 +1178,20 @@
     "id": "fc-5.4-003",
     "domain": 5,
     "task_statement": "5.4",
-    "front": "How do manifest-based crash recovery and /compact each manage context in long sessions?",
-    "back": "Crash recovery: each agent exports its state to a known location; on resume the coordinator loads a manifest of those exports and injects the recovered state into agent prompts, so work continues instead of restarting. /compact: condenses accumulated context in place to reduce context usage when the window fills with verbose discovery output.",
+    "front": "How does manifest-based crash recovery let a multi-agent session resume after a crash?",
+    "back": "Each agent exports its state to a known location; on resume, the coordinator loads a manifest of those exports and injects the recovered state into agent prompts, so work continues instead of restarting from scratch.",
     "tags": [
       "crash-recovery",
-      "manifest",
+      "manifest"
+    ]
+  },
+  {
+    "id": "fc-5.4-004",
+    "domain": 5,
+    "task_statement": "5.4",
+    "front": "What does `/compact` do to manage context in a long session?",
+    "back": "It condenses accumulated context in place, reducing context usage when the window fills with verbose discovery output.",
+    "tags": [
       "compact"
     ]
   },
@@ -1041,12 +1261,20 @@
     "id": "fc-5.6-003",
     "domain": 5,
     "task_statement": "5.6",
-    "front": "How do you keep temporal differences from being misread as contradictions, and how should content types be rendered?",
-    "back": "Require subagents to include publication/data-collection dates in structured outputs so time-separated figures are read as a trend, not a conflict. Render each content type in its most legible form: financial data as tables, news as prose, technical findings as structured lists, instead of forcing everything into one uniform format.",
+    "front": "How do you keep temporal differences between sources from being misread as contradictions?",
+    "back": "Require subagents to include publication/data-collection dates in structured outputs, so time-separated figures are read as a trend over time rather than a conflict.",
     "tags": [
-      "temporal-data",
-      "content-type-rendering",
-      "structured-output"
+      "temporal-data"
+    ]
+  },
+  {
+    "id": "fc-5.6-004",
+    "domain": 5,
+    "task_statement": "5.6",
+    "front": "How should different content types be rendered in a synthesized output?",
+    "back": "In each content type's most legible form — financial data as tables, news as prose, technical findings as structured lists — instead of forcing everything into one uniform format.",
+    "tags": [
+      "content-type-rendering"
     ]
   }
 ]
