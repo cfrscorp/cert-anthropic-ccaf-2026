@@ -218,7 +218,7 @@ select:focus-visible, .btn:focus-visible, .option:focus-visible, .tab:focus-visi
 .progressbar > span { display: block; height: 100%; background: var(--accent);
   transition: width .3s ease; }
 
-.scenario { font-size: .86rem; color: var(--ink-2); background: var(--surface-3);
+.scenario { font-size: 1rem; color: var(--ink-2); background: var(--surface-3);
   border-left: 3px solid var(--baseline); padding: .55rem .7rem; border-radius: 8px;
   margin-bottom: .8rem; }
 .stem { font-size: 1.08rem; font-weight: 600; margin: 0 0 .9rem; letter-spacing: -.01em; }
