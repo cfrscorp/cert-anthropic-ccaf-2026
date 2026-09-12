@@ -3,11 +3,24 @@
     "id": "fc-1.1-001",
     "domain": 1,
     "task_statement": "1.1",
-    "front": "In the agentic loop, which `stop_reason` value means continue (execute tools) and which means terminate?",
-    "back": "`\"tool_use\"` means Claude is requesting tools, so execute them and iterate. `\"end_turn\"` means Claude has produced its final response, so terminate the loop.",
+    "front": "In the agentic loop, what does a `stop_reason` of `\"tool_use\"` mean, and what should the loop do?",
+    "back": "It means Claude is requesting tools. Execute them and iterate — continue the loop.",
     "tags": [
       "stop_reason",
-      "agentic-loop"
+      "agentic-loop",
+      "tool_use"
+    ]
+  },
+  {
+    "id": "fc-1.1-004",
+    "domain": 1,
+    "task_statement": "1.1",
+    "front": "In the agentic loop, what does a `stop_reason` of `\"end_turn\"` mean, and what should the loop do?",
+    "back": "It means Claude has produced its final response. Terminate the loop.",
+    "tags": [
+      "stop_reason",
+      "agentic-loop",
+      "end_turn"
     ]
   },
   {
@@ -71,8 +84,18 @@
     "id": "fc-1.2-003",
     "domain": 1,
     "task_statement": "1.2",
-    "front": "What is the overly-narrow-decomposition failure mode, and how does the coordinator fix it?",
-    "back": "The coordinator breaks a broad topic into subtasks that only cover part of it (e.g., decomposing \"creative industries\" into digital art, graphic design, and photography while omitting music, writing, film). Subagents then succeed within their narrow scope but the aggregate misses whole domains. Fix: partition scope to span the topic, and run iterative refinement loops that evaluate synthesis for gaps and re-delegate targeted queries.",
+    "front": "What is the overly-narrow-decomposition failure mode in multi-agent task decomposition?",
+    "back": "The coordinator breaks a broad topic into subtasks that only cover part of it (e.g., decomposing \"creative industries\" into digital art, graphic design, and photography while omitting music, writing, film). Subagents then succeed within their narrow scope but the aggregate misses whole domains.",
+    "tags": [
+      "narrow-decomposition"
+    ]
+  },
+  {
+    "id": "fc-1.2-005",
+    "domain": 1,
+    "task_statement": "1.2",
+    "front": "How does a coordinator fix overly-narrow decomposition once it's detected?",
+    "back": "Partition scope to span the topic, and run iterative refinement loops that evaluate synthesis for gaps and re-delegate targeted queries to cover what was missed.",
     "tags": [
       "narrow-decomposition",
       "iterative-refinement"
@@ -159,8 +182,18 @@
     "id": "fc-1.5-001",
     "domain": 1,
     "task_statement": "1.5",
-    "front": "What does a PostToolUse hook do, and what is its canonical use for MCP tools?",
-    "back": "A PostToolUse hook intercepts a tool's result before the model processes it. Its canonical use is normalizing heterogeneous formats from different MCP tools (Unix epochs, ISO 8601 strings, numeric status codes) into one consistent representation, so the model never has to reason over mismatched raw values.",
+    "front": "What does a PostToolUse hook do?",
+    "back": "It intercepts a tool's result before the model processes it, letting you inspect or transform that result first.",
+    "tags": [
+      "PostToolUse"
+    ]
+  },
+  {
+    "id": "fc-1.5-004",
+    "domain": 1,
+    "task_statement": "1.5",
+    "front": "What is the canonical use of a PostToolUse hook for MCP tools?",
+    "back": "Normalizing heterogeneous formats from different MCP tools (Unix epochs, ISO 8601 strings, numeric status codes) into one consistent representation, so the model never has to reason over mismatched raw values.",
     "tags": [
       "PostToolUse",
       "normalization"
@@ -227,8 +260,19 @@
     "id": "fc-1.7-001",
     "domain": 1,
     "task_statement": "1.7",
-    "front": "How do you continue a specific prior Claude Code conversation by name, and when is that the right choice?",
-    "back": "Use `--resume <session-name>` to reattach to the named session. It is the right choice when the prior context and tool results are mostly still valid and you want to keep the accumulated understanding rather than rebuild it.",
+    "front": "How do you continue a specific prior Claude Code conversation by name?",
+    "back": "Use `--resume <session-name>` to reattach to the named session.",
+    "tags": [
+      "resume",
+      "named-sessions"
+    ]
+  },
+  {
+    "id": "fc-1.7-004",
+    "domain": 1,
+    "task_statement": "1.7",
+    "front": "When is resuming a named session (rather than starting fresh) the right choice?",
+    "back": "When the prior context and tool results are mostly still valid and you want to keep the accumulated understanding rather than rebuild it.",
     "tags": [
       "resume",
       "named-sessions"
@@ -238,11 +282,22 @@
     "id": "fc-1.7-002",
     "domain": 1,
     "task_statement": "1.7",
-    "front": "What does `fork_session` do, and give a use case.",
-    "back": "It creates independent branches from a shared analysis baseline so you can explore divergent approaches in isolation, e.g., comparing two testing strategies or two refactoring approaches that both start from the same codebase analysis.",
+    "front": "What does `fork_session` do?",
+    "back": "It creates independent branches from a shared analysis baseline, so you can explore divergent approaches in isolation from each other.",
     "tags": [
       "fork_session",
       "branching"
+    ]
+  },
+  {
+    "id": "fc-1.7-005",
+    "domain": 1,
+    "task_statement": "1.7",
+    "front": "Give a use case for `fork_session`.",
+    "back": "Comparing two testing strategies, or two refactoring approaches, that both start from the same codebase analysis but need to be explored independently.",
+    "tags": [
+      "fork_session",
+      "use-case"
     ]
   },
   {
@@ -327,10 +382,19 @@
     "id": "fc-2.2-002",
     "domain": 2,
     "task_statement": "2.2",
-    "front": "Why is a uniform `\"Operation failed\"` response an anti-pattern, and what structured metadata replaces it?",
-    "back": "A generic message hides the failure category and retryability, so the agent cannot decide whether to retry, correct input, or explain to a user. Instead return `errorCategory`, an `isRetryable`/`retriable` boolean, and a human-readable message. `isRetryable: false` prevents wasted retries on deterministic (validation/business/permission) failures.",
+    "front": "Why is a uniform `\"Operation failed\"` response an anti-pattern?",
+    "back": "A generic message hides the failure category and retryability, so the agent cannot decide whether to retry, correct input, or explain to a user.",
     "tags": [
-      "anti-pattern",
+      "anti-pattern"
+    ]
+  },
+  {
+    "id": "fc-2.2-006",
+    "domain": 2,
+    "task_statement": "2.2",
+    "front": "What structured metadata should replace a uniform `\"Operation failed\"` response?",
+    "back": "Return `errorCategory`, an `isRetryable`/`retriable` boolean, and a human-readable message. `isRetryable: false` prevents wasted retries on deterministic (validation/business/permission) failures.",
+    "tags": [
       "structured-metadata",
       "isRetryable"
     ]
@@ -360,11 +424,20 @@
     "id": "fc-2.3-001",
     "domain": 2,
     "task_statement": "2.3",
-    "front": "Why does giving one agent 18 tools instead of a focused 4-5 hurt performance, and what is the fix?",
-    "back": "Too many available tools increases decision complexity and degrades tool selection reliability. The fix is scoped tool access: give each agent only the tools its role needs, preventing both bad selection and cross-specialization misuse (e.g., a synthesis agent running web searches).",
+    "front": "Why does giving one agent 18 tools instead of a focused 4-5 hurt performance?",
+    "back": "Too many available tools increases decision complexity and degrades tool selection reliability.",
+    "tags": [
+      "tool-distribution"
+    ]
+  },
+  {
+    "id": "fc-2.3-004",
+    "domain": 2,
+    "task_statement": "2.3",
+    "front": "What is the fix for an agent having too many available tools?",
+    "back": "Scoped tool access: give each agent only the tools its role needs, preventing both bad selection and cross-specialization misuse (e.g., a synthesis agent running web searches).",
     "tags": [
       "least-privilege",
-      "tool-distribution",
       "scoped-access"
     ]
   },
@@ -419,11 +492,21 @@
     "id": "fc-2.4-003",
     "domain": 2,
     "task_statement": "2.4",
-    "front": "MCP tools vs. MCP resources: what problem does each solve?",
-    "back": "Tools from all connected MCP servers are discovered at connection time and are available simultaneously so the agent can act. MCP resources expose content catalogs (issue summaries, doc hierarchies, DB schemas) so the agent can see what data exists up front and skip repeated exploratory tool calls.",
+    "front": "What problem do MCP tools solve?",
+    "back": "Tools from all connected MCP servers are discovered at connection time and are available simultaneously so the agent can act.",
     "tags": [
-      "mcp-resources",
+      "mcp-tools",
       "tool-discovery"
+    ]
+  },
+  {
+    "id": "fc-2.4-004",
+    "domain": 2,
+    "task_statement": "2.4",
+    "front": "What problem do MCP resources solve?",
+    "back": "They expose content catalogs (issue summaries, doc hierarchies, DB schemas) so the agent can see what data exists up front and skip repeated exploratory tool calls.",
+    "tags": [
+      "mcp-resources"
     ]
   },
   {
@@ -500,10 +583,19 @@
     "id": "fc-3.1-003",
     "domain": 3,
     "task_statement": "3.1",
-    "front": "What are `@import` and `.claude/rules/` used for?",
-    "back": "`@import` references external files to keep a CLAUDE.md modular and single-sourced (e.g., importing only the standards relevant to a package). `.claude/rules/` holds topic-specific files (e.g., testing.md, api-conventions.md, deployment.md) as an alternative to one monolithic CLAUDE.md — both are ways to organize memory content without one giant file.",
+    "front": "What is `@import` used for in CLAUDE.md?",
+    "back": "It references external files to keep a CLAUDE.md modular and single-sourced (e.g., importing only the standards relevant to a package).",
     "tags": [
-      "import",
+      "import"
+    ]
+  },
+  {
+    "id": "fc-3.1-006",
+    "domain": 3,
+    "task_statement": "3.1",
+    "front": "What is `.claude/rules/` used for?",
+    "back": "It holds topic-specific files (e.g., testing.md, api-conventions.md, deployment.md) as an alternative to one monolithic CLAUDE.md — a way to organize memory content without one giant file.",
+    "tags": [
       "claude-rules"
     ]
   },
@@ -521,8 +613,19 @@
     "id": "fc-3.2-001",
     "domain": 3,
     "task_statement": "3.2",
-    "front": "Where do team-shared vs personal custom slash commands live?",
-    "back": "Team-shared: `.claude/commands/` in the project repo, committed to version control so every developer gets them on clone/pull. Personal: `~/.claude/commands/` in the home directory, available across your projects but never shared. CLAUDE.md and a `.claude/config.json` `commands` array do NOT define commands (the latter does not exist).",
+    "front": "Where do team-shared custom slash commands live?",
+    "back": "In `.claude/commands/` in the project repo, committed to version control so every developer gets them on clone/pull.",
+    "tags": [
+      "slash-commands",
+      "command-scope"
+    ]
+  },
+  {
+    "id": "fc-3.2-006",
+    "domain": 3,
+    "task_statement": "3.2",
+    "front": "Where do personal custom slash commands live?",
+    "back": "In `~/.claude/commands/` in the home directory — available across your projects but never shared. (Note: CLAUDE.md and a `.claude/config.json` `commands` array do NOT define commands; the latter does not exist.)",
     "tags": [
       "slash-commands",
       "command-scope"
@@ -565,11 +668,21 @@
     "id": "fc-3.2-003",
     "domain": 3,
     "task_statement": "3.2",
-    "front": "Skills vs CLAUDE.md: when do you use each?",
-    "back": "CLAUDE.md is always-loaded context, use it for universal standards that should apply to every interaction. Skills are invoked on demand, use them for task-specific workflows that are only occasionally relevant, keeping always-loaded context lean. Personal skill variants go in `~/.claude/skills/` with a different name so they do not affect teammates.",
+    "front": "When do you use CLAUDE.md rather than a skill?",
+    "back": "CLAUDE.md is always-loaded context — use it for universal standards that should apply to every interaction.",
+    "tags": [
+      "CLAUDE.md",
+      "context-efficiency"
+    ]
+  },
+  {
+    "id": "fc-3.2-007",
+    "domain": 3,
+    "task_statement": "3.2",
+    "front": "When do you use a skill rather than CLAUDE.md?",
+    "back": "Skills are invoked on demand — use them for task-specific workflows that are only occasionally relevant, keeping always-loaded context lean. Personal skill variants go in `~/.claude/skills/` with a different name so they do not affect teammates.",
     "tags": [
       "skills",
-      "CLAUDE.md",
       "context-efficiency"
     ]
   },
@@ -681,8 +794,18 @@
     "id": "fc-3.5-003",
     "domain": 3,
     "task_statement": "3.5",
-    "front": "What is the interview pattern, and when is it most useful?",
-    "back": "Have Claude ask you clarifying questions BEFORE implementing, to surface considerations you did not anticipate (e.g., cache invalidation, staleness, failure modes). It is most useful in unfamiliar domains where you can't anticipate all the considerations yourself.",
+    "front": "What is the interview pattern?",
+    "back": "Have Claude ask you clarifying questions BEFORE implementing, to surface considerations you did not anticipate (e.g., cache invalidation, staleness, failure modes).",
+    "tags": [
+      "interview-pattern"
+    ]
+  },
+  {
+    "id": "fc-3.5-005",
+    "domain": 3,
+    "task_statement": "3.5",
+    "front": "When is the interview pattern most useful?",
+    "back": "In unfamiliar domains where you can't anticipate all the considerations yourself.",
     "tags": [
       "interview-pattern"
     ]
@@ -723,12 +846,21 @@
     "id": "fc-3.6-002",
     "domain": 3,
     "task_statement": "3.6",
-    "front": "Why is the Claude session that generated code a poor reviewer of its own diff, and what is the fix?",
-    "back": "Session context isolation: the generating session carries the assumptions and justifications behind the code, biasing it toward approval and missing defects. An independent Claude Code instance (fresh via `claude -p` in CI) reviews without that context and catches more issues.",
+    "front": "Why is the Claude session that generated code a poor reviewer of its own diff?",
+    "back": "Because it carries the assumptions and justifications behind the code (session context isolation), biasing it toward approval and missing defects.",
+    "tags": [
+      "self-review-bias"
+    ]
+  },
+  {
+    "id": "fc-3.6-006",
+    "domain": 3,
+    "task_statement": "3.6",
+    "front": "What is the fix for self-review bias in Claude-generated code review?",
+    "back": "Use an independent Claude Code instance (fresh via `claude -p` in CI) that reviews without the generating session's context, catching more issues.",
     "tags": [
       "session-isolation",
-      "independent-review",
-      "self-review-bias"
+      "independent-review"
     ]
   },
   {
@@ -746,10 +878,19 @@
     "id": "fc-3.6-005",
     "domain": 3,
     "task_statement": "3.6",
-    "front": "How do CLAUDE.md and existing test files improve CI-driven review/test-generation output?",
-    "back": "CLAUDE.md supplies testing standards, fixtures, and review criteria as project context. Providing existing test files lets test generation target coverage gaps instead of duplicating already-covered scenarios.",
+    "front": "How does CLAUDE.md improve CI-driven review/test-generation output?",
+    "back": "It supplies testing standards, fixtures, and review criteria as project context.",
     "tags": [
-      "claude-md",
+      "claude-md"
+    ]
+  },
+  {
+    "id": "fc-3.6-007",
+    "domain": 3,
+    "task_statement": "3.6",
+    "front": "How do existing test files improve CI-driven test-generation output?",
+    "back": "Providing existing test files lets test generation target coverage gaps instead of duplicating already-covered scenarios.",
+    "tags": [
       "existing-tests"
     ]
   },
@@ -769,10 +910,20 @@
     "id": "fc-4.1-002",
     "domain": 4,
     "task_statement": "4.1",
-    "front": "How do high false-positive categories affect trust in a code-review tool, and what is the recommended interim fix?",
-    "back": "High false-positive categories undermine developer confidence in the whole tool, so developers ignore even the accurate categories. Interim fix: temporarily disable the noisy categories (keeping the trusted ones active) to restore trust while you rewrite their prompts with explicit criteria, then re-enable only after verifying a low false-positive rate.",
+    "front": "How do high false-positive categories affect trust in a code-review tool?",
+    "back": "They undermine developer confidence in the whole tool, so developers ignore even the accurate categories.",
     "tags": [
       "developer-trust",
+      "false-positives"
+    ]
+  },
+  {
+    "id": "fc-4.1-004",
+    "domain": 4,
+    "task_statement": "4.1",
+    "front": "What is the recommended interim fix for a code-review category with a high false-positive rate?",
+    "back": "Temporarily disable the noisy category (keeping the trusted ones active) to restore trust while you rewrite its prompt with explicit criteria, then re-enable only after verifying a low false-positive rate.",
+    "tags": [
       "category-disabling",
       "false-positives"
     ]
@@ -1017,10 +1168,19 @@
     "id": "fc-5.1-001",
     "domain": 5,
     "task_statement": "5.1",
-    "front": "Why does progressive summarization endanger critical support information, and what preserves it?",
-    "back": "Summarization condenses exact amounts, percentages, dates, and customer-stated expectations into vague language (e.g., \"$47.32\" becomes \"around $50\"). Preserve them by extracting transactional facts into a persistent \"case facts\" block passed verbatim in every prompt, outside the summarized history.",
+    "front": "Why does progressive summarization endanger critical support information?",
+    "back": "It condenses exact amounts, percentages, dates, and customer-stated expectations into vague language (e.g., \"$47.32\" becomes \"around $50\").",
     "tags": [
-      "progressive-summarization",
+      "progressive-summarization"
+    ]
+  },
+  {
+    "id": "fc-5.1-005",
+    "domain": 5,
+    "task_statement": "5.1",
+    "front": "How do you preserve critical transactional facts across progressive summarization?",
+    "back": "Extract them into a persistent \"case facts\" block passed verbatim in every prompt, outside the summarized history.",
+    "tags": [
       "case-facts"
     ]
   },
@@ -1028,11 +1188,22 @@
     "id": "fc-5.1-002",
     "domain": 5,
     "task_statement": "5.1",
-    "front": "What is the \"lost in the middle\" effect and how do you mitigate it?",
-    "back": "Models process the beginning and end of long inputs reliably but may omit findings from the middle. Mitigate by placing a key-findings summary at the beginning and organizing detailed results with explicit section headers so middle content is anchored.",
+    "front": "What is the \"lost in the middle\" effect?",
+    "back": "Models process the beginning and end of long inputs reliably but may omit findings from the middle.",
     "tags": [
       "lost-in-the-middle",
       "position-effects"
+    ]
+  },
+  {
+    "id": "fc-5.1-006",
+    "domain": 5,
+    "task_statement": "5.1",
+    "front": "How do you mitigate the \"lost in the middle\" effect?",
+    "back": "Place a key-findings summary at the beginning, and organize detailed results with explicit section headers so middle content is anchored.",
+    "tags": [
+      "lost-in-the-middle",
+      "mitigation"
     ]
   },
   {
@@ -1156,10 +1327,19 @@
     "id": "fc-5.4-001",
     "domain": 5,
     "task_statement": "5.4",
-    "front": "What are the tell-tale symptoms of context degradation in an extended exploration session, and what counteracts it?",
-    "back": "Symptoms: the model gives inconsistent answers to the same question and references 'typical patterns' instead of the specific classes/files it discovered earlier. Counter it by having the agent maintain scratchpad files that record key findings and re-reading them for later questions, so specifics persist across context boundaries.",
+    "front": "What are the tell-tale symptoms of context degradation in an extended exploration session?",
+    "back": "The model gives inconsistent answers to the same question and references 'typical patterns' instead of the specific classes/files it discovered earlier.",
     "tags": [
-      "context-degradation",
+      "context-degradation"
+    ]
+  },
+  {
+    "id": "fc-5.4-005",
+    "domain": 5,
+    "task_statement": "5.4",
+    "front": "What counteracts context degradation in an extended exploration session?",
+    "back": "Have the agent maintain scratchpad files that record key findings and re-read them for later questions, so specifics persist across context boundaries.",
+    "tags": [
       "scratchpad"
     ]
   },
@@ -1199,11 +1379,20 @@
     "id": "fc-5.5-001",
     "domain": 5,
     "task_statement": "5.5",
-    "front": "Why can a 97% aggregate extraction accuracy be dangerous, and what must you check before automating high-confidence extractions?",
-    "back": "An aggregate is a volume-weighted average, so a low-volume document type or field can be extracted almost entirely wrong while the overall number stays high. Before reducing human review, validate accuracy broken out by document type and field segment and confirm performance is consistently acceptable across all of them.",
+    "front": "Why can a 97% aggregate extraction accuracy be dangerous?",
+    "back": "An aggregate is a volume-weighted average, so a low-volume document type or field can be extracted almost entirely wrong while the overall number stays high.",
     "tags": [
       "aggregate-accuracy",
-      "masking",
+      "masking"
+    ]
+  },
+  {
+    "id": "fc-5.5-004",
+    "domain": 5,
+    "task_statement": "5.5",
+    "front": "What must you check before automating high-confidence extractions based on an aggregate accuracy number?",
+    "back": "Validate accuracy broken out by document type and field segment, and confirm performance is consistently acceptable across all of them.",
+    "tags": [
       "segment-analysis"
     ]
   },
@@ -1211,11 +1400,20 @@
     "id": "fc-5.5-002",
     "domain": 5,
     "task_statement": "5.5",
-    "front": "What does it mean to calibrate field-level confidence scores, and why can't you trust a raw 0.90 score at face value?",
-    "back": "Raw model confidence is not inherently a probability of correctness; a reported 0.90 might mean 99% or 70% actual accuracy, and it varies by field. Calibration compares scores to ground truth on a labeled validation set to learn the true accuracy of each score band per field, so review thresholds are set from evidence rather than assumption.",
+    "front": "Why can't you trust a raw model confidence score (e.g., 0.90) at face value?",
+    "back": "Raw model confidence is not inherently a probability of correctness; a reported 0.90 might mean 99% or 70% actual accuracy, and it varies by field.",
+    "tags": [
+      "confidence-calibration"
+    ]
+  },
+  {
+    "id": "fc-5.5-005",
+    "domain": 5,
+    "task_statement": "5.5",
+    "front": "What does it mean to calibrate field-level confidence scores?",
+    "back": "Comparing scores to ground truth on a labeled validation set to learn the true accuracy of each score band per field, so review thresholds are set from evidence rather than assumption.",
     "tags": [
       "confidence-calibration",
-      "field-level",
       "validation-set",
       "thresholds"
     ]
@@ -1237,10 +1435,19 @@
     "id": "fc-5.6-001",
     "domain": 5,
     "task_statement": "5.6",
-    "front": "Why does source attribution get lost during multi-agent synthesis, and how do you prevent it?",
-    "back": "Attribution is lost when findings are compressed into free-text summaries without preserving which source supports which claim. Prevent it by requiring subagents to emit structured claim-source mappings (claim + source URL/document name + relevant excerpt) that downstream agents preserve and merge through synthesis, keeping corroborating sources for a claim rather than collapsing to one.",
+    "front": "Why does source attribution get lost during multi-agent synthesis?",
+    "back": "Attribution is lost when findings are compressed into free-text summaries without preserving which source supports which claim.",
     "tags": [
-      "provenance",
+      "provenance"
+    ]
+  },
+  {
+    "id": "fc-5.6-005",
+    "domain": 5,
+    "task_statement": "5.6",
+    "front": "How do you prevent source attribution from being lost during multi-agent synthesis?",
+    "back": "Require subagents to emit structured claim-source mappings (claim + source URL/document name + relevant excerpt) that downstream agents preserve and merge through synthesis, keeping corroborating sources for a claim rather than collapsing to one.",
+    "tags": [
       "claim-source-mapping",
       "synthesis"
     ]

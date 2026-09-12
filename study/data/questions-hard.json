@@ -8,7 +8,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Three parallel `tool_use` blocks in one message is itself the error — set `tool_choice` to a forced single tool so the model can only request one call per turn, then the one-result-per-message pattern is valid."
+        "text": "Three parallel `tool_use` blocks in one message is itself the error — set `tool_choice` to a forced single tool so the model can request just one call per turn, then the one-result-per-message pattern is valid."
       },
       {
         "key": "B",
@@ -16,11 +16,11 @@
       },
       {
         "key": "C",
-        "text": "Batch all three `tool_result` blocks into one user message: every `tool_use` block from a single assistant message must be answered together."
+        "text": "Batch the three `tool_result` blocks into one user message: each `tool_use` block from a single assistant message needs to be answered together."
       },
       {
         "key": "D",
-        "text": "The results are being appended with the `user` role; parallel tool results must be appended with the `assistant` role so they attach to the message that requested them."
+        "text": "The results are being appended with the `user` role; parallel tool results need to be appended with the `assistant` role so they attach to the message that requested them."
       }
     ],
     "correct": "C",
@@ -106,7 +106,7 @@
       },
       {
         "key": "D",
-        "text": "Plain-text results drop the `tool_use_id` binding each result to its call, so with two outstanding calls the model must guess."
+        "text": "Plain-text results drop the `tool_use_id` binding each result to its call, so with two outstanding calls the model has to guess."
       }
     ],
     "correct": "D",
@@ -141,7 +141,7 @@
       },
       {
         "key": "B",
-        "text": "Reject the change and accept the latency, since hub-and-spoke requires that all inter-subagent communication route through the coordinator."
+        "text": "Reject the change and accept the latency, since hub-and-spoke requires that inter-subagent communication route through the coordinator."
       },
       {
         "key": "C",
@@ -149,7 +149,7 @@
       },
       {
         "key": "D",
-        "text": "Merge the analysis and search subagents into one agent so the lookup becomes an internal step with no cross-agent hop at all."
+        "text": "Merge the analysis and search subagents into one agent so the lookup becomes an internal step with no cross-agent hop remaining."
       }
     ],
     "correct": "A",
@@ -180,7 +180,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Have the coordinator assess each query's requirements and select which subagents to invoke, rather than always running the full pipeline."
+        "text": "Have the coordinator assess each query's requirements and select which subagents to invoke, rather than running the full pipeline by default."
       },
       {
         "key": "B",
@@ -222,15 +222,15 @@
     "options": [
       {
         "key": "A",
-        "text": "Set `tool_choice: \"any\"` on the coordinator so it is required to call a tool on every turn instead of pausing to reason between delegations."
+        "text": "Set `tool_choice: \"any\"` on the coordinator so it is required to call a tool each turn instead of pausing to reason between delegations."
       },
       {
         "key": "B",
-        "text": "Move the four subagents behind an async MCP server that fans the work out internally and returns once all four finish."
+        "text": "Move the four subagents behind an async MCP server that fans the work out internally and returns once the four calls finish."
       },
       {
         "key": "C",
-        "text": "Have the coordinator emit all four Task tool calls within a single response rather than one per turn."
+        "text": "Have the coordinator emit its four Task tool calls within a single response rather than one per turn."
       },
       {
         "key": "D",
@@ -265,7 +265,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Instruct the synthesis subagent to preserve every source mentioned in its input and to never state a claim without a citation."
+        "text": "Instruct the synthesis subagent to preserve each source mentioned in its input and to attach a citation to each claim it keeps."
       },
       {
         "key": "B",
@@ -273,7 +273,7 @@
       },
       {
         "key": "C",
-        "text": "Give the synthesis subagent a tool to re-look-up each claim and attach a fresh citation at write time."
+        "text": "Give the synthesis subagent a tool it can call to re-look-up each claim and attach a freshly retrieved citation to it at write time, rather than relying on whatever the upstream agent originally found."
       },
       {
         "key": "D",
@@ -312,7 +312,7 @@
       },
       {
         "key": "B",
-        "text": "Keep the gate and require staff to run `get_customer` for in-store returns as well, so one verification path covers every case."
+        "text": "Keep the gate and require staff to run `get_customer` for in-store returns as well, so one verification path covers each case."
       },
       {
         "key": "C",
@@ -320,7 +320,7 @@
       },
       {
         "key": "D",
-        "text": "Replace the gate with a system-prompt rule that verification must precede refunds, letting the agent recognize the attestation token as satisfying it."
+        "text": "Replace the gate with a system-prompt rule that verification needs to precede refunds, letting the agent recognize the attestation token as satisfying it."
       }
     ],
     "correct": "A",
@@ -350,7 +350,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Include few-shot examples showing correct comparison across all three formats."
+        "text": "Add a few worked examples to the system prompt showing correct comparisons across epoch, ISO 8601, and locale-formatted dates."
       },
       {
         "key": "B",
@@ -358,11 +358,11 @@
       },
       {
         "key": "C",
-        "text": "Document each tool's time format in its tool description so the model knows how to interpret every field it receives."
+        "text": "Document each tool's time format in its tool description so the model knows how to interpret each field it receives."
       },
       {
         "key": "D",
-        "text": "Add a `normalize_timestamp` tool and instruct the agent to call it on any date before comparing."
+        "text": "Add a `normalize_timestamp` tool the agent can call on any date value, and instruct it in the system prompt to run each date through that tool before comparing."
       }
     ],
     "correct": "B",
@@ -396,15 +396,15 @@
       },
       {
         "key": "B",
-        "text": "Replacing a tool result with an escalation message is too weak a signal; the hook should raise an exception so the agent cannot continue."
+        "text": "Replacing a tool result with an escalation message is too weak a signal; the hook should raise an exception so the agent is prevented from continuing."
       },
       {
         "key": "C",
-        "text": "The hook is matching on the wrong field, reading the refund's requested amount rather than the settled amount returned by the payments system."
+        "text": "The hook is comparing against the wrong field, reading the refund's originally requested amount instead of the amount the payments system actually settled after processing."
       },
       {
         "key": "D",
-        "text": "`PostToolUse` fires after the tool has executed, so the refund is already issued; enforcement must intercept the outgoing call before execution."
+        "text": "`PostToolUse` fires after the tool has executed, so the refund is already issued; enforcement needs to intercept the outgoing call before execution."
       }
     ],
     "correct": "D",
@@ -447,7 +447,7 @@
       },
       {
         "key": "D",
-        "text": "Keep the hook as is and add a separate `get_gift_status` tool the agent can call when it suspects an order is a gift."
+        "text": "Keep the trimming hook exactly as configured, and add a separate `get_gift_status` tool the agent can call whenever it suspects a particular order might be a gift."
       }
     ],
     "correct": "C",
@@ -489,7 +489,7 @@
       },
       {
         "key": "D",
-        "text": "Dynamic decomposition for both, since adaptivity is never worse than a fixed pipeline and handles edge cases in the nightly review too."
+        "text": "Dynamic decomposition for both, on the reasoning that a capable agent can reconstruct the same five-step checklist on its own, matching the fixed chain's results while also catching edge cases in the nightly review."
       }
     ],
     "correct": "A",
@@ -498,7 +498,7 @@
       "distractors": {
         "B": "Prompt chaining does reduce attention dilution in both, and that shared benefit makes this look principled. A fixed chain cannot express an investigation whose steps depend on what earlier steps discover, so Workflow B would be forced into a pipeline that does not match its shape.",
         "C": "This inverts the mapping. It has surface appeal because auditability genuinely matters in incident response, but consistency there comes from logging and structured findings, not from forcing a fixed step order onto an investigation whose path is unknown.",
-        "D": "Adaptivity is not free: it costs planning turns, produces different execution paths run to run, and makes a nightly job harder to reproduce and audit. Where the aspect list is known and stable, a fixed chain is both cheaper and more consistent."
+        "D": "Assuming the agent will reliably reconstruct the same checklist every run is optimistic: planning it out costs turns the fixed chain does not spend, and different runs can arrive at slightly different steps, which undermines the reproducibility a nightly audit trail depends on. Where the aspect list is already known and stable, a fixed chain delivers the same coverage more cheaply and consistently."
       }
     },
     "lab": "lab-16-decomposition-and-review",
@@ -565,15 +565,15 @@
       },
       {
         "key": "B",
-        "text": "Instruct the agent to skip trivial accessors and focus its effort on business logic."
+        "text": "Instruct the agent, in the task prompt, to skip trivial getters and setters and concentrate its testing effort on business logic wherever it appears in the codebase."
       },
       {
         "key": "C",
-        "text": "Give the agent an explicit ordered list of the modules to test, highest-risk first, so it cannot start in the wrong place."
+        "text": "Give the agent an explicit ordered list of the modules to test, highest-risk first, so it has little room to start in the wrong place."
       },
       {
         "key": "D",
-        "text": "Run one subagent per top-level directory in parallel, so every part of the codebase receives attention regardless of traversal order."
+        "text": "Run one subagent per top-level directory in parallel, so each part of the codebase receives attention regardless of traversal order."
       }
     ],
     "correct": "A",
@@ -603,7 +603,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Use `--resume` and immediately run `/compact` to reduce the stale tool results before continuing."
+        "text": "Use `--resume` on the session and immediately run `/compact` to shrink the outdated tool-call history before continuing the work."
       },
       {
         "key": "B",
@@ -611,7 +611,7 @@
       },
       {
         "key": "C",
-        "text": "Start a fresh session seeded with a structured summary of the prior architectural conclusions, leaving the stale tool results behind."
+        "text": "Start a fresh session seeded with a structured summary of the prior conclusions, leaving the stale tool results behind."
       },
       {
         "key": "D",
@@ -649,7 +649,7 @@
       },
       {
         "key": "B",
-        "text": "Use `--resume` twice against the same named session, once per strategy."
+        "text": "Use `--resume` against the same named session twice, running one strategy through to completion and then the other in the same conversation history."
       },
       {
         "key": "C",
@@ -687,7 +687,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Resume and name the two changed files, asking for a targeted re-read and revision of only the conclusions that depended on them."
+        "text": "Resume and name the two changed files, asking for a targeted re-read and revision of just the conclusions that depended on them."
       },
       {
         "key": "B",
@@ -695,7 +695,7 @@
       },
       {
         "key": "C",
-        "text": "Start a fresh session with a summary, since any change to previously analyzed files makes the resumed context unreliable."
+        "text": "Start a fresh session with a summary of yesterday's findings, since any change to previously analyzed files makes the resumed context inherently unreliable to trust."
       },
       {
         "key": "D",
@@ -729,7 +729,7 @@
     "options": [
       {
         "key": "A",
-        "text": "The two tools accept similar parameters, so the model cannot distinguish them at call time despite the differing descriptions."
+        "text": "The two tools accept similar parameters, so the model may have trouble telling them apart when deciding which one to invoke, even with differing descriptions."
       },
       {
         "key": "B",
@@ -771,19 +771,19 @@
     "options": [
       {
         "key": "A",
-        "text": "Keep one tool and enforce a single union JSON schema on its output covering all three result shapes."
+        "text": "Keep the one tool but enforce a single union JSON schema on its output, so each result shape at least validates consistently."
       },
       {
         "key": "B",
-        "text": "Keep one tool and expand its description to specify all three uses and the output produced by each."
+        "text": "Keep the one tool and substantially expand its description to spell out each of its three uses and each one's output shape."
       },
       {
         "key": "C",
-        "text": "Split it into `extract_data_points`, `summarize_content`, and `verify_claim_against_source`, each with a defined input/output contract."
+        "text": "Split it into `extract_data_points`, `summarize_content`, and `verify_claim_against_source`, each with its own input/output contract."
       },
       {
         "key": "D",
-        "text": "Keep one tool and add a required `mode` enum parameter with the three values, documenting the output shape for each mode."
+        "text": "Keep the one tool and add a required `mode` enum parameter covering the three values, documenting the output shape produced by each mode."
       }
     ],
     "correct": "C",
@@ -821,7 +821,7 @@
       },
       {
         "key": "C",
-        "text": "Implement retry with exponential backoff and a maximum attempt count inside each tool, so retry policy is enforced server-side and the agent never decides."
+        "text": "Implement retry with exponential backoff and a maximum attempt count inside each tool, so retry policy is enforced server-side instead of left to the agent's judgment."
       },
       {
         "key": "D",
@@ -863,7 +863,7 @@
       },
       {
         "key": "C",
-        "text": "Change the no-match case to `errorCategory: \"validation\"` with `isRetryable: false`, so the agent stops retrying a query that will never match."
+        "text": "Change the no-match case to `errorCategory: \"validation\"` with `isRetryable: false`, so the agent stops retrying a query that will not find a match."
       },
       {
         "key": "D",
@@ -939,11 +939,11 @@
     "options": [
       {
         "key": "A",
-        "text": "Keep all 18 tools and set `tool_choice: \"auto\"` so the model is free to skip tool use entirely when synthesis alone suffices."
+        "text": "Keep all 18 tools and set `tool_choice: \"auto\"` so the model can skip tool use when synthesis alone is sufficient."
       },
       {
         "key": "B",
-        "text": "Reduce the synthesis subagent to synthesis-only tools with no lookup capability, so every verification is delegated through the coordinator."
+        "text": "Reduce the synthesis subagent to a narrow set of synthesis tools with no lookup capability, routing verification requests through the coordinator instead."
       },
       {
         "key": "C",
@@ -958,7 +958,7 @@
     "rationale": {
       "correct": "Eighteen tools degrades selection reliability, and tools outside an agent's specialization invite exactly the misuse observed. Scoping back to role-appropriate tools fixes that, while a single narrow `verify_fact` tool serves the 85% case without reopening general search — and complex research still routes through the coordinator, preserving separation of concerns.",
       "distractors": {
-        "A": "`\"auto\"` is already the permissive default and does not restrict which tools are eligible. Allowing the model to skip tools does nothing about it choosing the wrong ones when it does use them.",
+        "A": "`\"auto\"` is already the permissive default in most setups, so this changes little about which tools are eligible for selection. It gives the model explicit room to skip tool calls, which addresses over-calling but not misrouting — all eighteen tools remain equally selectable whenever it does decide to call one, so the wrong-tool problem persists unchanged.",
         "B": "Strict scoping is principled and eliminates the duplication cleanly, so it is a strong answer. It sends every trivial date or name check on a full round trip through the coordinator, which is a large latency and cost penalty for the overwhelming majority of this agent's verification needs.",
         "C": "A prompt instruction is trivial to add and would reduce the behavior somewhat. Selection reliability degrades from tool-set size itself, so eighteen options remain in play on every turn and the instruction competes against them probabilistically rather than removing the temptation."
       }
@@ -981,19 +981,19 @@
     "options": [
       {
         "key": "A",
-        "text": "Add the instruction \"prefer MCP tools over built-in tools\" to the project CLAUDE.md."
+        "text": "Add a blanket instruction to the project CLAUDE.md telling the agent to prefer MCP tools over built-in tools when either could apply."
       },
       {
         "key": "B",
-        "text": "Move the Jira server from user scope to project scope so it is loaded more prominently for everyone on the team."
+        "text": "Move the Jira server from user scope to project scope so it is loaded more prominently for the whole team."
       },
       {
         "key": "C",
-        "text": "Expand the `search_issues` description to detail what it queries, what it returns, and when it beats searching the repository."
+        "text": "Expand the `search_issues` description to state what it queries, what it returns, and when it beats a repo search."
       },
       {
         "key": "D",
-        "text": "Remove Grep from the agent's allowed tools so it has no alternative to the Jira tool."
+        "text": "Remove Grep from the agent's allowed tools so searching the repository is no longer an available alternative."
       }
     ],
     "correct": "C",
@@ -1023,28 +1023,28 @@
     "options": [
       {
         "key": "A",
-        "text": "GitHub in project `.mcp.json` with `${GITHUB_TOKEN}` expansion, the prototype in user-scoped `~/.claude.json`; all configured servers' tools are available at once."
+        "text": "GitHub in project `.mcp.json` via `${GITHUB_TOKEN}` expansion, the prototype in the engineer's `~/.claude.json`; both servers' tools stay available together."
       },
       {
         "key": "B",
-        "text": "Configure the GitHub server in `.mcp.json` with the token committed but encrypted, and the prototype in `.mcp.json` behind a disabled flag."
+        "text": "Configure the GitHub server in `.mcp.json` with the token committed in encrypted form, and put the prototype in `.mcp.json` behind a flag that starts disabled."
       },
       {
         "key": "C",
-        "text": "Put both servers in the project `.mcp.json` and gate the prototype behind an environment variable each engineer sets individually."
+        "text": "Put both servers in the project `.mcp.json` and gate the prototype behind an environment variable that each engineer sets on their own machine."
       },
       {
         "key": "D",
-        "text": "Configure both in the engineer's `~/.claude.json` and have each teammate copy the GitHub entry into their own file, so no credentials are committed."
+        "text": "Configure both servers in each engineer's `~/.claude.json` and have each teammate copy the GitHub entry into their own file so no credentials are committed."
       }
     ],
     "correct": "A",
     "rationale": {
-      "correct": "Project scope is for shared team tooling and is version-controlled, with environment variable expansion keeping the credential out of the repository. User scope is the right home for personal or experimental servers, since it affects only that engineer. The third concern is unfounded — all configured servers are discovered at connection time and their tools are simultaneously available, which is the intended behavior.",
+      "correct": "Project scope is for shared team tooling and is version-controlled, with environment-variable expansion keeping the credential out of the repo. User scope suits a personal or experimental server, since it affects just that one engineer. The third concern doesn't hold up: all configured servers are discovered at connection time, and their tools are simply available together — that's the intended behavior, not a conflict.",
       "distractors": {
-        "B": "Committing an encrypted token still commits a secret and requires distributing a decryption key, which is strictly worse than referencing an environment variable. Placing the prototype in project scope also imposes a personal experiment on the whole team.",
-        "C": "An environment-variable gate does keep the prototype dormant for others and is a recognizable pattern. It still puts a personal experiment into shared version-controlled configuration, so every teammate inherits the entry and any breakage it causes — precisely what user scope exists to avoid.",
-        "D": "Manual copying does keep credentials out of the repo and would technically work. It abandons shared configuration entirely, so the team loses a single source of truth for project tooling and every new member must be told to replicate the setup by hand."
+        "B": "Committing a token in encrypted form still commits a secret to the repository and adds the overhead of distributing a decryption key to every engineer, which is a real workflow cost. It's strictly worse than keeping the credential out of version control entirely, and placing the prototype in project scope still imposes a personal experiment on the whole team.",
+        "C": "An environment-variable gate does keep the prototype dormant for teammates who don't set it, and it's a recognizable, low-effort pattern. It still lands a personal experiment in shared, version-controlled configuration, so every teammate inherits the entry — and any breakage from a half-finished prototype — which is exactly what user scope exists to avoid.",
+        "D": "Manual copying keeps the credential out of the repo and would technically function for a small, stable team. It abandons shared configuration entirely: there is no single source of truth for project tooling, onboarding a new member means walking them through a manual setup step, and the entry silently drifts once someone updates their own copy."
       }
     },
     "lab": "lab-15-mcp-integration",
@@ -1065,28 +1065,28 @@
     "options": [
       {
         "key": "A",
-        "text": "Cache fetched pages so repeated exploration of the same documents is cheaper."
+        "text": "Cache fetched pages locally so that repeated exploration of the same documents becomes cheaper on subsequent turns."
       },
       {
         "key": "B",
-        "text": "Add a `search_wiki` tool with better ranking so the first search returns the right page more often."
+        "text": "Add a `search_wiki` tool with substantially better ranking so the first query is more likely to surface the right page."
       },
       {
         "key": "C",
-        "text": "Add a `PostToolUse` hook that trims fetched pages to their most relevant sections, so discarded content costs less context."
+        "text": "Add a `PostToolUse` hook that trims each fetched page down to its most relevant sections, so discarded content costs noticeably less context to hold."
       },
       {
         "key": "D",
-        "text": "Expose the document hierarchy with titles and summaries as an MCP resource, giving the agent visibility without exploratory calls."
+        "text": "Expose the document hierarchy with titles and summaries as an MCP resource, giving the agent visibility up front."
       }
     ],
     "correct": "D",
     "rationale": {
       "correct": "MCP resources exist to expose content catalogs — documentation hierarchies, issue summaries, schemas — so an agent can see what is available instead of discovering it by trial and error. A 400-document hierarchy with titles and summaries is a natural catalog, and having it up front replaces the list-fetch-discard loop with direct selection.",
       "distractors": {
-        "A": "Caching helps when the same documents are fetched repeatedly, which is a real pattern in long sessions. The described waste is first-time discovery across a wide corpus, so most fetches are cache misses by construction.",
+        "A": "Caching genuinely helps when the same documents are fetched repeatedly, which is a real and common pattern across long sessions with recurring questions. Here the waste is first-time discovery across a wide, unfamiliar corpus, so most of these fetches are cache misses by construction — caching would not have prevented the exploratory churn described.",
         "B": "Better search ranking would genuinely cut the number of wrong fetches and is worth doing on its own merits. It still requires the agent to guess query terms without knowing what the corpus contains, so exploration is reduced rather than eliminated — and poor queries against a good ranker still miss.",
-        "C": "Trimming fetched pages is a sound context-management technique and would reduce the cost of each wasted fetch. It makes the exploratory loop cheaper rather than unnecessary, so the turns are still spent."
+        "C": "Trimming fetched pages is a sound context-management technique on its own merits, and it would reduce the cost of each wasted fetch by shrinking what lands in context afterward. It only makes the exploratory loop cheaper, not unnecessary — the agent still burns the same number of turns listing, fetching, and discarding candidates before it finds the right page."
       }
     },
     "lab": "lab-15-mcp-integration",
@@ -1107,19 +1107,19 @@
     "options": [
       {
         "key": "A",
-        "text": "Use Grep to count the occurrences across the file, then use Edit with an occurrence index to select the specific call on line 412."
+        "text": "Use Grep to count the occurrences across the file, then use Edit with an occurrence index to target the specific instance on line 412."
       },
       {
         "key": "B",
-        "text": "Retry Edit with the same anchor text; the failure is likely transient."
+        "text": "Retry the Edit attempt with the same anchor text, on the theory that the failure was a transient tool glitch rather than a real conflict."
       },
       {
         "key": "C",
-        "text": "Use Bash with `sed -i '412s/.../.../'` to perform a line-addressed in-place substitution."
+        "text": "Use Bash with a line-addressed `sed -i '412s/.../.../' ` command to substitute the text in place at that specific line number."
       },
       {
         "key": "D",
-        "text": "Expand the anchor with surrounding lines to make the match unique, falling back to Read followed by Write if no unique anchor exists."
+        "text": "Expand the anchor with surrounding lines so the match is unique, falling back to Read then Write if no unique anchor exists."
       }
     ],
     "correct": "D",
@@ -1127,7 +1127,7 @@
       "correct": "Edit matches on unique text, so a string appearing nine times cannot anchor it. Widening the anchor with surrounding context is the natural first move, and Read followed by Write is the documented fallback when no unique anchor exists — it gives full control over the resulting file contents.",
       "distractors": {
         "A": "Counting occurrences with Grep is a sensible diagnostic step and the reasoning is close to right. Edit selects by unique text rather than by occurrence index, so the second half of this describes a capability that is not available.",
-        "B": "Edit failing on a non-unique match is deterministic, not transient — the same call will fail identically every time. Retrying without changing the anchor cannot succeed.",
+        "B": "Edit's failure here is deterministic rather than transient: the tool is refusing because the anchor text matches nine locations in the file, and that fact does not change between attempts. Retrying with the identical anchor reproduces the exact same failure every time, so it costs a turn without moving the task forward.",
         "C": "A line-addressed `sed` substitution would work mechanically and is a familiar shell idiom. It edits by line number, which drifts the moment anything above line 412 changes, and it bypasses the file-editing tools in favor of an in-place shell rewrite with no matching safeguards."
       }
     },
@@ -1161,7 +1161,7 @@
       },
       {
         "key": "D",
-        "text": "First trace the re-exports to identify every name the function is reachable under, then Grep for each name and combine the results."
+        "text": "First trace the re-exports to identify each name the function is reachable under, then Grep for each name and combine the results."
       }
     ],
     "correct": "D",
@@ -1203,7 +1203,7 @@
       },
       {
         "key": "D",
-        "text": "Grep for an entry point such as the refund handler, then Read it and follow its imports outward, expanding only along the relevant path."
+        "text": "Grep for an entry point such as the refund handler, then Read it and follow its imports outward, expanding just along the relevant path."
       }
     ],
     "correct": "D",
@@ -1275,28 +1275,28 @@
     "options": [
       {
         "key": "A",
-        "text": "Keep universal standards in the root `CLAUDE.md`, extract each domain's conventions to its own file, and `@import` only what applies into each package."
+        "text": "Split the file by package, placing a `CLAUDE.md` in each package directory, and delete the root file so nothing is shared across packages."
       },
       {
         "key": "B",
-        "text": "Keep the single root file but reorganize it under clear per-package headers so Claude can identify which section applies to the file being edited."
+        "text": "Keep the single root file but reorganize it under clear per-package headers so Claude can infer which section governs the file it is editing."
       },
       {
         "key": "C",
-        "text": "Move every convention into `.claude/rules/` files with path globs, leaving `CLAUDE.md` empty."
+        "text": "Move every convention into `.claude/rules/` files scoped with path globs, leaving `CLAUDE.md` empty except for a short pointer comment."
       },
       {
         "key": "D",
-        "text": "Split the file by package and place a `CLAUDE.md` in each package directory, deleting the root file."
+        "text": "Keep universal standards in the root `CLAUDE.md`, extract each domain's conventions into its own file, and `@import` only what applies per package."
       }
     ],
-    "correct": "A",
+    "correct": "D",
     "rationale": {
       "correct": "This addresses both complaints at once. Universal standards stay in one place, domain conventions become separately editable files with clear ownership, and `@import` lets each package compose exactly the set that applies to it — so backend packages never load mobile conventions and editing the GraphQL standards no longer touches every package.",
       "distractors": {
+        "A": "Per-package `CLAUDE.md` files do scope conventions correctly and are a legitimate part of the hierarchy. Deleting the root file loses the shared universal standards, and conventions common to several packages get duplicated across directories, which reintroduces the maintenance problem in a new form.",
         "B": "Clear headers improve readability and would help somewhat. Everything under them still loads for every package, so the model is left inferring which section applies — the inference that is already failing — and a single 900-line file remains a shared edit surface.",
-        "C": "Path-scoped rules are an excellent fit for conventions keyed to file type and would solve the misapplication cleanly. Emptying `CLAUDE.md` entirely goes too far: genuinely universal standards should be always-loaded, and forcing them into glob-scoped rules means they apply only when a matching file happens to be open.",
-        "D": "Per-package `CLAUDE.md` files do scope conventions correctly and are a legitimate part of the hierarchy. Deleting the root file loses the shared universal standards, and conventions common to several packages get duplicated across directories, which reintroduces the maintenance problem in a new form."
+        "C": "Path-scoped rules are an excellent fit for conventions keyed to file type and would solve the misapplication cleanly. Emptying `CLAUDE.md` entirely goes too far: genuinely universal standards should be always-loaded, and forcing them into glob-scoped rules means they apply only when a matching file happens to be open."
       }
     },
     "lab": "lab-02-claude-code-config-foundations",
@@ -1321,11 +1321,11 @@
       },
       {
         "key": "B",
-        "text": "Create the variant in `.claude/commands/` as a personal slash command, since commands are not shared the way skills are."
+        "text": "Create the variant as a personal slash command in `.claude/commands/`, since commands aren't shared across the team the way skills are."
       },
       {
         "key": "C",
-        "text": "A differently named variant in `~/.claude/skills/`, with `allowed-tools` restricting file operations and `argument-hint` prompting for the service name."
+        "text": "A distinctly named variant in `~/.claude/skills/`, with `allowed-tools` restricted to file operations and an `argument-hint` for the service name."
       },
       {
         "key": "D",
@@ -1334,7 +1334,7 @@
     ],
     "correct": "C",
     "rationale": {
-      "correct": "Each requirement maps to one mechanism. A differently named variant in user-scoped `~/.claude/skills/` keeps it personal and avoids colliding with the shared skill. `allowed-tools` in the frontmatter restricts what the skill may do during execution, which is the guard against destructive operations. `argument-hint` prompts for a required parameter when the skill is invoked without arguments.",
+      "correct": "Each requirement maps to one mechanism. A distinctly named variant in user-scoped `~/.claude/skills/` keeps it personal and avoids colliding with the shared skill. `allowed-tools` in the frontmatter restricts what the skill may do during execution, which is the guard against destructive operations. `argument-hint` prompts for a required parameter when the skill is invoked without arguments.",
       "distractors": {
         "A": "Adding a flag to the shared skill would work functionally and keeps one implementation. It modifies version-controlled team configuration to serve a personal preference, and the `allowed-tools` restriction you want would then constrain everyone.",
         "B": "Personal slash commands are a real mechanism and would keep this out of the shared skill set, so the instinct is sound. The path given here is the project-scoped commands directory, which is shared via version control — so this variant would reach teammates, violating the one requirement the scenario states most firmly.",
@@ -1380,7 +1380,7 @@
       "distractors": {
         "B": "A rule with a glob covering all source files would enforce the naming convention and is a defensible way to express it. A glob that matches everything is just an always-loaded standard with extra machinery, and the second half inverts the checklist placement — putting 400 lines of occasional procedure into always-loaded context is the costlier error.",
         "C": "Putting both in `CLAUDE.md` guarantees availability, and the instinct to not rely on invocation is reasonable for the convention. It loads 400 lines of release procedure into every conversation regardless of relevance, which crowds out context that the current task needs.",
-        "D": "Making both skills keeps `CLAUDE.md` lean, which is a real virtue. A convention with no exceptions cannot depend on someone choosing to invoke it — if it only applies when summoned, it is not universal."
+        "D": "Making both skills keeps `CLAUDE.md` lean, which is a real virtue, and it would work fine for the checklist, which genuinely is invocation-shaped. A convention with no exceptions cannot depend on someone remembering to summon it, though: if it only applies when an engineer happens to invoke the skill, it stops being universal the moment someone forgets."
       }
     },
     "lab": "lab-07-rules-commands-skills",
@@ -1506,7 +1506,7 @@
       "distractors": {
         "A": "Discoverability is a genuine benefit of colocation and matters for human contributors, which makes this a real trade-off rather than a wrong answer. It is outweighed here by the known upcoming split, and discoverability can be recovered with a pointer in the package README.",
         "B": "It is accurate that the two are functionally equivalent for today's layout, which is why this is tempting. The question supplies the future split precisely so it can inform the decision, and ignoring known upcoming change is what produces avoidable rework.",
-        "D": "Directory-level `CLAUDE.md` files are a supported part of the configuration hierarchy and are not deprecated. Choosing correctly for a stated reason that is false leaves the team with a wrong model of the tooling."
+        "D": "Directory-level `CLAUDE.md` files remain a fully supported part of the configuration hierarchy and are not deprecated in favor of anything. Even though this option happens to name the right mechanism, arriving at it through a claim that is factually wrong leaves the team with an incorrect mental model of the tooling — one that will mislead the next decision they make."
       }
     },
     "lab": "lab-07-rules-commands-skills",
@@ -1527,28 +1527,28 @@
     "options": [
       {
         "key": "A",
-        "text": "Keep plan mode and use the Explore subagent for discovery, so verbose file-reading stays isolated and the session keeps room to decide."
+        "text": "Keep plan mode and run `/compact` once answers start drifting, then resume reading through the remaining files."
       },
       {
         "key": "B",
-        "text": "Split the migration into three plan-mode sessions of 15 files each and merge the resulting plans."
+        "text": "Split the migration into three plan-mode sessions of fifteen files each, then merge the three resulting plans together."
       },
       {
         "key": "C",
-        "text": "Abandon plan mode and switch to direct execution, migrating file by file so no single session must hold the whole picture."
+        "text": "Abandon plan mode and switch to direct, file-by-file execution so no single session has to hold the whole picture."
       },
       {
         "key": "D",
-        "text": "Keep plan mode and run `/compact` once the agent starts drifting, then continue reading the remaining files."
+        "text": "Keep plan mode, but delegate discovery to the Explore subagent so verbose file reads stay isolated and reasoning room remains."
       }
     ],
-    "correct": "A",
+    "correct": "D",
     "rationale": {
       "correct": "The task genuinely warrants plan mode — 45 files and two competing approaches with different infrastructure implications. The problem is that verbose discovery is consuming the context the architectural reasoning needs. The Explore subagent isolates that output and returns summaries, which is precisely the pattern for preventing context exhaustion during multi-phase work.",
       "distractors": {
+        "A": "Compacting does reclaim context and would let the session continue, so it is a reasonable stopgap. It is reactive and lossy: the specific call-site details already gathered get condensed exactly when they are needed for the decision, and the same drift recurs as reading resumes.",
         "B": "Partitioning bounds each session's context and is a sensible instinct for large surveys. The choice between the two migration paths depends on the complete usage picture, so plans formed against one-third of the call sites each cannot be merged into a coherent decision.",
-        "C": "Direct execution avoids the context problem by never building the full picture, which is why it is tempting. It also forecloses the architectural choice — you would begin migrating before deciding which path to take, which is the rework plan mode exists to prevent.",
-        "D": "Compacting does reclaim context and would let the session continue, so it is a reasonable stopgap. It is reactive and lossy: the specific call-site details already gathered get condensed exactly when they are needed for the decision, and the same drift recurs as reading resumes."
+        "C": "Direct execution avoids the context problem by never building the full picture, which is why it is tempting. It also forecloses the architectural choice — you would begin migrating before deciding which path to take, which is the rework plan mode exists to prevent."
       }
     },
     "lab": "lab-08-plan-mode-and-refinement",
@@ -1590,7 +1590,7 @@
       "distractors": {
         "A": "This shows accurate reasoning about which defects interact and applies the right principle, making it the strongest alternative. Splitting into two rounds buys nothing — the independent null fix does not conflict with anything, so separating it adds a round trip without reducing risk.",
         "C": "Sequential iteration is the correct approach for independent problems and is a reasonable default. Two of these are coupled, so fixing batch size first without the rollback constraint in view invites a change that the next round has to partly undo.",
-        "D": "Parallel isolated sessions would produce three fixes that were each developed unaware of the others, and merging the coupled pair would require reconciling two incompatible assumptions about batching."
+        "D": "Running each defect in its own isolated session does prevent one fix from accidentally overwriting another's edits, which is a real benefit for review hygiene. But the batch-size and rollback fixes would each be developed unaware of the other's assumptions, and reconciling two independently authored, incompatible views of the batching would need a fourth round to merge."
       }
     },
     "lab": "lab-08-plan-mode-and-refinement",
@@ -1652,7 +1652,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Lower the generation temperature so output is more conservative and less prone to producing redundant tests."
+        "text": "Lower the generation temperature so the output is more conservative and less prone to producing redundant tests."
       },
       {
         "key": "B",
@@ -1660,18 +1660,18 @@
       },
       {
         "key": "C",
-        "text": "Post-process the generated tests, discarding any whose assertions closely match an existing test."
+        "text": "Post-process the generated tests, discarding any whose assertions closely match an existing test in the suite."
       },
       {
         "key": "D",
-        "text": "Add a system prompt instructing Claude to write only high-value tests and to avoid testing framework behavior."
+        "text": "Add a system prompt instructing Claude to write only genuinely high-value tests and to skip framework or language behavior."
       }
     ],
     "correct": "B",
     "rationale": {
       "correct": "All three defects come from missing context. The instance cannot avoid duplicating tests it has never seen, and it cannot use fixtures or apply value criteria it was never told about. Supplying the existing tests addresses duplication directly, and CLAUDE.md is the mechanism for giving a CI-invoked instance the project's standards, criteria, and fixture conventions.",
       "distractors": {
-        "A": "Temperature affects sampling variability, not knowledge. A more deterministic run will duplicate existing tests just as reliably and still will not know the fixtures exist.",
+        "A": "Temperature affects sampling variability, not what the model knows about the codebase. Lowering it might trim a few redundant phrasings, but the run still lacks visibility into the existing suite, so the same tests get regenerated just as reliably, and the model still has no way to discover the project's fixtures.",
         "C": "Post-hoc filtering would remove some duplicates and is a reasonable safety net. It runs after the tokens are spent, catches only near-identical assertions, and does nothing for the fixture and value problems — so most of the low-value output survives.",
         "D": "A prompt instruction is cheap and would trim the most obvious framework-behavior tests. \"High-value\" is undefined without the project's criteria, and the instruction does nothing about duplication or fixtures, since those require information the instance does not have."
       }
@@ -1694,7 +1694,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Adopt it, since instructing the model to require higher confidence is the standard way to trade recall for precision."
+        "text": "Adopt it, since instructing the model to require higher confidence is the standard way to trade coverage for precision."
       },
       {
         "key": "B",
@@ -1706,7 +1706,7 @@
       },
       {
         "key": "D",
-        "text": "Reject it and replace the vague instruction with a specific categorical criterion: flag a comment only when its claimed behavior contradicts the code."
+        "text": "Reject it and replace the vague instruction with a specific criterion: flag a comment whose claimed behavior contradicts the code."
       }
     ],
     "correct": "D",
@@ -1790,7 +1790,7 @@
       },
       {
         "key": "D",
-        "text": "Add a `detected_pattern` field to each finding so you can analyze which code constructs developers dismiss most often and target those."
+        "text": "Add a `detected_pattern` field to each finding so you can analyze which code constructs developers dismiss most often, then target prompt work at whichever pattern turns out to explain the dismissals."
       }
     ],
     "correct": "C",
@@ -1824,7 +1824,7 @@
       },
       {
         "key": "B",
-        "text": "Supply examples of the agent asking clarifying questions in every ambiguous case, establishing a consistent default."
+        "text": "Supply examples of the agent asking a clarifying question in each ambiguous case, establishing a consistent default."
       },
       {
         "key": "C",
@@ -1866,15 +1866,15 @@
       },
       {
         "key": "B",
-        "text": "Strict schemas eliminate syntax errors but not semantic ones; add `calculated_total` alongside `stated_total` and a `conflict_detected` flag."
+        "text": "Strict schemas eliminate syntax errors but not semantic ones; add a `calculated_total` field next to `stated_total` plus a `conflict_detected` flag."
       },
       {
         "key": "C",
-        "text": "The schema is under-constrained; add `minimum`/`maximum` bounds and stricter field types so invalid values cannot validate."
+        "text": "The schema is under-constrained; add `minimum`/`maximum` bounds and stricter field types so implausible values are rejected at validation time, before they ever reach accounting."
       },
       {
         "key": "D",
-        "text": "The extraction should switch from `tool_choice: \"any\"` to a forced tool call so the correct schema is always applied."
+        "text": "The extraction should switch from `tool_choice: \"any\"` to forcing a single named tool, so the correct schema is consistently applied."
       }
     ],
     "correct": "B",
@@ -1912,7 +1912,7 @@
       },
       {
         "key": "C",
-        "text": "Keep the field required and add a retry that re-extracts whenever downstream review flags a suspicious value."
+        "text": "Keep the field required and add a retry that re-extracts each time downstream review flags a suspicious value."
       },
       {
         "key": "D",
@@ -1950,7 +1950,7 @@
       },
       {
         "key": "B",
-        "text": "Set `tool_choice: \"auto\"` and add a prompt instruction that the model must always call an extraction tool."
+        "text": "Set `tool_choice: \"auto\"` and add a prompt instruction telling the model to invoke an extraction tool every time."
       },
       {
         "key": "C",
@@ -1958,7 +1958,7 @@
       },
       {
         "key": "D",
-        "text": "Set `tool_choice: \"any\"`, requiring a call to one of the four extraction tools while leaving the choice to the model."
+        "text": "Set `tool_choice: \"any\"`, requiring the model to invoke one of the four extraction tools while leaving the schema choice to it."
       }
     ],
     "correct": "D",
@@ -1991,15 +1991,15 @@
       },
       {
         "key": "B",
-        "text": "Append the specific validation error to the retry prompt, and route failures caused by information absent from the source instead of retrying them."
+        "text": "Append the specific validation error to the retry prompt, and route source-absent failures for handling instead of blindly retrying them."
       },
       {
         "key": "C",
-        "text": "Retry with a higher temperature so the model explores different interpretations of the document."
+        "text": "Retry with a higher temperature so the model explores different interpretations of the document, hoping randomness lands on a better reading of the ambiguous fields."
       },
       {
         "key": "D",
-        "text": "Cap retries at two attempts for all failure types, so the unrecoverable cases stop consuming budget."
+        "text": "Cap retries at two attempts regardless of failure type, so the unrecoverable cases stop consuming budget without further changes to the retry logic."
       }
     ],
     "correct": "B",
@@ -2037,11 +2037,11 @@
       },
       {
         "key": "C",
-        "text": "Fail the record and log it for manual re-keying, since automated extraction cannot resolve a contradictory source."
+        "text": "Fail the record and log it for manual re-keying, since automated extraction has no way to resolve a contradictory source."
       },
       {
         "key": "D",
-        "text": "Relax the validator to permit a tolerance band, since small mismatches are common in real documents."
+        "text": "Relax the validator to permit a tolerance band, since minor mismatches are common in real documents."
       }
     ],
     "correct": "B",
@@ -2083,7 +2083,7 @@
       },
       {
         "key": "D",
-        "text": "Add a free-text field where developers can explain each dismissal."
+        "text": "Add a free-text field where developers can explain each dismissal, capturing their specific reasoning in their own words for later review."
       }
     ],
     "correct": "B",
@@ -2155,7 +2155,7 @@
     "options": [
       {
         "key": "A",
-        "text": "Resubmit only the twelve by `custom_id`, chunking the eight oversized documents and retrying the four transient failures unchanged."
+        "text": "Resubmit the twelve by `custom_id`: chunk the eight oversized documents and retry the four transient failures unchanged."
       },
       {
         "key": "B",
@@ -2247,11 +2247,11 @@
       },
       {
         "key": "C",
-        "text": "Report only findings the model would classify as high severity, suppressing the rest."
+        "text": "Report just the findings the model would classify as high severity, suppressing the rest."
       },
       {
         "key": "D",
-        "text": "Have the model rank all findings against one another and present them in priority order, so reviewers work down the list from most to least important."
+        "text": "Have the model rank the findings against one another and present them in priority order, so reviewers work down the list from most to least important."
       }
     ],
     "correct": "B",
@@ -2289,7 +2289,7 @@
       },
       {
         "key": "C",
-        "text": "Two independent generation passes, shipping the script only where both agree."
+        "text": "Two independent generation passes, shipping the script when both agree and routing disagreements to a human reviewer."
       },
       {
         "key": "D",
@@ -2323,26 +2323,26 @@
     "options": [
       {
         "key": "A",
-        "text": "Instruct the synthesis agent to give equal weight to all four subagents' findings."
+        "text": "Instruct the synthesis agent to weight each subagent's findings equally, regardless of where it falls in the input."
       },
       {
         "key": "B",
-        "text": "Sort the findings by relevance score so the most important material occupies the beginning and end regardless of source."
+        "text": "Sort the findings by relevance score so the most important material occupies the beginning and end regardless of which subagent produced it."
       },
       {
         "key": "C",
-        "text": "Split synthesis into four passes, one per subagent, then combine the four partial syntheses."
+        "text": "Split synthesis into four passes, one per subagent, then combine the four partial syntheses into a single report."
       },
       {
         "key": "D",
-        "text": "Lead with a consolidated key-findings summary and organize the detailed results under explicit section headers."
+        "text": "Lead with a consolidated key-findings summary, then organize the detailed results underneath using explicit headers."
       }
     ],
     "correct": "D",
     "rationale": {
       "correct": "That rotation moves rather than fixes the problem confirms a position effect rather than a content difference. Leading with a key-findings summary puts every contribution in the high-attention opening, and explicit section headers give the detailed material structure the model can navigate, which is the standard mitigation for long aggregated inputs.",
       "distractors": {
-        "A": "An equal-weight instruction is cheap and expresses the desired outcome directly. Position effects are not a matter of intent, so instructing the model to attend evenly does not change how a long undifferentiated input is actually processed.",
+        "A": "An equal-weight instruction is cheap, costs nothing to add alongside other fixes, and states the desired outcome directly. Position effects come from how a long, undifferentiated input is processed relative to attention, not from stated intent, so telling the model to attend evenly does not change that underlying mechanism and the middle content stays structurally disadvantaged.",
         "B": "Relevance sorting is a reasonable use of position and ensures the most important material is well attended. It concedes that middle content will be underweighted rather than mitigating it, so lower-ranked-but-relevant findings are still lost — and it presumes relevance scores that are themselves reliable.",
         "C": "Per-subagent passes do guarantee each contribution gets full attention, which makes this a serious option. Synthesis is precisely the act of relating findings across sources, so partial syntheses computed in isolation cannot surface cross-source agreement, conflict, or convergence — and combining them reintroduces the same aggregation problem one level up."
       }
@@ -2407,19 +2407,19 @@
     "options": [
       {
         "key": "A",
-        "text": "Decline but offer the own-site adjustment if the item's price drops within 14 days, resolving what policy does cover."
+        "text": "Decline the match, but offer the adjustment policy does cover if the item's own price drops within 14 days, resolving what policy actually addresses."
       },
       {
         "key": "B",
-        "text": "Escalate: the policy is silent on this request, and a policy gap is an escalation trigger distinct from case complexity."
+        "text": "Escalate: policy is silent on competitor matching, and a genuine policy gap is its own escalation trigger, separate from case complexity."
       },
       {
         "key": "C",
-        "text": "Decline, since anything not explicitly permitted by policy should be treated as not permitted."
+        "text": "Decline the match, on the reasoning that anything the policy does not explicitly permit should be treated as not permitted until stated otherwise by a manager."
       },
       {
         "key": "D",
-        "text": "Approve the match, since nothing in the policy prohibits it and approving preserves first-contact resolution."
+        "text": "Approve the match, since nothing in the policy prohibits it, and approving keeps the interaction a first-contact resolution rather than a delay for the customer."
       }
     ],
     "correct": "B",
@@ -2427,8 +2427,8 @@
       "correct": "Policy gaps and exceptions are escalation triggers in their own right, separate from case complexity. The policy neither permits nor prohibits competitor matching, so the agent has no basis for either answer, and someone with authority to set precedent should decide. Citing an unrelated own-site rule as though it settled the question is the current defect.",
       "distractors": {
         "A": "Offering the adjustment that policy does cover is genuinely good service and worth doing alongside the escalation. As a complete response it still resolves the gap by declining, so the agent has silently decided an open policy question while appearing helpful.",
-        "C": "Treating silence as prohibition is a coherent conservative posture and is how some organizations operate. It is the agent inventing policy rather than applying it, and the answer is stated with a confidence the policy does not support — which is how incorrect precedents get established at scale.",
-        "D": "Treating silence as permission is the mirror-image error and would please this customer. It commits the business to a pricing concession nobody authorized, and at scale an agent approving whatever policy fails to forbid is a serious financial exposure."
+        "C": "Treating silence as prohibition is a coherent conservative posture and is how some organizations choose to operate by default. It is nonetheless the agent inventing policy rather than applying it, and the answer is delivered with a confidence the policy itself does not support — which is how incorrect precedents get established at scale.",
+        "D": "Treating silence as permission is the mirror-image error and would please this particular customer. It commits the business to a pricing concession nobody authorized, and an agent that approves whatever policy fails to explicitly forbid is a real and recurring financial exposure at scale."
       }
     },
     "lab": "lab-12-escalation",
@@ -2449,11 +2449,11 @@
     "options": [
       {
         "key": "A",
-        "text": "The subagent should retry the database until it becomes reachable rather than returning at all."
+        "text": "Have the subagent keep retrying the database connection until it succeeds, rather than returning any result while the outage persists."
       },
       {
         "key": "B",
-        "text": "Silently converting failure into empty success makes an access failure indistinguishable from a valid empty result; return structured error context instead."
+        "text": "Converting failure into empty success erases the difference between failure and a genuine empty result; return structured error context."
       },
       {
         "key": "C",
@@ -2461,7 +2461,7 @@
       },
       {
         "key": "D",
-        "text": "The coordinator should verify that each subagent returned a non-empty result before synthesizing."
+        "text": "Have the coordinator verify that each subagent returned a non-empty result before proceeding to synthesize the final combined report."
       }
     ],
     "correct": "B",
@@ -2469,8 +2469,8 @@
       "correct": "Suppressing errors by returning empty results as success is an anti-pattern precisely because it destroys the distinction between an access failure and a genuine negative. The coordinator receives the same payload in both cases and cannot make an informed recovery decision, which is how a database outage became a confident factual claim. Structured error context restores that distinction.",
       "distractors": {
         "A": "Local recovery for transient failures is genuinely the subagent's job and part of the right design. Retrying indefinitely against a sustained outage blocks the workflow with no upper bound, and errors it cannot resolve locally must still be propagated with context rather than absorbed.",
-        "C": "A standing disclaimer is honest and would temper the report's confidence. It weakens every negative finding equally, including the well-supported ones, and does nothing to let the coordinator retry, seek an alternative source, or annotate this particular gap.",
-        "D": "A non-empty check would catch this specific case and is cheap to add, so it has real appeal. It misclassifies every legitimate empty result as suspect and still gives the coordinator no information about what actually went wrong or whether retrying could help."
+        "C": "A standing disclaimer is honest and would temper the report's confidence somewhat. It weakens every negative finding equally, including the well-supported ones, and does nothing to let the coordinator retry, seek an alternative source, or flag this particular gap.",
+        "D": "A non-empty check would catch this specific case and is cheap to add, so it has real appeal as a quick patch. It misclassifies every legitimate empty result as suspect and still gives the coordinator no information about what actually went wrong or whether retrying could help."
       }
     },
     "lab": "lab-20-error-propagation-provenance",
@@ -2533,27 +2533,27 @@
     "options": [
       {
         "key": "A",
-        "text": "Have each agent export state to a known location, and have the coordinator load a manifest on resume and inject it into each agent's prompt."
+        "text": "Have each agent export its state to a known location; the coordinator loads a manifest on resume and injects the state into each agent's prompt."
       },
       {
         "key": "B",
-        "text": "Checkpoint the coordinator's session with `fork_session` at regular intervals, so the most recent branch can be resumed after a crash."
+        "text": "Checkpoint the coordinator's session with `fork_session` at regular intervals, so the most recent branch can be resumed from after a crash occurs."
       },
       {
         "key": "C",
-        "text": "Persist the full conversation transcript for each agent and replay it on restart to rebuild their contexts."
+        "text": "Persist the full conversation transcript for each agent and replay it on restart, letting each agent regenerate its context from that transcript."
       },
       {
         "key": "D",
-        "text": "Have each agent write its findings to a shared scratchpad file that any agent can read on restart."
+        "text": "Have each agent write its findings to a shared scratchpad file, so that after a crash any agent can resume by reading whatever is currently in it."
       }
     ],
     "correct": "A",
     "rationale": {
       "correct": "Crash recovery in a multi-agent system is built on structured state persistence: each agent exports its state to a known location, and on resume the coordinator loads a manifest of those exports and injects the relevant state into each agent's prompt. That reconstructs working knowledge without re-deriving it, and the manifest gives the coordinator a single view of what survived.",
       "distractors": {
-        "B": "Forking is for exploring divergent approaches from a shared baseline, not for checkpointing. It also covers only the coordinator's session, leaving each subagent's accumulated analysis unprotected.",
-        "C": "Full transcript replay is the most complete form of restoration and loses nothing in principle. Replaying hours of transcripts re-consumes the entire context budget that was the original constraint, and it restores verbose tool results rather than the distilled conclusions that actually matter.",
+        "B": "Forking is a branching tool for exploring divergent approaches from a shared baseline, not a general checkpointing mechanism, and reaching for it here is understandable given how convenient the primitive is. It also only covers the coordinator's own session, so each subagent's accumulated analysis — the bulk of the several hours of work — is left completely unprotected and would still restart from nothing.",
+        "C": "Full transcript replay is the most complete form of restoration and loses nothing in principle, which makes it tempting as a safety-first default. Replaying hours of transcripts re-consumes the entire context budget that was the original constraint, and it restores verbose tool results rather than the distilled conclusions that actually matter.",
         "D": "A shared scratchpad does persist findings across a crash and is the right primitive for a single agent fighting context degradation, so this is close. It lacks the per-agent structure and manifest that let the coordinator know which agents completed what and route the right state back to each one — with several agents writing to one file, resume becomes an unstructured re-read."
       }
     },
@@ -2705,24 +2705,24 @@
       },
       {
         "key": "B",
-        "text": "Route a random 15% sample, so measurement stays unbiased and every segment is represented."
+        "text": "Route a random 15% sample of extractions, on the reasoning that this keeps measurement unbiased and gives each field roughly proportional coverage."
       },
       {
         "key": "C",
-        "text": "Route by business impact, sending the highest-value records to review regardless of model confidence."
+        "text": "Route by business impact, sending the highest-value records to review first and treating model confidence as a secondary factor rather than the primary one."
       },
       {
         "key": "D",
-        "text": "Route the 15% of extractions carrying the lowest raw model confidence, on the basis that those are the ones most likely to be wrong."
+        "text": "Route the 15% of extractions carrying the lowest raw model confidence, on the basis that those scores mark the cases most likely to be wrong."
       }
     ],
     "correct": "A",
     "rationale": {
       "correct": "Raw model confidence is not directly interpretable as a probability of correctness, so calibrating field-level scores against labeled data is what turns them into a usable routing signal. Adding source ambiguity and internal contradiction as triggers catches cases where the model may be confident but the document itself is unreliable, and prioritizing within fixed capacity is what makes the constraint tractable.",
       "distractors": {
-        "B": "Random sampling is the right method for unbiased measurement of an error rate, and some of it should be retained for exactly that. As a routing strategy it spends the entire budget uniformly rather than where errors concentrate, so most reviewed records are ones that needed no review.",
-        "C": "Impact-weighted routing is a legitimate consideration and belongs in the prioritization, since errors on high-value records cost more. Used alone it ignores likelihood entirely, so reviewers spend the budget re-checking high-value extractions the model got right while low-value errors pass through unexamined.",
-        "D": "Confidence-based routing is directionally correct and far better than random, which makes this the closest alternative. Uncalibrated scores make the threshold arbitrary — a raw 0.8 may mean very different things for different fields and document types — so capacity is allocated against a signal of unknown meaning."
+        "B": "Random sampling is the right method for unbiased measurement of an error rate, and some of it should be retained for exactly that purpose. As a routing strategy it spends the entire budget uniformly rather than where errors concentrate, so most reviewed records end up being ones that needed no review at all.",
+        "C": "Impact-weighted routing is a legitimate consideration and belongs in the prioritization, since errors on high-value records cost more to fix later. Used alone it ignores likelihood of error entirely, so reviewers spend the budget re-checking high-value extractions the model already got right while low-value errors pass through unexamined.",
+        "D": "Confidence-based routing is directionally correct and far better than random, which makes this the closest alternative to the right answer. Uncalibrated scores make the threshold arbitrary — a raw 0.8 may mean very different things for different fields and document types — so capacity is allocated against a signal of unknown and unverified meaning."
       }
     },
     "lab": "lab-18-human-review-calibration",
@@ -2732,6 +2732,505 @@
       "confidence-routing",
       "human-review",
       "capacity"
+    ]
+  },
+  {
+    "id": "q-1.1-104",
+    "domain": 1,
+    "task_statement": "1.1",
+    "scenario": "A production agent's loop correctly checks `stop_reason` and iterates only while it is `\"tool_use\"`, appending each tool result before the next request. Two separate incidents surface in the same week. First: the agent calls a failing lookup tool with identical arguments repeatedly — 41 times in one run — before a hard iteration cap of 50 finally ends the run, burning cost with no progress. Second: in a long research session, the loop appends each tool's full raw result text to the conversation on every iteration; by iteration 30, the growing history pushes the request over the context limit and the API starts rejecting calls. You want to fix both without touching the `stop_reason` logic, which is already correct.",
+    "stem": "Select the TWO changes that would fix both the repeated-failing-call problem and the context-growth problem, without altering the loop's core termination logic.",
+    "options": [
+      {
+        "key": "A",
+        "text": "Track a hash of each attempted (tool name, arguments) pair across iterations, and break out to escalate once an identical failing call repeats beyond a small threshold."
+      },
+      {
+        "key": "B",
+        "text": "Before appending a tool result to the conversation, trim or summarize it down to the fields the next decision actually depends on, instead of carrying the full raw payload forward every iteration."
+      },
+      {
+        "key": "C",
+        "text": "Lower the model's sampling temperature so it is less likely to re-emit the same tool call twice in a row."
+      },
+      {
+        "key": "D",
+        "text": "Raise the hard iteration cap from 50 to 200 so that legitimately long-running tasks are not cut short partway through."
+      },
+      {
+        "key": "E",
+        "text": "Set `tool_choice` to force a single named tool for the whole session, so the model has no alternative tool to select instead of the failing one."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "rationale": {
+      "correct": "The two incidents have independent root causes and need independent fixes. Nothing in the loop currently notices that a call is being repeated without progress, so a repeated-call guard is what turns 41 wasted iterations into an early escalation. Separately, nothing bounds what gets carried forward each turn, so trimming appended results to what the next decision needs is what keeps history from outgrowing the context window. Each fix addresses exactly one incident; together they cover both without touching the stop_reason branch, which was never the problem.",
+      "distractors": {
+        "C": "Temperature affects how varied the model's outputs are, not whether a tool call sequence is tracked or bounded. A failing call made deterministically can still recur exactly as often as one made with some randomness, and this does nothing about growing context.",
+        "D": "Raising the cap gives the runaway repeated-call pattern more room to run before it is caught, which makes that incident more expensive rather than less, and it has no bearing on the unrelated context-growth problem.",
+        "E": "Forcing one tool for the whole session would prevent the model from ever calling anything else, which is a large capability loss unrelated to either incident — the failing tool could still be called repeatedly, and raw results would still accumulate unbounded."
+      }
+    },
+    "lab": "lab-03-agentic-loop",
+    "difficulty": 9,
+    "tags": [
+      "agentic-loop",
+      "repeated-call-guard",
+      "context-management",
+      "diagnose",
+      "select-two"
+    ]
+  },
+  {
+    "id": "q-1.5-104",
+    "domain": 1,
+    "task_statement": "1.5",
+    "scenario": "A finance-facing agent must satisfy two requirements simultaneously: (1) any `process_refund` call requesting more than $500 must be blocked before it reaches the payments backend, with no exceptions, and (2) compliance needs an audit record of every refund attempt — including ones that get blocked — for a quarterly review, since regulators specifically ask about attempted-but-refused transactions, not just completed ones.",
+    "stem": "Select the TWO hook designs that together satisfy both requirements.",
+    "options": [
+      {
+        "key": "A",
+        "text": "A hook that intercepts the outgoing `process_refund` call before execution, inspects the requested amount, and blocks the call from proceeding whenever it exceeds $500."
+      },
+      {
+        "key": "B",
+        "text": "The same pre-execution hook writes an audit entry for every attempted call it inspects, recording the requested amount and its allow/block decision, regardless of which way the decision goes."
+      },
+      {
+        "key": "C",
+        "text": "A hook that runs after `process_refund` executes, reversing the transaction in the payments backend whenever the settled amount exceeds $500."
+      },
+      {
+        "key": "D",
+        "text": "A hook that runs after `process_refund` executes, writing an audit entry for every completed refund so compliance has a record of what was processed."
+      },
+      {
+        "key": "E",
+        "text": "A system-prompt instruction telling the agent to log every refund attempt it makes, including ones it decides not to submit, for the compliance audit trail."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "rationale": {
+      "correct": "Blocking a policy-violating action deterministically requires intercepting the call before it executes; once the tool has run, the side effect has already happened and nothing downstream can undo it reliably. That same pre-execution point is also the only place that sees every attempt, allowed or blocked, which is exactly what the audit requirement needs — a post-execution record would never contain the blocked attempts at all, since they never execute.",
+      "distractors": {
+        "C": "By the time a post-execution hook runs, the refund has already been issued against the payments backend. Attempting to reverse it after the fact depends on the backend supporting reversal and introduces a window where the over-limit refund was live; it does not provide the deterministic block the requirement asks for.",
+        "D": "A post-execution audit hook captures every refund that actually ran, which is useful, but a call blocked before execution never reaches this hook and so never appears in its record — exactly the attempted-but-refused case compliance says it needs.",
+        "E": "Asking the agent to self-report its own attempts, including ones it chooses to abandon, relies on the model reliably narrating actions it did not take. That is a probabilistic hope for what should be a guaranteed record, and it provides no mechanism to actually stop the over-limit transfer."
+      }
+    },
+    "lab": "lab-11-hooks-and-enforcement",
+    "difficulty": 8,
+    "tags": [
+      "hooks",
+      "pre-execution-enforcement",
+      "audit-logging",
+      "deterministic-vs-probabilistic",
+      "select-two"
+    ]
+  },
+  {
+    "id": "q-2.2-104",
+    "domain": 2,
+    "task_statement": "2.2",
+    "scenario": "You are designing the error contract for a payments MCP tool that can fail in several distinct ways: a timed-out connection to the processor, a request rejected because the account is frozen, and a refund rejected because it falls outside a 30-day policy window. The tool is called by an agent that must both decide programmatically what to do next and, in some cases, explain the outcome to a customer in plain language.",
+    "stem": "Select the THREE fields that belong in this tool's error responses to support both goals.",
+    "options": [
+      {
+        "key": "A",
+        "text": "An `errorCategory` that classifies the failure (for example: transient, permission, business-rule), giving the agent a basis for choosing a recovery strategy."
+      },
+      {
+        "key": "B",
+        "text": "An `isRetryable` boolean stating whether reissuing the same call could plausibly succeed, so the agent doesn't retry a rejection that will never change."
+      },
+      {
+        "key": "C",
+        "text": "A human-readable, customer-appropriate description of what happened and why, distinct from any internal diagnostic detail."
+      },
+      {
+        "key": "D",
+        "text": "The raw exception type and stack trace from the payments backend, included in full so every response carries complete internal diagnostic context."
+      },
+      {
+        "key": "E",
+        "text": "A single numeric status code (for example, borrowed from HTTP) as the sole indicator of what went wrong."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "C"
+    ],
+    "rationale": {
+      "correct": "Category and retryability together give the agent a programmatic basis for its next action: retry a transient timeout, don't retry a business-rule rejection, and treat a permission failure differently from either. Neither field, on its own or together, tells the agent what to say to a person, which is why a distinct customer-appropriate description is also needed — it is the piece that turns 'blocked, non-retryable' into an actual explanation the customer can be given. All three are necessary and none is redundant with the others.",
+      "distractors": {
+        "D": "Stack traces and exception types are valuable for engineers debugging the backend, but they leak internal implementation detail into the agent's context and are not something to surface to a customer; the agent still has to guess retryability and category from unstructured internals rather than reading a declared field.",
+        "E": "A single status code borrowed from a different protocol conflates categories that need different handling — a timeout and a frozen account might both plausibly map to the same code family — and it says nothing about retryability or how to phrase an explanation to the customer."
+      }
+    },
+    "lab": "lab-09-errors-and-tool-distribution",
+    "difficulty": 8,
+    "tags": [
+      "structured-error-context",
+      "errorCategory",
+      "isRetryable",
+      "error-contract-design",
+      "select-three"
+    ]
+  },
+  {
+    "id": "q-2.4-104",
+    "domain": 2,
+    "task_statement": "2.4",
+    "scenario": "Your team configures two MCP servers: a read-only reporting server backed by a Postgres replica, and a write-capable order-management server that can modify live orders. Every agent session — including customer-support sessions that only ever need to read order status — currently connects to both servers. Two problems have emerged: support sessions occasionally issue a write-capable call they didn't need and shouldn't have had access to, and the combined tool list from both servers has grown large enough that tool selection has noticeably slowed down across every session.",
+    "stem": "Select the TWO configuration changes that address both problems.",
+    "options": [
+      {
+        "key": "A",
+        "text": "Scope which MCP servers connect per session to that session's actual need — for example, only the read-only reporting server for customer-support sessions."
+      },
+      {
+        "key": "B",
+        "text": "Give the order-management server narrower, purpose-specific write tools (or a confirmation parameter on state-changing calls), instead of one broad write tool exposed whenever it connects."
+      },
+      {
+        "key": "C",
+        "text": "Increase the MCP client's per-call timeout so tool selection has more time to consider the full combined tool list before choosing."
+      },
+      {
+        "key": "D",
+        "text": "Merge the two servers into a single MCP server exposing one unified tool that can read or write depending on its arguments, to simplify configuration."
+      },
+      {
+        "key": "E",
+        "text": "Add an instruction to CLAUDE.md telling the agent not to make write-capable calls unless the user has explicitly asked for a change."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "rationale": {
+      "correct": "The two problems have distinct causes that need distinct fixes. Connecting both servers to every session regardless of need is what both bloats the combined tool list and exposes write capability where it is never required, so scoping server connections to the session's actual task shrinks the tool list and removes the write server from sessions that don't need it. Narrowing the write server's own tool surface is a second, independent layer: even for the sessions that legitimately connect to it, a purpose-specific or confirmation-gated tool reduces the chance of an unintended state change compared to one broad write tool.",
+      "distractors": {
+        "C": "A longer timeout gives the client more time to weigh a large tool list, which does not shrink that list or remove the write server from sessions that never needed it; it addresses neither the exposure problem nor the actual cause of slower selection.",
+        "D": "Merging the two servers into one unified read-or-write tool combines a smaller configuration surface with a permanently larger capability surface for every session, since read-only sessions would now have a tool that can also write — the opposite of what the exposure problem calls for.",
+        "E": "A prompt-level instruction against unintended writes is a reasonable additional layer but relies on probabilistic compliance for a capability the agent should not have had available in the first place, and it does nothing to shrink the combined tool list that is slowing selection down."
+      }
+    },
+    "lab": "lab-15-mcp-integration",
+    "difficulty": 8,
+    "tags": [
+      "mcp-integration",
+      "server-scoping",
+      "tool-surface-design",
+      "least-privilege",
+      "select-two"
+    ]
+  },
+  {
+    "id": "q-3.3-104",
+    "domain": 3,
+    "task_statement": "3.3",
+    "scenario": "A repository stores SQL migration files at `db/migrations/*.sql` for the main application, and at `packages/*/migrations/*.sql` for each of several independently versioned sub-packages (for example `packages/billing/migrations/003_add_index.sql`). The same tree also contains unrelated `.sql` files elsewhere — seed data at `db/seeds/seed.sql` and a schema dump at `packages/billing/src/schema.sql` — that must not trigger the migration-writing conventions. A team is choosing the `paths` glob list for `.claude/rules/migrations.md`.",
+    "stem": "Select the TWO glob patterns that, together, correctly scope the rule to both migration locations without also matching the unrelated seed and schema-dump files.",
+    "options": [
+      {
+        "key": "A",
+        "text": "`db/migrations/*.sql`"
+      },
+      {
+        "key": "B",
+        "text": "`packages/*/migrations/*.sql`"
+      },
+      {
+        "key": "C",
+        "text": "`**/*.sql`"
+      },
+      {
+        "key": "D",
+        "text": "`db/migrations/**`"
+      },
+      {
+        "key": "E",
+        "text": "`packages/*/migrations`"
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "rationale": {
+      "correct": "Each location needs its own pattern anchored to its actual structure. `db/migrations/*.sql` matches exactly the main application's migration files and nothing under `db/seeds/`. `packages/*/migrations/*.sql` matches each sub-package's migration files one level down and does not reach into a sibling `src/` directory. Together the two patterns cover every migration file across both locations while excluding both named unrelated files.",
+      "distractors": {
+        "C": "`**/*.sql` matches every `.sql` file anywhere in the repository, which reaches `db/seeds/seed.sql` and `packages/billing/src/schema.sql` just as readily as the migration files, defeating the purpose of scoping the rule at all.",
+        "D": "`db/migrations/**` matches everything recursively under that one directory, including any non-SQL files that might live there (a README, a notes file), and it still says nothing about the `packages/*/migrations/` location, so half the intended scope is missing.",
+        "E": "`packages/*/migrations` (with no trailing `/*.sql`) matches the migrations directory path itself, not the individual files inside it, so a rule scoped this way would not load when editing the actual `.sql` files it is meant to cover."
+      }
+    },
+    "lab": "lab-07-rules-commands-skills",
+    "difficulty": 9,
+    "tags": [
+      "path-specific-rules",
+      "glob-patterns",
+      "scoping",
+      "select-two"
+    ]
+  },
+  {
+    "id": "q-3.6-104",
+    "domain": 3,
+    "task_statement": "3.6",
+    "scenario": "A GitHub Actions workflow reviews every incoming pull request, including ones opened from external contributors' forks, by triggering on `pull_request_target` so the job can access a write-scoped deploy token and post inline comments. The invocation builds its prompt by interpolating the PR title directly into a shell string: `claude -p \"Review PR titled: ${{ github.event.pull_request.title }}\"`. A fork contributor fully controls that title text and could set it to anything.",
+    "stem": "Select the TWO changes that most directly close the security exposure here.",
+    "options": [
+      {
+        "key": "A",
+        "text": "Avoid running fork-PR jobs under `pull_request_target` with its write-scoped token; use a read-only token for jobs that review untrusted content instead."
+      },
+      {
+        "key": "B",
+        "text": "Pass untrusted PR content through a file or stdin rather than interpolating it into a shell command string, so it cannot be parsed as shell syntax."
+      },
+      {
+        "key": "C",
+        "text": "Confirm the job passes the `-p` (`--print`) flag so Claude Code runs non-interactively in the pipeline instead of waiting on stdin for input."
+      },
+      {
+        "key": "D",
+        "text": "Grant the entire workflow `contents: write` permissions so the review step can push its findings, regardless of which trigger or event fired it."
+      },
+      {
+        "key": "E",
+        "text": "Add a rule file instructing the review process to disregard any instructions that happen to appear inside a pull request's title or description text."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "rationale": {
+      "correct": "The exposure has two independent components. Running untrusted fork content under a trigger that grants write-scoped secrets is what lets a malicious PR reach privileged credentials at all, so removing that write scope for fork-originated jobs closes that path regardless of what the PR contains. Separately, interpolating attacker-controlled text directly into a shell command string is a classic injection point independent of token scope — a crafted title can break out of the intended string, so passing that content through a file or stdin instead removes the shell's ability to reinterpret it.",
+      "distractors": {
+        "C": "The `-p` flag is what makes the job run non-interactively in CI at all and is worth verifying, but it has no bearing on either a write-scoped token being reachable from untrusted content or a title being interpolated into a shell string.",
+        "D": "Broadening the token to `contents: write` moves in the opposite direction from what a job processing untrusted fork content should have; it increases what a successful exploit of the shell-interpolation issue could do rather than reducing exposure.",
+        "E": "An instruction telling the model to ignore embedded instructions is a prompt-level mitigation against one class of manipulation, but it is a probabilistic ask, not a guarantee, and it does nothing about the shell metacharacter risk in how the title reaches the command line or about the token scope the job runs with."
+      }
+    },
+    "lab": "lab-21-claude-code-cicd",
+    "difficulty": 9,
+    "tags": [
+      "ci-cd",
+      "security",
+      "untrusted-input",
+      "token-scoping",
+      "select-two"
+    ]
+  },
+  {
+    "id": "q-4.3-104",
+    "domain": 4,
+    "task_statement": "4.3",
+    "scenario": "An extraction pipeline classifies incoming documents using a strict `enum` of 12 known categories in its tool schema. New categories appear in production roughly monthly as the business expands, and each time the enum must be hand-patched and redeployed before those documents can be classified at all. Separately, when a document sits ambiguously between two known categories, the model silently picks one, and there is currently no way for downstream systems to tell that the classification was uncertain rather than confident.",
+    "stem": "Select the TWO schema changes that address both the redeploy-lag problem and the invisible-ambiguity problem, without abandoning structured validation for this field.",
+    "options": [
+      {
+        "key": "A",
+        "text": "Replace the closed `enum` with a documented `string` list plus an explicit `\"other\"` value the model can emit, so a new category doesn't need a schema patch to validate."
+      },
+      {
+        "key": "B",
+        "text": "Add a parallel field for borderline documents — an alternate-category value or a confidence indicator — so ambiguity is captured explicitly instead of silently resolved to one value."
+      },
+      {
+        "key": "C",
+        "text": "Keep the closed enum, but move the category list into an externally reloadable configuration file so it can be updated without a full application redeploy each time."
+      },
+      {
+        "key": "D",
+        "text": "Remove the category field from the extraction schema and have a separate downstream classifier assign categories after the extraction step runs."
+      },
+      {
+        "key": "E",
+        "text": "Force `tool_choice` to one specific extraction tool so the same schema applies to every document that comes through the pipeline, regardless of its type."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "rationale": {
+      "correct": "The two problems are independent and need independent schema-level answers. An `\"other\"` fallback alongside a documented (rather than enum-enforced) category list is what lets a genuinely new category pass validation the moment it appears, instead of failing until someone edits the schema. A separate field for borderline cases is what turns a silent single guess into a visible signal that the classification was uncertain — something an enum-only field, however it is populated, cannot express on its own.",
+      "distractors": {
+        "C": "Externalizing the enum's source list shortens the turnaround for adding a category, which helps with deployment friction, but it is still a closed enum: a category that has not yet been added still fails validation, and this does nothing for the separate problem of silently resolved ambiguity.",
+        "D": "Moving categorization to a downstream classifier gives up structural validation for this field entirely rather than fixing it, which is a larger architectural change than either problem calls for, and it does not by itself address how ambiguity gets surfaced.",
+        "E": "Forcing a single tool guarantees which schema applies when multiple extraction schemas exist for different document types, which is a different problem than this scenario describes — here one schema is already being applied to every document, and the category values within it are what need to change."
+      }
+    },
+    "lab": "lab-04-structured-output",
+    "difficulty": 8,
+    "tags": [
+      "json-schema",
+      "extensible-enum",
+      "uncertainty-signal",
+      "structured-output",
+      "select-two"
+    ]
+  },
+  {
+    "id": "q-4.6-104",
+    "domain": 4,
+    "task_statement": "4.6",
+    "scenario": "A team runs three independent review passes over each pull request and flags an issue only when at least two of the three passes agree on it, to filter out any single instance's idiosyncratic false positives. Two problems have emerged. First, subtle defects that only one of the three passes happens to notice are being silently dropped by the majority rule. Second, reviewers are spending significant time manually reconciling reports where two passes plainly describe the same underlying bug but in different files, wording, or line references — the voting mechanism treats these as unrelated findings and never credits them as agreement.",
+    "stem": "Select the TWO changes that would fix both the lost-subtle-defect problem and the failure to recognize agreement across differently worded findings, without abandoning the multi-pass ensembling approach.",
+    "options": [
+      {
+        "key": "A",
+        "text": "For a defined class of high-severity checks, accept a single pass's flag instead of requiring two of three, while keeping the two-of-three bar elsewhere."
+      },
+      {
+        "key": "B",
+        "text": "Have each pass emit structured findings (file, line, category) instead of free text, and cluster matching findings across passes before applying the vote."
+      },
+      {
+        "key": "C",
+        "text": "Increase the number of independent passes from three to five while keeping a two-of-N agreement threshold, giving more instances a chance to notice each defect."
+      },
+      {
+        "key": "D",
+        "text": "Replace the three-pass majority vote with a single pass from the most capable available model, on the reasoning that one stronger reviewer will catch more than three weaker ones combined."
+      },
+      {
+        "key": "E",
+        "text": "Instruct each pass, in its prompt, to phrase findings identically to how the other passes would, so that votes line up more easily during reconciliation."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "rationale": {
+      "correct": "The two failures need different fixes. Majority voting is what silently discards a defect only one pass catches, so the fix has to change the agreement rule itself — accepting a single flag for a defined high-stakes category while keeping the broader two-of-three bar elsewhere. The reconciliation burden is a separate, structural problem: free-text findings about the same bug can be worded differently enough that a literal-match vote never recognizes them as agreement, which is fixed by giving passes a structured format and matching on that structure before voting, not by changing the threshold.",
+      "distractors": {
+        "C": "More independent passes may somewhat improve the odds that a subtle defect is caught by at least two of them, but it does nothing to help differently worded reports of the same bug be recognized as agreement, and cost grows with each added pass while only one of the two problems is even partially addressed.",
+        "D": "Replacing the ensemble with a single stronger reviewer abandons the multi-pass approach the question asks to preserve, and a single reviewer reintroduces the single-instance blind spots that independent passes exist to diversify against.",
+        "E": "Independent instances do not share context or coordinate wording with each other, so an instruction asking each one to guess how the others will phrase a finding is not something any of them can reliably act on; it leaves the actual reconciliation problem — matching differently worded reports — unsolved."
+      }
+    },
+    "lab": "lab-16-decomposition-and-review",
+    "difficulty": 9,
+    "tags": [
+      "multi-pass",
+      "majority-vote",
+      "independent-review",
+      "finding-reconciliation",
+      "select-two"
+    ]
+  },
+  {
+    "id": "q-5.5-104",
+    "domain": 5,
+    "task_statement": "5.5",
+    "scenario": "Your extraction pipeline currently automates eight document types with thousands of labeled examples each. The team wants to add a ninth type to the automated tier. It has only 40 historical labeled examples, versus thousands for the existing types, and its schema includes three fields that were added specifically for this new type and have no historical error data at all.",
+    "stem": "Select the THREE things that must be established before extending automation to this new document type.",
+    "options": [
+      {
+        "key": "A",
+        "text": "That the available labeled sample is large enough (or has been supplemented) to support a statistically meaningful confidence-calibration curve for the new type, since 40 examples may not, whatever headline accuracy they show."
+      },
+      {
+        "key": "B",
+        "text": "Error rates specifically for the three newly added fields, since an acceptable overall accuracy figure for the type can still mask poor performance on fields with no track record."
+      },
+      {
+        "key": "C",
+        "text": "An ongoing stratified-sampling audit plan for the new type once it is automated, so the small launch-time labeled set is not treated as sufficient evidence indefinitely."
+      },
+      {
+        "key": "D",
+        "text": "That the new type's measured accuracy exceeds the aggregate accuracy already achieved across the other eight types combined, before it can share their automated tier."
+      },
+      {
+        "key": "E",
+        "text": "That reviewer capacity is reallocated so the new type receives a fixed percentage of review capacity proportional to its share of daily volume."
+      }
+    ],
+    "correct": [
+      "A",
+      "B",
+      "C"
+    ],
+    "rationale": {
+      "correct": "All three concern whether the evidence behind automating this type is actually sufficient and stays that way. A 40-example sample may be too small to calibrate confidence reliably regardless of what accuracy it reports, so establishing that the sample supports calibration comes first. Overall accuracy on the type can still hide a high error rate on the three fields that have never been measured before, so those need their own check. And because the launch-time evidence is thin by construction, an ongoing audit is what confirms the decision continues to hold in production rather than being a one-time judgment on a small sample.",
+      "distractors": {
+        "D": "Requiring the new type to beat the other eight types' combined aggregate uses an arbitrary cross-type comparison as the bar, rather than judging the new type against its own error tolerance and field-level performance — a type could reasonably be automated at a lower headline accuracy than another if its errors are lower-consequence, or vice versa.",
+        "E": "Allocating a fixed share of review capacity by volume is a plausible-sounding operational policy, but it ignores where errors actually concentrate; capacity is better spent where calibrated confidence and ambiguity signals indicate risk, not distributed by volume share regardless of the new type's actual error profile."
+      }
+    },
+    "lab": "lab-18-human-review-calibration",
+    "difficulty": 9,
+    "tags": [
+      "calibration",
+      "small-sample",
+      "onboarding-new-type",
+      "stratified-sampling",
+      "select-three"
+    ]
+  },
+  {
+    "id": "q-5.6-101",
+    "domain": 5,
+    "task_statement": "5.6",
+    "scenario": "A financial-research pipeline has two defects surfacing in the same report. First: the synthesis agent describes two quarterly revenue figures for the same company as 'contradictory,' when one figure is from the original filing and the other is from a later restatement — neither the subagent's structured output nor the synthesis prompt carries which version each figure came from. Second: a document-analysis subagent, on finding two internally conflicting compliance-cost figures within one filing, silently averages them into a single number before passing it to the coordinator, so the coordinator never learns a conflict existed.",
+    "stem": "Select the TWO changes that would fix both defects.",
+    "options": [
+      {
+        "key": "A",
+        "text": "Require every extracted figure to carry its filing-version or restatement status alongside the value, so the synthesis agent can present pre- and post-restatement figures as a labeled revision rather than an unexplained contradiction."
+      },
+      {
+        "key": "B",
+        "text": "Change the document-analysis subagent so that when it finds internally conflicting values, it passes both forward with annotation rather than resolving them itself, leaving reconciliation to the coordinator."
+      },
+      {
+        "key": "C",
+        "text": "Lower the synthesis agent's sampling temperature so it is less likely to describe two similar-looking figures as contradictory."
+      },
+      {
+        "key": "D",
+        "text": "Have the coordinator discard whichever of two disagreeing figures looks older whenever a subagent's report contains numbers that disagree."
+      },
+      {
+        "key": "E",
+        "text": "Have the document-analysis subagent apply stricter internal validation so that only one of the two compliance-cost figures ever reaches its output, chosen by whichever appears first in the source filing."
+      }
+    ],
+    "correct": [
+      "A",
+      "B"
+    ],
+    "rationale": {
+      "correct": "The two defects have separate root causes and need separate fixes. The revenue figures only look contradictory because the version metadata that would explain the difference was never captured, so carrying restatement status forward is what lets synthesis present them correctly as a revision instead of a conflict. The compliance-cost figures are a different failure: the subagent is resolving a real internal conflict on its own, before the coordinator ever sees it, so the fix is to stop resolving it at that level and instead pass both values forward with annotation, which is what lets the coordinator reconcile them with full context.",
+      "distractors": {
+        "C": "Sampling temperature affects output variability, not whether the model has access to version metadata or whether a subagent silently averages conflicting values; a fully deterministic run would still describe the figures as contradictory and would still average the compliance costs away.",
+        "D": "Discarding the 'older-looking' figure does not restore the missing restatement metadata — it is a guess about recency rather than a use of recorded version data — and it addresses neither defect: it does not fix the false contradiction and does not touch the subagent's separate averaging behavior at all.",
+        "E": "Choosing whichever value appears first in the source document is the same kind of silent, arbitrary resolution the subagent is already doing, only with a different tie-breaking rule; it keeps the conflict invisible to the coordinator rather than surfacing it, and does nothing for the missing restatement metadata in the other defect."
+      }
+    },
+    "lab": "lab-20-error-propagation-provenance",
+    "difficulty": 8,
+    "tags": [
+      "provenance",
+      "temporal-data",
+      "conflict-annotation",
+      "synthesis",
+      "select-two"
     ]
   }
 ]
