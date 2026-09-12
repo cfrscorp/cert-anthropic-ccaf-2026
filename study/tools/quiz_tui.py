@@ -20,6 +20,7 @@ modern PowerShell.
 """
 
 import argparse
+import random
 import shutil
 import sys
 import textwrap
@@ -111,9 +112,11 @@ def accuracy_color(pct):
     return core.Color.RED
 
 
-def render_frame(index, total, q, answered_state, running_correct, running_answered):
+def render_frame(index, total, q, display_options, orig_to_display, display_to_orig, answered_state, running_correct, running_answered):
     """answered_state is None (not yet answered), or a dict with
-    {"choice": str, "correct": bool, "skipped": bool} describing the result."""
+    {"choice": str, "correct": bool, "skipped": bool} describing the result.
+    `choice` is in display-letter terms; display_options/orig_to_display/
+    display_to_orig describe this question's current on-screen shuffle."""
     lines = []
     lines.append(core.c("  CCAF PRACTICE QUIZ", core.Color.BOLD, core.Color.CYAN) + core.c("  ·  fixed-layout mode", core.Color.DIM))
     lines.append(core.c("─" * term_width(), core.Color.DIM))
@@ -136,7 +139,7 @@ def render_frame(index, total, q, answered_state, running_correct, running_answe
 
     lines.append(core.c(wrap(q.stem, width=term_width()), core.Color.BOLD))
     lines.append("")
-    for opt in q.options:
+    for opt in display_options:
         prefix = f"  {opt['key']}. "
         body = textwrap.fill(opt["text"], width=term_width(), initial_indent="", subsequent_indent=" " * len(prefix))
         lines.append(f"  {core.c(opt['key'], core.Color.BOLD, core.Color.CYAN)}. {body}")
@@ -154,25 +157,27 @@ def render_frame(index, total, q, answered_state, running_correct, running_answe
         else:
             choice = answered_state["choice"]
             is_multi = isinstance(q.correct, list)
-            correct_set = set(q.correct) if is_multi else {q.correct}
-            chosen_set = set(choice) if is_multi else {choice}
+            correct_orig = set(q.correct) if is_multi else {q.correct}
+            chosen_orig = {display_to_orig[k] for k in choice} if is_multi else {display_to_orig[choice]}
             if answered_state["correct"]:
                 lines.append(core.c("✓ Correct!", core.Color.BOLD, core.Color.GREEN))
             else:
-                answer_label = ", ".join(sorted(q.correct)) if is_multi else q.correct
+                correct_display = sorted(orig_to_display[k] for k in correct_orig)
+                answer_label = ", ".join(correct_display) if is_multi else correct_display[0]
                 verb = "are" if is_multi else "is"
                 lines.append(core.c(f"✗ Incorrect — correct answer{'s' if is_multi else ''} {verb} {answer_label}.", core.Color.BOLD, core.Color.RED))
             lines.append("")
             lines.append(label_line("Why: ", q.rationale.get("correct", "")))
             if not answered_state["correct"]:
-                for key in sorted(chosen_set - correct_set):
-                    distractor = q.rationale.get("distractors", {}).get(key)
+                wrong_orig = sorted(chosen_orig - correct_orig, key=lambda k: orig_to_display[k])
+                for orig_key in wrong_orig:
+                    distractor = q.rationale.get("distractors", {}).get(orig_key)
                     if distractor:
-                        lines.append(label_line(f"About {key}: ", distractor))
+                        lines.append(label_line(f"About {orig_to_display[orig_key]}: ", distractor))
                 if is_multi:
-                    missed = sorted(correct_set - chosen_set)
-                    if missed:
-                        lines.append(label_line("Missed: ", f"{', '.join(missed)} should also have been selected."))
+                    missed_display = sorted(orig_to_display[k] for k in correct_orig - chosen_orig)
+                    if missed_display:
+                        lines.append(label_line("Missed: ", f"{', '.join(missed_display)} should also have been selected."))
             if q.lab:
                 lines.append(core.c(f"Practice: {q.lab}", core.Color.DIM))
         lines.append("")
@@ -219,7 +224,7 @@ def wait_continue():
     return raw not in ("q", "quit", "exit")
 
 
-def run_tui_session(questions, history, history_path, source_files, filters):
+def run_tui_session(questions, history, history_path, source_files, filters, rng):
     from datetime import datetime
 
     _enable_windows_vt()
@@ -230,10 +235,11 @@ def run_tui_session(questions, history, history_path, source_files, filters):
     ended_early = False
     try:
         for i, q in enumerate(questions, start=1):
-            valid_keys = [o["key"] for o in q.options]
+            display_options, orig_to_display, display_to_orig = core.shuffle_options(q, rng)
+            valid_keys = [o["key"] for o in display_options]
             select_count = len(q.correct) if isinstance(q.correct, list) else None
 
-            render_frame(i, len(questions), q, None, correct_count, answered)
+            render_frame(i, len(questions), q, display_options, orig_to_display, display_to_orig, None, correct_count, answered)
             choice = prompt_answer(valid_keys, select_count)
 
             if choice == "quit":
@@ -241,20 +247,22 @@ def run_tui_session(questions, history, history_path, source_files, filters):
                 break
 
             if choice == "skip":
-                render_frame(i, len(questions), q, {"skipped": True, "choice": None, "correct": False}, correct_count, answered)
+                render_frame(i, len(questions), q, display_options, orig_to_display, display_to_orig, {"skipped": True, "choice": None, "correct": False}, correct_count, answered)
                 if not wait_continue():
                     ended_early = True
                     break
                 continue
 
             answered += 1
-            is_correct = set(choice) == set(q.correct) if isinstance(q.correct, list) else choice == q.correct
+            is_multi = isinstance(q.correct, list)
+            chosen_orig = {display_to_orig[k] for k in choice} if is_multi else display_to_orig[choice]
+            is_correct = chosen_orig == set(q.correct) if is_multi else chosen_orig == q.correct
             if is_correct:
                 correct_count += 1
             core.record_answer(history, q, is_correct)
 
             render_frame(
-                i, len(questions), q,
+                i, len(questions), q, display_options, orig_to_display, display_to_orig,
                 {"skipped": False, "choice": choice, "correct": is_correct},
                 correct_count, answered,
             )
@@ -335,7 +343,11 @@ def build_parser():
     parser.add_argument("--tag", metavar="TAG", help="Only include questions with this tag.")
     parser.add_argument("--num", type=int, metavar="N", help="Limit the session to N questions.")
     parser.add_argument("--shuffle", action="store_true", help="Shuffle question order before selecting.")
-    parser.add_argument("--seed", type=int, metavar="N", help="Random seed for --shuffle, for reproducible order.")
+    parser.add_argument(
+        "--seed", type=int, metavar="N",
+        help="Random seed for reproducible randomness (--shuffle's question order, and each "
+             "question's on-screen answer order, which is always shuffled).",
+    )
     parser.add_argument(
         "--review-missed", action="store_true",
         help="Only include questions whose most recent recorded attempt was incorrect.",
@@ -398,7 +410,8 @@ def main(argv=None):
         print(core.c("No questions match the given filters.", core.Color.YELLOW))
         return 1
 
-    selected = core.select_questions(pool, args)
+    rng = random.Random(args.seed) if args.seed is not None else random.Random()
+    selected = core.select_questions(pool, args, rng)
     if not selected:
         print(core.c("No questions left after applying --num.", core.Color.YELLOW))
         return 1
@@ -408,7 +421,7 @@ def main(argv=None):
         "review_missed": args.review_missed, "num": args.num, "shuffle": args.shuffle,
     }
     try:
-        run_tui_session(selected, history, args.history, [p.name for p in args.files], filters)
+        run_tui_session(selected, history, args.history, [p.name for p in args.files], filters, rng)
     except (KeyboardInterrupt, EOFError):
         # run_tui_session's own try/finally has already restored the terminal by this point.
         print(core.c("\n\nInterrupted — progress so far was not saved for this session.", core.Color.YELLOW))

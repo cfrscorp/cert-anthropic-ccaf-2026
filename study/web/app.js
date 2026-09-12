@@ -28,6 +28,19 @@
     }
     return a;
   }
+  function shuffleOptions(q) {
+    // Real exam items don't always put the correct answer in the same spot,
+    // so options are re-shuffled and relabeled (A, B, C, ...) each time a
+    // question is presented. q.correct / q.rationale keep their original
+    // keys untouched; origToDisplay/displayToOrig translate between them so
+    // grading and rationale lookups stay correct regardless of the shuffle.
+    var perm = shuffle(q.options);
+    var letters = q.options.map(function (o) { return o.key; });
+    var displayOptions = perm.map(function (o, i) { return { key: letters[i], text: o.text, orig: o.key }; });
+    var origToDisplay = {}, displayToOrig = {};
+    displayOptions.forEach(function (o) { origToDisplay[o.orig] = o.key; displayToOrig[o.key] = o.orig; });
+    return { displayOptions: displayOptions, origToDisplay: origToDisplay, displayToOrig: displayToOrig };
+  }
   function domainColor(id) { return "var(--d" + id + ")"; }
   function domainName(id) {
     var d = DATA.meta.domains.find(function (x) { return x.id === id; });
@@ -256,9 +269,10 @@
   function renderQuizQuestion() {
     var q = quiz.pool[quiz.idx];
     if (!q) { renderQuizSummary(); return; }
+    if (quiz.mapIdx !== quiz.idx) { quiz.map = shuffleOptions(q); quiz.mapIdx = quiz.idx; }
     var pct = Math.round((quiz.idx / quiz.pool.length) * 100);
     var isMulti = Array.isArray(q.correct);
-    var opts = q.options.map(function (o) {
+    var opts = quiz.map.displayOptions.map(function (o) {
       return '<button class="option" data-key="' + o.key + '">' +
         '<span class="option__key">' + o.key + "</span>" +
         '<span class="option__text">' + esc(o.text) + "</span></button>";
@@ -317,31 +331,38 @@
   function answerQuiz(q, key) {
     if (quiz.answered) return;
     quiz.answered = true;
+    var map = quiz.map;
     var isMulti = Array.isArray(q.correct);
-    var correctSet = isMulti ? q.correct.slice().sort() : null;
-    var chosenSet = isMulti ? key.slice().sort() : null;
+    var correctOrigSet = isMulti ? q.correct.slice().sort() : null;
+    var chosenOrigSet = isMulti ? key.map(function (k) { return map.displayToOrig[k]; }).sort() : null;
     var correct = isMulti
-      ? (chosenSet.length === correctSet.length && chosenSet.every(function (k, i) { return k === correctSet[i]; }))
-      : key === q.correct;
+      ? (chosenOrigSet.length === correctOrigSet.length && chosenOrigSet.every(function (k, i) { return k === correctOrigSet[i]; }))
+      : map.displayToOrig[key] === q.correct;
     if (correct) quiz.score += 1;
     recordAnswer(q.id, correct);
 
     document.querySelectorAll("#opts .option").forEach(function (btn) {
-      var k = btn.getAttribute("data-key");
+      var dKey = btn.getAttribute("data-key");
+      var oKey = map.displayToOrig[dKey];
       btn.setAttribute("disabled", "true");
       if (isMulti) {
-        if (correctSet.indexOf(k) >= 0) btn.classList.add("is-correct");
-        else if (chosenSet.indexOf(k) >= 0) btn.classList.add("is-wrong");
+        if (correctOrigSet.indexOf(oKey) >= 0) btn.classList.add("is-correct");
+        else if (chosenOrigSet.indexOf(oKey) >= 0) btn.classList.add("is-wrong");
       } else {
-        if (k === q.correct) btn.classList.add("is-correct");
-        else if (k === key) btn.classList.add("is-wrong");
+        if (oKey === q.correct) btn.classList.add("is-correct");
+        else if (dKey === key) btn.classList.add("is-wrong");
       }
     });
 
-    var distractors = Object.keys(q.rationale.distractors).sort().map(function (k) {
-      return '<div class="rationale__item"><b>' + k + " —</b> " + esc(q.rationale.distractors[k]) + "</div>";
+    var distractors = Object.keys(q.rationale.distractors).sort(function (a, b) {
+      return map.origToDisplay[a] < map.origToDisplay[b] ? -1 : 1;
+    }).map(function (oKey) {
+      var dKey = map.origToDisplay[oKey];
+      return '<div class="rationale__item"><b>' + dKey + " —</b> " + esc(q.rationale.distractors[oKey]) + "</div>";
     }).join("");
-    var answerLabel = isMulti ? correctSet.join(", ") : q.correct;
+    var answerLabel = isMulti
+      ? correctOrigSet.map(function (k) { return map.origToDisplay[k]; }).sort().join(", ")
+      : map.origToDisplay[q.correct];
     var rat = document.getElementById("rat");
     rat.innerHTML =
       '<h3>' + (correct ? "✓ Correct" : "✕ Not quite") + " — answer" + (isMulti ? "s " : " ") + answerLabel + "</h3>" +

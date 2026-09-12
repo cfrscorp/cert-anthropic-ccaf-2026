@@ -230,14 +230,31 @@ def apply_filters(questions, args, history):
     return pool
 
 
-def select_questions(pool, args):
+def select_questions(pool, args, rng):
     pool = list(pool)
     if args.shuffle:
-        rng = random.Random(args.seed) if args.seed is not None else random.Random()
         rng.shuffle(pool)
     if args.num is not None:
         pool = pool[: args.num]
     return pool
+
+
+def shuffle_options(q, rng):
+    """Return a per-presentation shuffle of a question's options: real exam
+    items don't always put the correct answer in the same position, so this
+    randomizes on-screen order and reassigns sequential display letters
+    (A, B, C, ...), independent of the underlying `q.correct` / `q.rationale`
+    keys (which stay exactly as authored). Returns (display_options,
+    orig_to_display, display_to_orig); the two dicts translate between the
+    letters shown to the user this time and the letters the data model uses,
+    so grading and rationale lookups stay correct regardless of shuffle."""
+    perm = list(q.options)
+    rng.shuffle(perm)
+    letters = [o["key"] for o in q.options][: len(perm)]  # reuse A, B, C... in order
+    display_options = [{"key": letters[i], "text": perm[i]["text"]} for i in range(len(perm))]
+    orig_to_display = {perm[i]["key"]: letters[i] for i in range(len(perm))}
+    display_to_orig = {letters[i]: perm[i]["key"] for i in range(len(perm))}
+    return display_options, orig_to_display, display_to_orig
 
 
 # --------------------------------------------------------------------------
@@ -250,7 +267,7 @@ def print_banner():
     rule("═")
 
 
-def print_question(index, total, q):
+def print_question(index, total, q, display_options):
     print()
     header = f"Question {index}/{total}"
     tag = f"Domain {q.domain} · Task {q.task_statement}"
@@ -265,7 +282,7 @@ def print_question(index, total, q):
         print()
     print(c(q.stem, Color.BOLD))
     print()
-    for opt in q.options:
+    for opt in display_options:
         print(f"  {c(opt['key'], Color.BOLD, Color.CYAN)}. {opt['text']}")
     print()
 
@@ -300,42 +317,51 @@ def prompt_answer(valid_keys, select_count=None):
         return letters
 
 
-def show_feedback(q, chosen):
+def show_feedback(q, chosen, orig_to_display, display_to_orig):
+    """`chosen` is in display-letter terms (what the user typed, matching what
+    was on screen); comparisons against q.correct/q.rationale translate
+    through display_to_orig, and anything shown back to the user is
+    translated through orig_to_display so it stays consistent with the
+    letters they just saw, regardless of how this question's options were
+    shuffled for presentation."""
     is_multi = isinstance(q.correct, list)
-    correct_set = set(q.correct) if is_multi else {q.correct}
-    chosen_set = set(chosen) if is_multi else {chosen}
-    correct = chosen_set == correct_set
+    correct_orig = set(q.correct) if is_multi else {q.correct}
+    chosen_orig = {display_to_orig[k] for k in chosen} if is_multi else {display_to_orig[chosen]}
+    correct = chosen_orig == correct_orig
     if correct:
         print(c("  ✓ Correct!", Color.BOLD, Color.GREEN))
     else:
-        answer_label = ", ".join(sorted(q.correct)) if is_multi else q.correct
+        correct_display = sorted(orig_to_display[k] for k in correct_orig)
+        answer_label = ", ".join(correct_display) if is_multi else correct_display[0]
         verb = "are" if is_multi else "is"
         print(c(f"  ✗ Incorrect — correct answer{'s' if is_multi else ''} {verb} {answer_label}.", Color.BOLD, Color.RED))
     print()
     print(c("  Why: ", Color.BOLD) + q.rationale.get("correct", ""))
     if not correct:
-        for key in sorted(chosen_set - correct_set):
-            distractor = q.rationale.get("distractors", {}).get(key)
+        wrong_orig = sorted(chosen_orig - correct_orig, key=lambda k: orig_to_display[k])
+        for orig_key in wrong_orig:
+            distractor = q.rationale.get("distractors", {}).get(orig_key)
             if distractor:
-                print(c(f"  About {key}: ", Color.BOLD) + distractor)
+                print(c(f"  About {orig_to_display[orig_key]}: ", Color.BOLD) + distractor)
         if is_multi:
-            missed = sorted(correct_set - chosen_set)
-            if missed:
-                print(c("  Missed: ", Color.BOLD) + f"{', '.join(missed)} should also have been selected.")
+            missed_display = sorted(orig_to_display[k] for k in correct_orig - chosen_orig)
+            if missed_display:
+                print(c("  Missed: ", Color.BOLD) + f"{', '.join(missed_display)} should also have been selected.")
     if q.lab:
         print(c(f"  Practice: {q.lab}", Color.DIM))
     return correct
 
 
-def run_session(questions, history, history_path, source_files, filters):
+def run_session(questions, history, history_path, source_files, filters, rng):
     print_banner()
     print(c(f"  {len(questions)} question(s) loaded — answer A-D, or 'skip' / 'quit' anytime.\n", Color.DIM))
     start = datetime.now()
     correct_count = 0
     answered = 0
     for i, q in enumerate(questions, start=1):
-        print_question(i, len(questions), q)
-        valid_keys = [o["key"] for o in q.options]
+        display_options, orig_to_display, display_to_orig = shuffle_options(q, rng)
+        print_question(i, len(questions), q, display_options)
+        valid_keys = [o["key"] for o in display_options]
         select_count = len(q.correct) if isinstance(q.correct, list) else None
         choice = prompt_answer(valid_keys, select_count)
         if choice == "quit":
@@ -345,7 +371,7 @@ def run_session(questions, history, history_path, source_files, filters):
             print(c("  Skipped.", Color.DIM))
             continue
         answered += 1
-        is_correct = show_feedback(q, choice)
+        is_correct = show_feedback(q, choice, orig_to_display, display_to_orig)
         if is_correct:
             correct_count += 1
         record_answer(history, q, is_correct)
@@ -522,7 +548,11 @@ def build_parser():
     parser.add_argument("--tag", metavar="TAG", help="Only include questions with this tag.")
     parser.add_argument("--num", type=int, metavar="N", help="Limit the session to N questions.")
     parser.add_argument("--shuffle", action="store_true", help="Shuffle question order before selecting.")
-    parser.add_argument("--seed", type=int, metavar="N", help="Random seed for --shuffle, for reproducible order.")
+    parser.add_argument(
+        "--seed", type=int, metavar="N",
+        help="Random seed for reproducible randomness (--shuffle's question order, and each "
+             "question's on-screen answer order, which is always shuffled).",
+    )
     parser.add_argument(
         "--review-missed", action="store_true",
         help="Only include questions whose most recent recorded attempt was incorrect.",
@@ -584,7 +614,8 @@ def main(argv=None):
         print(c("No questions match the given filters.", Color.YELLOW))
         return 1
 
-    selected = select_questions(pool, args)
+    rng = random.Random(args.seed) if args.seed is not None else random.Random()
+    selected = select_questions(pool, args, rng)
     if not selected:
         print(c("No questions left after applying --num.", Color.YELLOW))
         return 1
@@ -594,7 +625,7 @@ def main(argv=None):
         "review_missed": args.review_missed, "num": args.num, "shuffle": args.shuffle,
     }
     try:
-        run_session(selected, history, args.history, [p.name for p in args.files], filters)
+        run_session(selected, history, args.history, [p.name for p in args.files], filters, rng)
     except (KeyboardInterrupt, EOFError):
         print(c("\n\nInterrupted — progress so far was not saved for this session.", Color.YELLOW))
         return 130
