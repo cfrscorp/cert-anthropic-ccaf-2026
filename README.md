@@ -8,21 +8,25 @@ building production applications with **Claude Code, the Claude Agent SDK, the
 Claude API, and the Model Context Protocol (MCP)**.
 
 This repo pairs the official exam guide with two ways to prepare: a buildable,
-testable **lab curriculum** and a polished, fully offline **study app** (practice
-quiz, flashcards, concept explainers, browsable labs, and a readiness dashboard) — so
-you gain hands-on experience with *every* feature, concept, and topic the exam covers,
+testable **lab curriculum** and a polished, fully offline **study app** (a
+three-tier practice quiz with real "Select N" multi-response items, flashcards,
+concept explainers, browsable labs, and a readiness dashboard) — so you gain
+hands-on experience with *every* feature, concept, and topic the exam covers,
 not just read about them.
 
 ## By the Numbers
 
 | Practice Questions | Flashcards | Concept Explainers | Hands-On Labs |
 |:--:|:--:|:--:|:--:|
-| **240** | **90** | **30** | **25** |
+| **435** | **135** | **30** | **25** |
 
-Covering all **5 exam domains** and **30 task statements**, with **40** syntax-highlighted
-code samples across the concept explainers — and every question and concept links to the
-lab that drills it. The whole study app runs locally and offline, with zero runtime
-dependencies.
+Questions span three difficulty tiers — **Standard** (240), **Intermediate** (120),
+and **Hard** (75, including 10 multi-response "Select N" items calibrated to the
+real exam's format) — dynamically selectable in the Web UI, or passed as any
+combination of files to the CLI/TUI. Covering all **5 exam domains** and **30 task
+statements**, with **40** syntax-highlighted code samples across the concept
+explainers — and every question and concept links to the lab that drills it. The
+whole study app runs locally and offline, with zero runtime dependencies.
 
 ## Study Materials
 
@@ -32,7 +36,7 @@ dependencies.
 | [`labs/`](labs/) | 25 hands-on labs + a shared test harness. Start at [`labs/README.md`](labs/README.md). |
 | [`labs/README.md`](labs/README.md) | Master matrix: labs by dependency tier & difficulty, with effort estimates and a full task-statement → lab / scenario → capstone traceability map. |
 | [`labs/_shared/`](labs/_shared/) | Reusable test harness (deterministic mock Claude client, `starter`/`solution` switching, opt-in LLM grading). See [`labs/_shared/README.md`](labs/_shared/README.md). |
-| [`study/`](study/) | A local, offline study app — practice quiz, flashcards, concept explainers (with code samples), browsable labs, and a readiness dashboard. Run: `uv run study/serve.py`. See [`study/README.md`](study/README.md). |
+| [`study/`](study/) | A local, offline study app — a 3-tier practice quiz (Standard/Intermediate/Hard, with multi-select items), flashcards with self-graded recall tracking, concept explainers (with code samples), browsable labs, and a readiness dashboard. Web UI (`uv run study/serve.py`) plus standalone CLI/TUI quiz and flashcard tools. See [`study/README.md`](study/README.md). |
 | `.claude/` | Project Claude Code config (enables the `pyright-lsp` and `agent-sdk-dev` plugins). |
 
 ## Labs At A Glance

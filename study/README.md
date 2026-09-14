@@ -1,13 +1,16 @@
 # CCAF Study App
 
 A **local, offline, single-user** study app for the Claude Certified Architect –
-Foundations (CCAF) exam: a scenario **practice-question bank**, **flashcards**,
-**concept explainers**, and a **readiness dashboard** that tracks your progress
-over time. No cloud, no accounts, no backend — everything runs on your machine and
-your progress lives in your browser.
+Foundations (CCAF) exam: a **3-tier practice-question bank** (435 questions —
+Standard/Intermediate/Hard, including real multi-response "Select N" items),
+**flashcards** (135 cards, with self-graded recall tracking), **concept
+explainers**, and a **readiness dashboard** that tracks your progress over time.
+No cloud, no accounts, no backend — everything runs on your machine and your
+progress lives in your browser (or in a local history file for the CLI/TUI tools).
 
-The content is plain, schema-validated **JSON** (`data/`); the app is dependency-free
-**HTML/CSS/JS** (`web/`) that reads it.
+The content is plain, schema-validated **JSON** (`data/`), driven by a manifest
+(`data/sets.json`) that lists every available question/flashcard set; the Web UI
+(`web/`, dependency-free HTML/CSS/JS) and the CLI/TUI tools (`tools/`) both read it.
 
 ## Install uv
 
@@ -119,11 +122,18 @@ stays in their own browser).
 
 ## Features
 
-- **Quiz** — scenario multiple-choice (the exam's format). Filter by domain / task
-  statement, answer, then see the correct choice **and why each distractor is wrong**,
-  with a running score and an end-of-set summary.
+- **Quiz** — scenario multiple-choice (the exam's format), across three difficulty
+  tiers (**Standard**, **Intermediate**, **Hard** — pick a set from the dropdown, or
+  combine files on the CLI/TUI). Includes real multi-response **"Select N"** items,
+  matching the exam's mixed single-/multi-answer format. Each question's answer
+  options are reshuffled and relabeled every time it's shown, so repeat practice
+  doesn't let you memorize a position instead of the content. Filter by domain / task
+  statement, answer, then see the correct choice **and why each distractor is
+  wrong**, with a running score and an end-of-set summary.
 - **Flashcards** — click-to-flip fact recall (CLI flags, `tool_choice` values, batch
-  limits, `stop_reason`, …). Filter and shuffle.
+  limits, `stop_reason`, …), each card testing one single concept. Filter by
+  domain and task statement, shuffle, and self-grade each card (✓ Got It / ✗ Missed
+  It) to drive a "review missed" mode, tracked separately from quiz mastery.
 - **Concepts** — one explainer per exam task statement (1.1–5.6): the idea, why it
   matters, the common trap, and a link to the relevant hands-on lab in `../labs/`.
 - **Readiness** — a cumulative dashboard: overall readiness % (weighted by the exam's
@@ -141,21 +151,50 @@ or move your progress, or **Reset** to start over.
 
 | File | What |
 |------|------|
-| `meta.json` | Domains + exam weights, the 30 task statements, and the task → lab map. |
-| `questions-standard.json`, `questions-intermediate.json`, `questions-hard.json` | Scenario multiple-choice questions by difficulty tier (stem, 4 options, correct, per-distractor rationale, lab link). The Web UI currently reads `questions-standard.json`; `quiz.py`/`quiz_tui.py` accept any of the three (or several at once). |
-| `flashcards.json` | Front/back fact-recall cards. |
-| `concepts.json` | One explainer per task statement. |
+| `meta.json` | Domains + exam weights, the 30 task statements, the task → lab map, and `config.app_version` (shown in the Web UI footer). |
+| `sets.json` | Manifest of every question/flashcard set (`{id, label, file}`), driving the Web UI's set-picker dropdowns; `quiz.py`/`quiz_tui.py`/`flashcards.py`/`flashcards_tui.py` instead take file paths directly. |
+| `questions-standard.json` (240), `questions-intermediate.json` (120), `questions-hard.json` (75, incl. 10 multi-response) | Scenario multiple-choice questions by difficulty tier: stem, 4-5 options (A-E), a `correct` key (a single letter, or a 2+-letter array for a "Select N" item), per-distractor rationale, lab link. All three are schema-identical and interchangeable across every surface. |
+| `flashcards.json` | Front/back fact-recall cards (135), each testing a single concept. |
+| `concepts.json` | One explainer per task statement (30). |
 | `schema/*.schema.json` | JSON Schemas; every data file is validated against these. |
 
 ### Adding or Editing Content
 
-Edit the JSON in `data/`, then validate:
+Edit the JSON in `data/` (and `sets.json` if adding/removing a whole set), then validate:
 
 ```bash
 cd study && uv run pytest
 ```
 
 The tests check schema validity, integrity (valid answer keys, complete distractor
-rationales, real task statements, resolvable lab links, weights summing to 100) and
-coverage (question count per task statement). Coverage is gated by `PILOT_DOMAINS` in
-`tests/test_study_data.py` — widen it to all five domains once every domain is authored.
+rationales, real task statements, resolvable lab links, weights summing to 100,
+the manifest staying in sync with the files on disk), and coverage (question count
+per task statement, per-tier minimums) across all three question tiers, all five
+domains.
+
+## Command-Line & TUI Tools (`tools/`)
+
+Prefer a terminal? `quiz.py` / `quiz_tui.py` and `flashcards.py` / `flashcards_tui.py`
+are standalone, dependency-free scripts offering the same content outside the
+browser, with their own cross-session progress history (`.working/`, gitignored).
+Each pair shares one "core" data/history module (`quiz_tui.py` and `flashcards_tui.py`
+just add a fixed-layout, full-screen rendering mode — same flags, same history file).
+
+```bash
+# Quiz: shuffle 20 Hard-tier questions, scoped to one domain
+uv run study/tools/quiz.py study/data/questions-hard.json --shuffle --num 20 --domain 1
+
+# Combine tiers, or drill everything you've missed before
+uv run study/tools/quiz.py study/data/questions-standard.json study/data/questions-intermediate.json
+uv run study/tools/quiz.py study/data/questions-standard.json --review-missed
+
+# Fixed-layout TUI variant (same flags)
+uv run study/tools/quiz_tui.py study/data/questions-hard.json --task 4.3
+
+# Flashcards: self-graded recall, filtered to one task statement
+uv run study/tools/flashcards.py study/data/flashcards.json --task 3.2
+uv run study/tools/flashcards_tui.py study/data/flashcards.json --review-missed
+
+# Full flag reference for any of the four
+uv run study/tools/quiz.py --help
+```
